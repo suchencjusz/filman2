@@ -7,6 +7,7 @@ from fake_useragent import UserAgent
 from utils import cut_unix_timestamp_miliseconds
 from db import Database
 from movie import Movie, MovieManager
+from tasks import TaskManager
 
 
 class Watched:
@@ -29,6 +30,30 @@ class WatchedManager:
     def __init__(self):
         pass
 
+    def update_movie_data(
+        self,
+        movie_id: int,
+        title: str,
+        year: int,
+        poster_path: str,
+        community_rate: float,
+    ):
+        movie_manager = MovieManager()
+
+        movie = movie_manager.get_movie_by_id(movie_id)
+
+        if movie is None:
+            return False
+
+        movie.title = title
+        movie.year = year
+        movie.poster_path = poster_path
+        movie.community_rate = community_rate
+
+        movie_manager.update_movie(movie)
+
+        return True
+
     def add_watched_movie(
         self,
         id_filmweb: str,
@@ -38,41 +63,57 @@ class WatchedManager:
         favourite: bool,
         unix_timestamp: int,
     ):
+        db = Database()
         movie_manager = MovieManager()
 
-        watched_movie = movie_manager.get_movie_by_id(movie_id)
+        # check movie is in db
+        db.cursor.execute(f"SELECT * FROM movies WHERE id = %s", (movie_id,))
+        result = db.cursor.fetchone()
 
-        if watched_movie is None:
+        if result is None:
+            # if not, create task to scrap movie
+
+            movie_manager.add_movie_to_db(
+                Movie(
+                    movie_id,
+                    None,
+                    None,
+                    None,
+                    None,
+                )
+            )
+
+            task_manager = TaskManager()
+            task_manager.new_task("scrap_movie", movie_id)
+
             return False
 
-        unix_timestamp = cut_unix_timestamp_miliseconds(unix_timestamp)
-
-        db = Database()
-
-        # Check if movie is already in watched_movies table
+        # check it is not already in watched
         db.cursor.execute(
             f"SELECT * FROM watched_movies WHERE id_filmweb = %s AND movie_id = %s",
             (id_filmweb, movie_id),
         )
+
         result = db.cursor.fetchone()
 
-        if result:
-            return "Movie is already watched"
+        if result is not None:
+            return "Already watched"
 
-        # If movie is not watched, add it to watched_movies table
+        # add to watched
         db.cursor.execute(
             f"INSERT INTO watched_movies (id_filmweb, movie_id, rate, comment, favourite, unix_timestamp) VALUES (%s, %s, %s, %s, %s, %s)",
             (id_filmweb, movie_id, rate, comment, favourite, unix_timestamp),
         )
-
         db.connection.commit()
         db.connection.close()
-
+        
         return True
 
     def get_all_watched_movie(self, id_filmweb: str):
         db = Database()
-        db.cursor.execute(f"SELECT * FROM watched WHERE id_filmweb = {id_filmweb}")
+        db.cursor.execute(
+            f"SELECT * FROM watched_movies WHERE id_filmweb = %s", (id_filmweb,)
+        )
         result = db.cursor.fetchall()
         db.connection.close()
 
