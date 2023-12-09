@@ -1,31 +1,34 @@
+import logging
 import requests
 import aiohttp
 import asyncio
 import ujson
 
-# https://www.filmweb.pl/api/v1/title/875647/info
-# {
-#     "title": "The Menu ",
-#     "year": 2022,
-#     "type": "film",
-#     "subType": "film_cinema",
-#     "posterPath": "/56/47/875647/8053539.$.jpg"
-# }
 
-# https://www.filmweb.pl/api/v1/film/1212/rating
-# count	332783
-# rate	7.02568
-# countWantToSee	12536
-# countVote1	2595
-# countVote2	2834
-# countVote3	7237
-# countVote4	13054
-# countVote5	26087
-# countVote6	54155
-# countVote7	94523
-# countVote8	76911
-# countVote9	30347
-# countVote10	25040
+class Task:
+    def __init__(
+        self, id_task, status, type, job, unix_timestamp, unix_timestamp_last_update
+    ):
+        self.id_task = id_task
+        self.status = status
+        self.type = type
+        self.job = job
+        self.unix_timestamp = unix_timestamp
+        self.unix_timestamp_last_update = unix_timestamp_last_update
+
+    def __str__(self):
+        return (
+            f"{self.id_task} {self.status} {self.type} {self.job} {self.unix_timestamp}"
+        )
+
+
+#
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 class Scraper:
@@ -34,42 +37,57 @@ class Scraper:
         self.movie_id = movie_id
         self.endpoint_url = endpoint_url
 
-    async def fetch(self, session, url):
-        async with session.get(url) as response:
-            return await response.text()
+    def fetch(self, url):
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            logging.error(f"Error fetching {url}: HTTP {response.status_code}")
+            return None
+        return response.text
 
-    async def scrap(self):
-        async with aiohttp.ClientSession() as session:
-            info_url = f"https://www.filmweb.pl/api/v1/title/{self.movie_id}/info"
-            rating_url = f"https://www.filmweb.pl/api/v1/film/{self.movie_id}/rating"
+    def scrap(self, task):
+        info_url = f"https://www.filmweb.pl/api/v1/title/{task.job}/info"
+        rating_url = f"https://www.filmweb.pl/api/v1/film/{task.job}/rating"
 
-            info_task = asyncio.ensure_future(self.fetch(session, info_url))
-            rating_task = asyncio.ensure_future(self.fetch(session, rating_url))
+        info_data = self.fetch(info_url)
+        rating_data = self.fetch(rating_url)
 
-            responses = await asyncio.gather(info_task, rating_task)
+        if info_data is None or rating_data is None:
+            return False
 
-            info_data = ujson.loads(responses[0])
-            rating_data = ujson.loads(responses[1])
+        info_data = ujson.loads(info_data)
+        rating_data = ujson.loads(rating_data)
 
-            title = info_data.get("title", None)
-            year = int(info_data.get("year", None))
-            poster_url = info_data.get("posterPath", None)
-            community_rate = rating_data.get("rate", None)
+        title = info_data.get("title", None)
+        year = int(info_data.get("year", None))
+        poster_url = info_data.get("posterPath", None)
+        community_rate = rating_data.get("rate", None)
 
-            if title is None or year is None or poster_url is None:
-                return False
+        if title is None or year is None or poster_url is None:
+            return False
 
-            return await self.update_data(
-                self.movie_id,
-                title,
-                year,
-                poster_url,
-                community_rate,
-            )
+        return self.update_data(
+            self.movie_id, title, year, poster_url, community_rate, task.id_task
+        )
 
-    async def update_data(self, movie_id, title, year, poster_url, community_rate):
+    def update_data(self, movie_id, title, year, poster_url, community_rate, id_task):
+        r = requests.post(
+            f"{self.endpoint_url}/movie/update",
+            headers=self.headers,
+            json={
+                "id": movie_id,
+                "title": title,
+                "year": year,
+                "poster_url": poster_url,
+                "community_rate": community_rate,
+            },
+        )
+
+        if r.status_code != 200:
+            return False
+
         r = requests.get(
-            f"{self.endpoint_url}/movie/update?id={movie_id}&title={title}&year={year}&poster_url={poster_url}&community_rate={community_rate}"
+            f"{self.endpoint_url}/task/update?id_task={id_task}&status=done",
+            headers=self.headers,
         )
 
         if r.status_code != 200:
