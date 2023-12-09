@@ -1,12 +1,9 @@
 from datetime import datetime
-from typing import Optional, Required
 
 import hikari
-import asyncio
 import lightbulb
 
 configure_plugin = lightbulb.Plugin("Configure")
-
 
 @configure_plugin.command
 @lightbulb.command("configure", "Configure the bot.")
@@ -14,20 +11,20 @@ configure_plugin = lightbulb.Plugin("Configure")
 async def configure_group(_: lightbulb.SlashContext) -> None:
     pass
 
-
 @configure_group.child
 @lightbulb.option(
-    "text_channel", "text channel", type=hikari.TextableChannel, required=True
+    "text_channel", "kanał tekstowy", type=hikari.TextableChannel, required=True
 )
 @lightbulb.command(
-    "channel", "set the channel for the bot to post in", pass_options=True
+    "channel", "ustaw kanał z powiadomieniami", pass_options=True
 )
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def channel_subcommand(
     ctx: lightbulb.SlashContext, text_channel: hikari.TextableChannel
 ) -> None:
-    async with ctx.bot.d.client_session.get(
-        f"http://localhost:8000/discord/configure/guild?guild_id={ctx.guild_id}&channel_id={text_channel.id}"
+    async with ctx.bot.d.client_session.post(
+        "http://localhost:8000/discord/configure/guild",
+        json={"guild_id": ctx.guild_id, "channel_id": text_channel.id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(
@@ -48,7 +45,6 @@ async def channel_subcommand(
         )
 
         await ctx.respond(embed)
-
 
 @configure_group.set_error_handler
 async def configure_group_error_handler(event: lightbulb.CommandErrorEvent) -> None:

@@ -51,5 +51,7 @@ docs/_build/
 
 # Virtual environments
 venv/
+venv2/
+venv3/
 env/
 ENV/

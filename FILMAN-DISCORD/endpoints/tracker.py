@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Required
+from typing import Optional
 
 import hikari
 import lightbulb
@@ -21,8 +21,9 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 @lightbulb.command("me", "powiadamiaj na tym serwerze", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_id: str) -> None:
-    async with ctx.bot.d.client_session.get(
-        f"http://localhost:8000/discord/user/add?id_filmweb={filmweb_id}&id_guild={ctx.guild_id}"
+    async with ctx.bot.d.client_session.post(
+        "http://localhost:8000/discord/user/add",
+        json={"id_filmweb": filmweb_id, "id_guild": ctx.guild_id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(
@@ -61,8 +62,9 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_id: str) -> None:
 @lightbulb.command("stop", "przestań powiadamiać na tym serwerze", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
-    async with ctx.bot.d.client_session.get(
-        f"/discord/user/stop?id_discord={ctx.author.id}&guild_id={ctx.guild_id}"
+    async with ctx.bot.d.client_session.post(
+        "http://localhost:8000/discord/user/stop",
+        json={"id_discord": ctx.author.id, "guild_id": ctx.guild_id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(
@@ -91,8 +93,9 @@ async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
 )
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
-    async with ctx.bot.d.client_session.get(
-        f"/discord/user/cancel?id_discord={ctx.author.id}"
+    async with ctx.bot.d.client_session.post(
+        "http://localhost:8000/discord/user/cancel",
+        json={"id_discord": ctx.author.id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(

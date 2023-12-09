@@ -2,6 +2,8 @@ from mysql.connector.errors import IntegrityError
 
 from db import Database
 
+from tasks import TasksManager
+
 
 class DiscordUser:
     def __init__(self, id_filmweb, id_discord, discord_color):
@@ -68,12 +70,25 @@ class DiscordManager:
 
         return True
 
-    def delete_user_from_guild(self, id_filmweb: str, guild_id: int):
+    def delete_user_from_guild(self, id_discord: int, guild_id: int):
         db = Database()
 
         db.cursor.execute(
-            f"DELETE FROM discord_destinations WHERE id_filmweb = %s AND guild_id = %s",
-            (id_filmweb, guild_id),
+            "DELETE FROM discord_destinations WHERE id_filmweb = (SELECT id_filmweb FROM users WHERE id_discord = %s) AND guild_id = %s",
+            (id_discord, guild_id),
+        )
+
+        db.connection.commit()
+        db.connection.close()
+
+        return True
+    
+    def delete_user_from_all_destinations(self, id_discord: int):
+        db = Database()
+
+        db.cursor.execute(
+            "DELETE FROM discord_destinations WHERE id_filmweb = (SELECT id_filmweb FROM users WHERE id_discord = %s)",
+            (id_discord,),
         )
 
         db.connection.commit()
@@ -104,6 +119,9 @@ class DiscordManager:
 
         db.connection.commit()
         db.connection.close()
+
+        task_manager = TasksManager()
+        task_manager.new_task("check_user_new_movies", id_filmweb)
 
         return True
 

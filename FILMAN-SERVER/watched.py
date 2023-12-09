@@ -7,7 +7,7 @@ from fake_useragent import UserAgent
 from utils import cut_unix_timestamp_miliseconds
 from db import Database
 from movie import Movie, MovieManager
-from tasks import TaskManager
+from tasks import TasksManager
 
 
 class Watched:
@@ -53,7 +53,7 @@ class WatchedManager:
         movie_manager.update_movie(movie)
 
         return True
-
+    
     def add_watched_movie(
         self,
         id_filmweb: str,
@@ -62,6 +62,7 @@ class WatchedManager:
         comment: str,
         favourite: bool,
         unix_timestamp: int,
+        without_discord: bool,
     ):
         db = Database()
         movie_manager = MovieManager()
@@ -83,7 +84,7 @@ class WatchedManager:
                 )
             )
 
-            task_manager = TaskManager()
+            task_manager = TasksManager()
             task_manager.new_task("scrap_movie", movie_id)
 
             return False
@@ -107,9 +108,15 @@ class WatchedManager:
         db.connection.commit()
         db.connection.close()
         
+        if without_discord is True:
+            return True
+
+        task_manager = TasksManager()
+        task_manager.new_task("send_discord", f"{id_filmweb},{movie_id}")
+
         return True
 
-    def get_all_watched_movie(self, id_filmweb: str):
+    def get_all_watched_movies(self, id_filmweb: str):
         db = Database()
         db.cursor.execute(
             f"SELECT * FROM watched_movies WHERE id_filmweb = %s", (id_filmweb,)

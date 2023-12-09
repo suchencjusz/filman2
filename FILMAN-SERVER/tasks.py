@@ -30,7 +30,7 @@ class Task:
 # type: scrap_movie, scrape_series, send_discord, check_user_new_movies, check_user_new_series
 
 
-class TaskManager:
+class TasksManager:
     def __init__(self):
         pass
 
@@ -65,7 +65,7 @@ class TaskManager:
 
     def new_task(self, type: str, job: str):
         # status: waiting, in_progress, done, failed
-        # type: scrap_movie, scrape_series, send_discord, check_user_new_movies, check_user_new_series
+        # type: scrap_movie, scrape_series, send_discord, check_user_new_movies, check_user_new_series,
 
         db = Database()
 
@@ -80,6 +80,50 @@ class TaskManager:
         db.connection.close()
 
         return True
+
+    def get_and_update_tasks(self, type: str = None, status: str = "waiting"):
+        db = Database()
+
+        if type is None:
+            db.cursor.execute(
+                f"SELECT * FROM tasks WHERE status = %s ORDER BY id_task ASC LIMIT 10",
+                (status,),
+            )
+        else:
+            db.cursor.execute(
+                f"SELECT * FROM tasks WHERE type = %s AND status = %s ORDER BY id_task ASC LIMIT 10",
+                (type, status),
+            )
+        
+        result = db.cursor.fetchall()
+
+        if result is None:
+            return None
+
+        tasks = []
+
+        for task in result:
+            tasks.append(
+                Task(
+                    id_task=task[0],
+                    status=task[1],
+                    type=task[2],
+                    job=task[3],
+                    unix_timestamp=task[4],
+                    unix_timestamp_last_update=task[5],
+                )
+            )
+
+        for task in tasks:
+            db.cursor.execute(
+                f"UPDATE tasks SET status = %s WHERE id_task = %s",
+                ("in_progress", task.id_task),
+            )
+
+        db.connection.commit()
+        db.connection.close()
+
+        return tasks
 
     def get_tasks_count_by_type_and_status(self, type: str, status: str):
         db = Database()
@@ -99,10 +143,17 @@ class TaskManager:
     def get_task_by_type(self, type: str):
         db = Database()
 
-        db.cursor.execute(
-            f"SELECT * FROM tasks WHERE type = %s AND status = %s",
-            (type, "waiting"),
-        )
+        if type is None:
+            db.cursor.execute(
+                f"SELECT * FROM tasks WHERE status = %s ORDER BY id_task ASC LIMIT 1",
+                ("waiting",),
+            )
+        else:
+            db.cursor.execute(
+                f"SELECT * FROM tasks WHERE type = %s AND status = %s ORDER BY id_task ASC LIMIT 1",
+                (type, "waiting"),
+            )
+
         result = db.cursor.fetchone()
 
         if result is None:
@@ -117,15 +168,15 @@ class TaskManager:
             unix_timestamp_last_update=result[5],
         )
 
-        yield task
+        return task
 
-        db.cursor.execute(
-            f"UPDATE tasks SET status = %s WHERE id_task = %s",
-            ("in_progress", task.id_task),
-        )
+        # db.cursor.execute(
+        #     f"UPDATE tasks SET status = %s WHERE id_task = %s",
+        #     ("in_progress", task.id_task),
+        # )
 
-        db.connection.commit()
-        db.connection.close()
+        # db.connection.commit()
+        # db.connection.close()
 
     def reset_stuck_tasks():
         db = Database()

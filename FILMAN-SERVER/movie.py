@@ -5,7 +5,7 @@ import time
 from fake_useragent import UserAgent
 
 from db import Database
-from tasks import TaskManager
+from tasks import TasksManager
 
 
 class Movie:
@@ -75,7 +75,7 @@ class MovieManager:
         db.connection.close()
 
         if result is None:
-            task_manager = TaskManager()
+            task_manager = TasksManager()
             task_manager.new_task("scrap_movie", id)
 
             return None
