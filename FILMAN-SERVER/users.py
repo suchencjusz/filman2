@@ -24,8 +24,25 @@ class UserManager:
     def __init__(self):
         pass
 
+    def check_user_has_filmweb_account(self, id_filmweb: str):
+        headers = {
+            "User-Agent": UserAgent().random,
+        }
+
+        response = requests.head(
+            f"https://www.filmweb.pl/api/v1/user/{id_filmweb}/preview", headers=headers
+        )
+
+        if response.status_code == 200:
+            return True
+
+        return False
+
     def create_user(self, id_filmweb: str, id_discord: int):
         db = Database()
+
+        if self.check_user_has_filmweb_account(id_filmweb) is False:
+            return "User does not exist on filmweb"
 
         try:
             db.cursor.execute(

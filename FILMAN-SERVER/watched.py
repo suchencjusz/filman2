@@ -76,18 +76,16 @@ class WatchedManager:
 
             movie_manager.add_movie_to_db(
                 Movie(
-                    movie_id,
-                    None,
-                    None,
-                    None,
-                    None,
+                    id=movie_id,
+                    title="",
+                    year=0,
+                    poster_uri="",
+                    community_rate=0,
                 )
             )
 
             task_manager = TasksManager()
             task_manager.new_task("scrap_movie", movie_id)
-
-            return False
 
         # check it is not already in watched
         db.cursor.execute(
@@ -98,6 +96,7 @@ class WatchedManager:
         result = db.cursor.fetchone()
 
         if result is not None:
+            print("Already watched")
             return "Already watched"
 
         # add to watched

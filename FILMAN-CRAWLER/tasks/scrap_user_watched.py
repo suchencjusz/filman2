@@ -152,6 +152,8 @@ class Scraper:
         )
 
         if r.status_code != 200:
+            logging.error(f"Error adding movies: HTTP {r.status_code}")
+            logging.error(r.text)
             return "Error adding movies"
 
         r = requests.get(

@@ -74,15 +74,17 @@ class Scraper:
             f"{self.endpoint_url}/movie/update",
             headers=self.headers,
             json={
-                "id": movie_id,
-                "title": title,
-                "year": year,
-                "poster_url": poster_url,
-                "community_rate": community_rate,
+                "id": int(movie_id),
+                "title": str(title),
+                "year": int(year),
+                "poster_uri": str(poster_url),
+                "community_rate": float(community_rate),
             },
         )
 
         if r.status_code != 200:
+            logging.error(f"Error updating movie data: HTTP {r.status_code}")
+            logging.error(r.text)
             return False
 
         r = requests.get(

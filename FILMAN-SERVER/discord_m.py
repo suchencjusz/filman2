@@ -29,6 +29,20 @@ class DiscordManager:
     def __init__(self) -> None:
         pass
 
+    def check_user_is_in_db(self, id_discord: int):
+        db = Database()
+
+        db.cursor.execute(
+            f"SELECT * FROM users WHERE id_discord = %s",
+            (id_discord,),
+        )
+
+        result = db.cursor.fetchone()
+
+        db.connection.close()
+
+        return result
+
     def get_user_notification_destinations(self, id_filmweb: str):
         db = Database()
 
@@ -57,6 +71,19 @@ class DiscordManager:
 
         return result
 
+    def delete_user_from_db(self, id_discord: int):
+        db = Database()
+
+        db.cursor.execute(
+            f"DELETE FROM users WHERE id_discord = %s",
+            (id_discord,),
+        )
+
+        db.connection.commit()
+        db.connection.close()
+
+        return True
+
     def delete_user_from_all_guilds(self, id_filmweb: str):
         db = Database()
 
@@ -82,7 +109,7 @@ class DiscordManager:
         db.connection.close()
 
         return True
-    
+
     def delete_user_from_all_destinations(self, id_discord: int):
         db = Database()
 
@@ -94,34 +121,34 @@ class DiscordManager:
         db.connection.commit()
         db.connection.close()
 
+        self.delete_user_from_db(id_discord)
+
         return True
 
-    def add_user_to_guild(self, id_filmweb: str, guild_id: int):
+    def add_user_to_guild(self, id_discord: int, guild_id: int):
+        if self.check_user_is_in_db(id_discord) is None:
+            return "User not found in database"
+
+        id_discord = int(id_discord)
+        guild_id = int(guild_id)
+
         db = Database()
 
         db.cursor.execute(
-            f"SELECT * FROM discord_destinations WHERE id_filmweb = %s AND guild_id = %s",
-            (id_filmweb, guild_id),
+            f"SELECT * FROM discord_destinations WHERE id_filmweb = (SELECT id_filmweb FROM users WHERE id_discord = %s) AND guild_id = %s",
+            (id_discord, guild_id),
         )
 
         result = db.cursor.fetchone()
 
         if result is None:
             db.cursor.execute(
-                f"INSERT INTO discord_destinations (id_filmweb, guild_id) VALUES (%s, %s)",
-                (id_filmweb, guild_id),
+                f"INSERT INTO discord_destinations (id_filmweb, guild_id) VALUES ((SELECT id_filmweb FROM users WHERE id_discord = %s), %s)",
+                (id_discord, guild_id),
             )
-        else:
-            db.cursor.execute(
-                f"UPDATE discord_destinations SET id_filmweb = %s WHERE guild_id = %s",
-                (id_filmweb, guild_id),
-            )
+            db.connection.commit()
 
-        db.connection.commit()
         db.connection.close()
-
-        task_manager = TasksManager()
-        task_manager.new_task("check_user_new_movies", id_filmweb)
 
         return True
 

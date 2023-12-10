@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
 
-from movie import Movie, MovieManager
+from movie import Movie as MovieManagerMovie
+from movie import MovieManager
 from watched import WatchedManager
 from users import UserManager
 from discord_m import DiscordManager
@@ -52,7 +53,7 @@ class MovieUpdateIn(BaseModel):
     id: int
     title: str
     year: int
-    poster_url: str
+    poster_uri: str
     community_rate: float
 
 
@@ -71,7 +72,7 @@ class TaskUpdateIn(BaseModel):
 
 
 class GuildIn(BaseModel):
-    id_filmweb: str
+    id_discord: int
     id_guild: int
 
 
@@ -101,17 +102,18 @@ async def get_all_movies(id_filmweb: str):
 
 
 class MovieWatched(BaseModel):
-    id_watched: int
+    id_watched: Optional[int] = None
     id_filmweb: str
     movie_id: int
     rate: int
-    comment: str
-    favourite: bool
+    comment: Optional[str] = None
+    favourite: bool = False
     unix_timestamp: int
+
 
 class MovieWatchedList(BaseModel):
     id_filmweb: str
-    movies: List[MovieWatched]
+    movies: list[MovieWatched]
     without_discord: Optional[bool] = False
 
 
@@ -120,7 +122,7 @@ async def add_many_movies(movies_in: MovieWatchedList):
     watched_manager = WatchedManager()
 
     for movie in movies_in.movies:
-        watched_manager.add_watched_movie(
+        result = watched_manager.add_watched_movie(
             movies_in.id_filmweb,
             movie.movie_id,
             movie.rate,
@@ -130,8 +132,6 @@ async def add_many_movies(movies_in: MovieWatchedList):
             movies_in.without_discord,
         )
 
-    return {"message": "OK"}
-
 
 @app.post("/user/create")
 async def create_user(user_in: UserIn):
@@ -139,8 +139,15 @@ async def create_user(user_in: UserIn):
     result = user_manager.create_user(user_in.id_filmweb, user_in.id_discord)
     if result is True:
         return {"message": "OK"}
-    else:
-        raise HTTPException(status_code=500, detail=result)
+    
+    if result == "User does not exist on filmweb":
+        raise HTTPException(status_code=404, detail=result)
+
+
+    if result == "User already exists":
+        raise HTTPException(status_code=409, detail=result)
+    
+    raise HTTPException(status_code=500, detail=result)
 
 
 @app.post("/user/watched/film/add")
@@ -171,11 +178,11 @@ async def update_movie(movie_update_in: MovieUpdateIn):
     movie_manager = MovieManager()
 
     result = movie_manager.add_movie_to_db(
-        Movie(
+        MovieManagerMovie(
             id=movie_update_in.id,
             title=movie_update_in.title,
             year=movie_update_in.year,
-            poster_uri=movie_update_in.poster_url,
+            poster_uri=movie_update_in.poster_uri,
             community_rate=movie_update_in.community_rate,
         )
     )
@@ -226,7 +233,6 @@ async def update_task(id_task: int, status: str):
 # DISCORD
 ##################################################
 
-
 @app.post("/discord/user/stop")
 async def stop_user_notifications(guild_stop_in: GuildStopIn):
     discord_manager = DiscordManager()
@@ -254,10 +260,14 @@ async def cancel_user_notifications(discord_user_id: DiscordUserIdIn):
 @app.post("/discord/user/add")
 async def add_user_to_guild(guild_in: GuildIn):
     discord_manager = DiscordManager()
-    result = discord_manager.add_user_to_guild(guild_in.id_filmweb, guild_in.id_guild)
+    result = discord_manager.add_user_to_guild(guild_in.id_discord, guild_in.id_guild)
     if result is True:
         return {"message": "OK"}
-    else:
+    
+    if result == "User not found in database":
+        raise HTTPException(status_code=404, detail=result)
+
+    if result is False:
         raise HTTPException(status_code=500, detail=result)
 
 
@@ -274,4 +284,4 @@ async def configure_guild(guild_configure_in: GuildConfigureIn):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug")

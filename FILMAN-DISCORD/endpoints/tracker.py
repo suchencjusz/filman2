@@ -15,17 +15,104 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 
 
 @tracker_group.child
+# @lightbulb.cooldown(1, 60, bucket=lightbulb.CooldownBucketType.user)
 @lightbulb.option(
-    "filmweb_id", "twoja użytkownika na filmwebie", type=str, required=True
+    "filmweb_username", "nazwa użytkownika na filmwebie", required=True, type=str
 )
-@lightbulb.command("me", "powiadamiaj na tym serwerze", pass_options=True)
+@lightbulb.command("me", "monitoruj swoje konto filmweb", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_id: str) -> None:
+async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/discord/user/add",
-        json={"id_filmweb": filmweb_id, "id_guild": ctx.guild_id},
+        "http://localhost:8000/user/create",
+        json={"id_discord": ctx.author.id, "id_filmweb": filmweb_username},
     ) as resp:
         if not resp.ok:
+            if resp.status == 404:
+                embed = hikari.Embed(
+                    title=f"Nie znaleziono użytkownika '{filmweb_username}' na filmwebie!",
+                    colour=0xFF0000,
+                    timestamp=datetime.now().astimezone(),
+                )
+
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+
+                await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+
+            if resp.status == 409:
+                embed = hikari.Embed(
+                    title=f"Użytkownik '{filmweb_username}' jest już monitorowany!",
+                    colour=0xFF0000,
+                    timestamp=datetime.now().astimezone(),
+                )
+
+                embed.add_field(
+                    name="Zmiana konta filmweb",
+                    value="""Jeśli chcesz zmienić monitorowane konto filmweb, musisz najpierw usunąć obecne!
+                    W tym celu użyj komendy `/tracker cancel`""",
+                    inline=True,
+                )
+
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+
+                await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+
+            return
+
+        embed = hikari.Embed(
+            title=f"Konto {filmweb_username} zostało dodane!",
+            colour=0xFFC200,
+            timestamp=datetime.now().astimezone(),
+        )
+
+        embed.add_field(
+            name="Inicializacja",
+            value="Inicjalizacja twoich danych może chwilę potrwać, więc nie martw się, jeśli nie dostaniesz od razu powiadomienia!",
+            inline=True,
+        )
+
+        embed.add_field(
+            name="Uwaga!",
+            value="""Powiadomienia nie będą działać, dopóki nie skonfigurujesz ich na serwerze!
+            W tym celu użyj komendy `/configure channel`""",
+            inline=True,
+        )
+
+        embed.add_field(
+            name="Powiadomienia na tym serwerze",
+            value="Aby włączyć powiadomienia na tym serwerze, użyj komendy `/tracker here`",
+            inline=True,
+        )
+
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+
+        await ctx.respond(embed)
+
+
+@tracker_group.child
+@lightbulb.command("here", "powiadamiaj na tym serwerze", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def here_subcommand(ctx: lightbulb.SlashContext) -> None:
+    async with ctx.bot.d.client_session.post(
+        "http://localhost:8000/discord/user/add",
+        json={"id_discord": ctx.author.id, "id_guild": ctx.guild_id},
+    ) as resp:
+        if not resp.ok:
+            if resp.status == 404:
+                await ctx.respond(
+                    f"Nie znaleziono Ciebie w bazie danych :c Użyj /tracker me, aby się dodać!",
+                    flags=hikari.MessageFlag.EPHEMERAL,
+                )
+                return
+
             await ctx.respond(
                 f"API zwróciło {resp.status} status :c",
                 flags=hikari.MessageFlag.EPHEMERAL,
@@ -36,12 +123,6 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_id: str) -> None:
             title=f"Powiadomienia zostały skonfigurowane!",
             colour=0xFFC200,
             timestamp=datetime.now().astimezone(),
-        )
-
-        embed.add_field(
-            name="Filmweb ID",
-            value=filmweb_id,
-            inline=True,
         )
 
         embed.add_field(
@@ -74,7 +155,7 @@ async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
             return
 
         embed = hikari.Embed(
-            title=f"Powiadomienia zostały wyłączone!",
+            title=f"Powiadomienia dla `{ctx.author}` zostały wyłączone!",
             colour=0xFFC200,
             timestamp=datetime.now().astimezone(),
         )
