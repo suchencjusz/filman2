@@ -1,13 +1,9 @@
 from mysql.connector.errors import IntegrityError
 import requests
-import ujson
-
 
 from fake_useragent import UserAgent
 
-from utils import cut_unix_timestamp_miliseconds
 from db import Database
-from movie import Movie, MovieManager
 
 
 class User:
@@ -24,6 +20,26 @@ class UserManager:
     def __init__(self):
         pass
 
+    def get_all_users_from_db(self):
+        db = Database()
+        db.cursor.execute(f"SELECT * FROM users")
+        result = db.cursor.fetchall()
+        db.connection.close()
+
+        if result is None:
+            return None
+
+        return list(
+            map(
+                lambda x: User(
+                    id_filmweb=x[0],
+                    id_discord=x[1],
+                    discord_color=x[2],
+                ),
+                result,
+            )
+        )
+
     def check_user_has_filmweb_account(self, id_filmweb: str):
         headers = {
             "User-Agent": UserAgent().random,
@@ -39,6 +55,8 @@ class UserManager:
         return False
 
     def create_user(self, id_filmweb: str, id_discord: int):
+        from tasks import TasksManager
+
         db = Database()
 
         if self.check_user_has_filmweb_account(id_filmweb) is False:
@@ -56,6 +74,12 @@ class UserManager:
 
         db.connection.close()
 
+        tasks_manager = TasksManager()
+        tasks_manager.new_task(
+            "check_user_new_movies",
+            f"{id_filmweb}",
+        )
+
         return True
 
     def delete_user(self, id_filmweb: str):
@@ -70,3 +94,18 @@ class UserManager:
         db.connection.close()
 
         return True
+
+    def get_user_by_filmweb_id(self, id_filmweb: str):
+        db = Database()
+        db.cursor.execute(f"SELECT * FROM users WHERE id_filmweb = %s", (id_filmweb,))
+        result = db.cursor.fetchone()
+        db.connection.close()
+
+        if result is None:
+            return None
+
+        return User(
+            id_filmweb=result[0],
+            id_discord=result[1],
+            discord_color=result[2],
+        )

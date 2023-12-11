@@ -1,14 +1,8 @@
-import requests
-import ujson
-
-from mysql.connector.errors import IntegrityError
-from fake_useragent import UserAgent
-
-from utils import cut_unix_timestamp_miliseconds
 from db import Database
 from movie import Movie, MovieManager
 from tasks import TasksManager
-
+from users import UserManager
+from discord_m import DiscordManager
 
 class Watched:
     def __init__(
@@ -53,7 +47,7 @@ class WatchedManager:
         movie_manager.update_movie(movie)
 
         return True
-    
+
     def add_watched_movie(
         self,
         id_filmweb: str,
@@ -106,7 +100,7 @@ class WatchedManager:
         )
         db.connection.commit()
         db.connection.close()
-        
+
         if without_discord is True:
             return True
 
@@ -125,6 +119,9 @@ class WatchedManager:
 
         if result is None:
             return None
+        
+        if len(result) == 0:
+            return None
 
         watched_movies = []
 
@@ -134,3 +131,29 @@ class WatchedManager:
             )
 
         return watched_movies
+
+    def get_watched_movie_with_rates(self, id_filmweb: str, movie_id: int):
+        db = Database()
+        db.cursor.execute(
+            f"SELECT * FROM watched_movies WHERE id_filmweb = %s AND movie_id = %s",
+            (id_filmweb, movie_id),
+        )
+
+        result = db.cursor.fetchone()
+
+        w = Watched(
+            result[0], result[1], result[2], result[3], result[4], result[5], result[6]
+        )
+
+        db.connection.close()
+
+        movie_manager = MovieManager()
+        user_manager = UserManager()
+        discord_manager = DiscordManager()
+
+        return (
+            w,
+            movie_manager.get_movie_by_id(movie_id),
+            user_manager.get_user_by_filmweb_id(id_filmweb),
+            discord_manager.get_user_notification_destinations(id_filmweb),
+        )

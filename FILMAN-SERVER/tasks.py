@@ -1,11 +1,7 @@
-import requests
-import ujson
 import time
-
-from mysql.connector.errors import IntegrityError
-from fake_useragent import UserAgent
 from datetime import datetime, timedelta
 
+from users import UserManager
 from db import Database
 
 
@@ -63,6 +59,18 @@ class TasksManager:
 
         return True
 
+    def add_scrap_users_task(self):
+        db = Database()
+
+        user_manager = UserManager()
+
+        all_users = user_manager.get_all_users_from_db()
+
+        for user in all_users:
+            self.new_task("check_user_new_movies", user.id_filmweb)
+
+        return True
+
     def new_task(self, type: str, job: str):
         # status: waiting, in_progress, done, failed
         # type: scrap_movie, scrape_series, send_discord, check_user_new_movies, check_user_new_series,
@@ -81,20 +89,16 @@ class TasksManager:
 
         return True
 
-    def get_and_update_tasks(self, type: str = None, status: str = "waiting"):
+    def get_and_update_tasks(self, types: list = None, status: str = "waiting"):
         db = Database()
 
-        if type is None:
-            db.cursor.execute(
-                f"SELECT * FROM tasks WHERE status = %s ORDER BY id_task ASC LIMIT 10",
-                (status,),
-            )
-        else:
-            db.cursor.execute(
-                f"SELECT * FROM tasks WHERE type = %s AND status = %s ORDER BY id_task ASC LIMIT 10",
-                (type, status),
-            )
-        
+        types_placeholder = ", ".join(["%s"] * len(types))
+
+        db.cursor.execute(
+            f"SELECT * FROM tasks WHERE type IN ({types_placeholder}) AND status = %s ORDER BY id_task ASC LIMIT 10",
+            (*types, status),
+        )
+
         result = db.cursor.fetchall()
 
         if result is None:
