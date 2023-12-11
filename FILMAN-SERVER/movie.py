@@ -1,8 +1,4 @@
-import requests
-import ujson
 import time
-
-from fake_useragent import UserAgent
 
 from db import Database
 from tasks import TasksManager
@@ -82,8 +78,8 @@ class MovieManager:
         else:
             return Movie(
                 id=result[0],
-                title=result[1],
-                year=result[2],
-                poster_uri=result[3],
-                community_rate=result[4],
+                title=result[2],
+                year=result[3],
+                poster_uri=result[4],
+                community_rate=result[5],
             )

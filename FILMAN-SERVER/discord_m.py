@@ -1,8 +1,4 @@
-from mysql.connector.errors import IntegrityError
-
 from db import Database
-
-from tasks import TasksManager
 
 
 class DiscordUser:
@@ -43,11 +39,25 @@ class DiscordManager:
 
         return result
 
+    # def get_user_notification_destinations_by_id(self, id_discord: int):
+    #     db = Database()
+
+    #     db.cursor.execute(
+    #         f"SELECT discord_guilds.guild_id, discord_guilds.channel_id FROM discord_guilds, discord_destinations WHERE discord_guilds.guild_id = discord_destinations.guild_id AND discord_destinations.id_filmweb = (SELECT id_filmweb FROM users WHERE id_discord = %s)",
+    #         (id_discord,),
+    #     )
+
+    #     result = db.cursor.fetchall()
+
+    #     db.connection.close()
+
+    #     return result
+
     def get_user_notification_destinations(self, id_filmweb: str):
         db = Database()
 
         db.cursor.execute(
-            f"SELECT discord_guilds.guild_id, discord_guilds.channel_id FROM discord_guilds, discord_destinations WHERE discord_guilds.guild_id = discord_destinations.id_guild AND discord_destinations.id_filmweb = %s",
+            f"SELECT discord_guilds.guild_id, discord_guilds.channel_id FROM discord_guilds, discord_destinations WHERE discord_guilds.guild_id = discord_destinations.guild_id AND discord_destinations.id_filmweb = %s",
             (id_filmweb,),
         )
 

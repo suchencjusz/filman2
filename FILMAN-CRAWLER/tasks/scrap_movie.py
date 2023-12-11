@@ -1,8 +1,13 @@
 import logging
 import requests
-import aiohttp
-import asyncio
 import ujson
+
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 class Task:
@@ -20,15 +25,6 @@ class Task:
         return (
             f"{self.id_task} {self.status} {self.type} {self.job} {self.unix_timestamp}"
         )
-
-
-#
-
-logging.basicConfig(
-    format="%(asctime)s %(levelname)-8s %(message)s",
-    level=logging.INFO,
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 
 
 class Scraper:

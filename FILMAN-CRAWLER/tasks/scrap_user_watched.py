@@ -86,11 +86,15 @@ class Scraper:
             return "Private profile"
 
         last_100_watched_data = ujson.loads(last_100_watched_data)
-        user_already_watched_data = ujson.loads(user_already_watched_data)
 
-        user_already_watched_data = list(
-            map(lambda x: x["movie_id"], user_already_watched_data)
-        )
+        if user_already_watched_data is None:
+            user_already_watched_data = []
+        else:   
+            user_already_watched_data = ujson.loads(user_already_watched_data)
+
+            user_already_watched_data = list(
+                map(lambda x: x["movie_id"], user_already_watched_data)
+            )
 
         new_movies_ids = []
 

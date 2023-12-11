@@ -70,7 +70,7 @@ async def channel_subcommand(
         return
 
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/discord/configure/guild",
+        "http://filman-server:8000/discord/configure/guild",
         json={"guild_id": ctx.guild_id, "channel_id": text_channel.id},
     ) as resp:
         if not resp.ok:

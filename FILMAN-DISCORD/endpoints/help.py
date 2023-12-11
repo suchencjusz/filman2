@@ -14,10 +14,30 @@ async def help_group(_: lightbulb.SlashContext) -> None:
 
 
 @help_group.child
+@lightbulb.command("configure", "konfiguracja serwera i konta filmweb")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
+    embed = hikari.Embed(
+        title="`/configure`", colour=0xFFC200, timestamp=datetime.now().astimezone()
+    )
+
+    embed.add_field(name="`/configure channel`", value="Ustawia kanał powiadomień")
+
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+
+    await ctx.respond(embed)
+
+
+@help_group.child
 @lightbulb.command("tracker", "powiadomienia i śledzenie użytkownika")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def tracker_subcommand(ctx: lightbulb.SlashContext) -> None:
-    embed = hikari.Embed(title="`/tracker`", colour=0xFFC200, timestamp=datetime.now().astimezone())
+    embed = hikari.Embed(
+        title="`/tracker`", colour=0xFFC200, timestamp=datetime.now().astimezone()
+    )
 
     embed.add_field(name="`/tracker me`", value="Monitoruje konto filmweb")
 

@@ -23,7 +23,7 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/user/create",
+        "http://filman-server:8000/user/create",
         json={"id_discord": ctx.author.id, "id_filmweb": filmweb_username},
     ) as resp:
         if not resp.ok:
@@ -102,7 +102,7 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def here_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/discord/user/add",
+        "http://filman-server:8000/discord/user/add",
         json={"id_discord": ctx.author.id, "id_guild": ctx.guild_id},
     ) as resp:
         if not resp.ok:
@@ -144,7 +144,7 @@ async def here_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/discord/user/stop",
+        "http://filman-server:8000/discord/user/stop",
         json={"id_discord": ctx.author.id, "guild_id": ctx.guild_id},
     ) as resp:
         if not resp.ok:
@@ -175,7 +175,7 @@ async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://localhost:8000/discord/user/cancel",
+        "http://filman-server:8000/discord/user/cancel",
         json={"id_discord": ctx.author.id},
     ) as resp:
         if not resp.ok:

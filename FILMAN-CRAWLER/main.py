@@ -1,7 +1,6 @@
+import os
 import requests
-import asyncio
 import ujson
-import concurrent.futures
 import time
 import logging
 
@@ -41,7 +40,8 @@ f_handler.setFormatter(f_format)
 logger.addHandler(c_handler)
 logger.addHandler(f_handler)
 
-CORE_ENDPOINT = "http://localhost:8000"
+CORE_ENDPOINT = os.environ.get("CORE_ENDPOINT", "http://localhost:8000")
+# CORE_ENDPOINT = "http://localhost:8000"
 
 HEADERS = {
     "User-Agent": UserAgent().random,
@@ -83,7 +83,26 @@ class Task:
 
 
 def fetch_tasks_from_endpoint():
-    r = requests.get(f"{CORE_ENDPOINT}/tasks/get?status=waiting")
+    # r = requests.get(
+    #     f'{CORE_ENDPOINT}/tasks/get?status=waiting&types=["scrap_movie","check_user_new_movies"]'
+    # )
+
+    allowed_tasks = [
+        "scrap_movie",
+        "check_user_new_movies",
+    ]
+
+    try:
+        r = requests.post(
+            f"{CORE_ENDPOINT}/tasks/get",
+            json={
+                "status": "waiting",
+                "types": allowed_tasks,
+            },
+        )
+    except Exception as e:
+        logging.error(f"Error fetching tasks: {e}")
+        return None
 
     if r.status_code != 200:
         logging.error(f"Error fetching tasks: HTTP {r.status_code}")

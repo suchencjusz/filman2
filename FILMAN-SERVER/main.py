@@ -1,11 +1,13 @@
 import uvicorn
-import ujson
-
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi_utils.session import FastAPISessionMaker
+from fastapi_utils.tasks import repeat_every
+
 from pydantic import BaseModel
+from typing import List, Optional
 
 from movie import Movie as MovieManagerMovie
 from movie import MovieManager
@@ -14,11 +16,7 @@ from users import UserManager
 from discord_m import DiscordManager
 from tasks import TasksManager
 
-
 app = FastAPI()
-
-from pydantic import BaseModel
-from typing import List, Optional
 
 
 class Movie(BaseModel):
@@ -139,14 +137,13 @@ async def create_user(user_in: UserIn):
     result = user_manager.create_user(user_in.id_filmweb, user_in.id_discord)
     if result is True:
         return {"message": "OK"}
-    
+
     if result == "User does not exist on filmweb":
         raise HTTPException(status_code=404, detail=result)
 
-
     if result == "User already exists":
         raise HTTPException(status_code=409, detail=result)
-    
+
     raise HTTPException(status_code=500, detail=result)
 
 
@@ -166,6 +163,26 @@ async def add_movie(movie_in: MovieIn):
         return {"message": "OK"}
     else:
         raise HTTPException(status_code=500, detail=result)
+
+
+@app.get("/user/watched/film/get")
+async def get_movie(id_filmweb: str, movie_id: int):
+    watched_manager = WatchedManager()
+    result = watched_manager.get_watched_movie_with_rates(id_filmweb, movie_id)
+    if result is None:
+        raise HTTPException(status_code=500, detail="No movies found")
+    else:
+        return result
+
+
+@app.get("/user/discord/destinations/get")
+async def get_user_destinations(id_discord: int):
+    discord_manager = DiscordManager()
+    result = discord_manager.get_user_notification_destinations_by_id(id_discord)
+    if result is None:
+        raise HTTPException(status_code=500, detail="No destinations found")
+    else:
+        return result
 
 
 ##################################################
@@ -193,15 +210,27 @@ async def update_movie(movie_update_in: MovieUpdateIn):
         raise HTTPException(status_code=500, detail=result)
 
 
+# @app.get("/movie/get
+
 ##################################################
 # TASKS
 ##################################################
 
 
-@app.get("/tasks/get")
-async def get_tasks(status: str = None, type: str = None):
+class PostGetTasks(BaseModel):
+    status: str
+    types: list[str]
+
+
+@app.post("/tasks/get")
+async def post_get_tasks(post_get_tasks: PostGetTasks):
+    # if post_get_tasks.types is not None:
+    #     types = ujson.dumps(types)
+
     tasks_manager = TasksManager()
-    result = tasks_manager.get_and_update_tasks(type, status)
+    result = tasks_manager.get_and_update_tasks(
+        post_get_tasks.types, post_get_tasks.status
+    )
     if result is None:
         raise HTTPException(status_code=500, detail="No tasks found")
     else:
@@ -229,9 +258,21 @@ async def update_task(id_task: int, status: str):
         raise HTTPException(status_code=500, detail=result)
 
 
+@repeat_every(seconds=60 * 3)
+@app.get("/task/scrap/all/users")
+async def scrap_all_users():
+    tasks_manager = TasksManager()
+    result = tasks_manager.add_scrap_users_task()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
+
+
 ##################################################
 # DISCORD
 ##################################################
+
 
 @app.post("/discord/user/stop")
 async def stop_user_notifications(guild_stop_in: GuildStopIn):
@@ -263,7 +304,7 @@ async def add_user_to_guild(guild_in: GuildIn):
     result = discord_manager.add_user_to_guild(guild_in.id_discord, guild_in.id_guild)
     if result is True:
         return {"message": "OK"}
-    
+
     if result == "User not found in database":
         raise HTTPException(status_code=404, detail=result)
 
@@ -284,4 +325,4 @@ async def configure_guild(guild_configure_in: GuildConfigureIn):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
