@@ -34,6 +34,7 @@ services:
     container_name: filman-crawler
     build:
       context: /FILMAN-CRAWLER
+      # context: .
       dockerfile: Dockerfile
     environment:
       - CORE_ENDPOINT=http://filman-server:8000
