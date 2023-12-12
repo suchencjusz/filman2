@@ -347,18 +347,4 @@ async def configure_guild(guild_configure_in: GuildConfigureIn):
 
 
 if __name__ == "__main__":
-    # uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
-
-    uvicorn_thread = threading.Thread(
-        target=uvicorn.run,
-        args=(app,),
-        kwargs={"host": "0.0.0.0", "port": 8000, "log_level": "debug"},
-    )
-
-    jobs_thread = threading.Thread(target=run_jobs_thread)
-
-    uvicorn_thread.start()
-    jobs_thread.start()
-
-    uvicorn_thread.join()
-    jobs_thread.join()
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
