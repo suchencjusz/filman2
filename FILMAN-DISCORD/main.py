@@ -174,7 +174,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     if user_rate["comment"]:
                         embed.add_field(
                             name="Komentarz",
-                            value=f"{user_rate['comment']}",
+                            value=f"{user_rate['comment']}\u200b",
                             inline=True,
                         )
 
