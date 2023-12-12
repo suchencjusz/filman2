@@ -6,9 +6,9 @@ services:
     image: suchencjusz/filman-server:main
     ports:
       - "8000:8000"
-    # build:
-    #   context: /FILMAN-SERVER
-    #   dockerfile: Dockerfile
+    build:
+      context: /FILMAN-SERVER
+      dockerfile: Dockerfile
     environment:
       - MYSQL_HOST=mysql.mikr.us
       - MYSQL_USER=t345
@@ -23,9 +23,9 @@ services:
       - filman-server
     container_name: filman-discord
     image: suchencjusz/filman-discord:main
-    # build:
-    #   context: /FILMAN-DISCORD
-    #   dockerfile: Dockerfile
+    build:
+      context: /FILMAN-DISCORD
+      dockerfile: Dockerfile
     environment:
       - DISCORD_TOKEN=MTE4MjM3MTY1ODM0NzA2NTM5NA.Gr7OHu.Y3PW4Dl98nLZAzAw1eJfvAzpushE3GXyM0qAX8
     restart: unless-stopped
@@ -35,9 +35,9 @@ services:
       - filman-server
     container_name: filman-crawler
     image: suchencjusz/filman-crawler:main
-    # build:
-    #   context: /FILMAN-CRAWLER
-    #   dockerfile: Dockerfile
+    build:
+      context: /FILMAN-CRAWLER
+      dockerfile: Dockerfile
     environment:
       - CORE_ENDPOINT=http://filman-server:8000
     restart: unless-stopped

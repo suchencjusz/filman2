@@ -32,7 +32,7 @@ async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
 
 
 @help_group.child
-@lightbulb.command("tracker", "powiadomienia i śledzenie użytkownika")
+@lightbulb.command("tracker", "monitoruje konto filmweb")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def tracker_subcommand(ctx: lightbulb.SlashContext) -> None:
     embed = hikari.Embed(

@@ -1,10 +1,8 @@
+import threading
 import uvicorn
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-
-from fastapi_utils.session import FastAPISessionMaker
-from fastapi_utils.tasks import repeat_every
 
 from pydantic import BaseModel
 from typing import List, Optional
@@ -16,7 +14,12 @@ from users import UserManager
 from discord_m import DiscordManager
 from tasks import TasksManager
 
+
 app = FastAPI()
+
+##################################################
+# MODELS
+##################################################
 
 
 class Movie(BaseModel):
@@ -258,11 +261,30 @@ async def update_task(id_task: int, status: str):
         raise HTTPException(status_code=500, detail=result)
 
 
-@repeat_every(seconds=60 * 3)
 @app.get("/task/scrap/all/users")
 async def scrap_all_users():
     tasks_manager = TasksManager()
     result = tasks_manager.add_scrap_users_task()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
+
+
+@app.get("/tasks/update/stuck")
+async def update_stuck_tasks():
+    tasks_manager = TasksManager()
+    result = tasks_manager.update_stuck_tasks()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
+
+
+@app.get("/tasks/delete/old")
+async def delete_old_tasks():
+    tasks_manager = TasksManager()
+    result = tasks_manager.delete_old_tasks()
     if result is True:
         return {"message": "OK"}
     else:
@@ -325,4 +347,18 @@ async def configure_guild(guild_configure_in: GuildConfigureIn):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
+    # uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
+
+    uvicorn_thread = threading.Thread(
+        target=uvicorn.run,
+        args=(app,),
+        kwargs={"host": "0.0.0.0", "port": 8000, "log_level": "debug"},
+    )
+
+    jobs_thread = threading.Thread(target=run_jobs_thread)
+
+    uvicorn_thread.start()
+    jobs_thread.start()
+
+    uvicorn_thread.join()
+    jobs_thread.join()

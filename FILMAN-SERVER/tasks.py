@@ -30,6 +30,47 @@ class TasksManager:
     def __init__(self):
         pass
 
+    def update_stuck_tasks(self):
+        db = Database()
+
+        # Get the current time
+        now = datetime.now()
+
+        # Calculate the threshold for 'stuck' tasks
+        threshold = now - timedelta(minutes=5)  # adjust as needed
+
+        # Convert the threshold to a Unix timestamp
+        threshold_timestamp = int(threshold.timestamp())
+
+        # Get all tasks with a status of 'in_progress' and a unix_timestamp_last_update older than the threshold
+        db.cursor.execute(
+            f"UPDATE tasks SET status = %s WHERE status = %s AND unix_timestamp_last_update < %s",
+            ("waiting", "in_progress", threshold_timestamp),
+        )
+
+        db.connection.commit()
+        db.connection.close()
+
+    def delete_old_tasks(self):
+        db = Database()
+
+        # Get the current time
+        now = datetime.now()
+
+        # Calculate the threshold for 'stuck' tasks
+        threshold = now - timedelta(minutes=30)
+
+        # Convert the threshold to a Unix timestamp
+        threshold_timestamp = int(threshold.timestamp())
+
+        # Get all tasks with a status of 'in_progress' and a unix_timestamp_last_update older than the threshold
+        db.cursor.execute(
+            f"DELETE FROM tasks WHERE unix_timestamp_last_update < %s",
+            (threshold_timestamp,),
+        )
+        db.connection.commit()
+        db.connection.close()
+
     def update_task_status(self, id_task: int, status: str):
         db = Database()
 

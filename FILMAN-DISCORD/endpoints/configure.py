@@ -7,7 +7,7 @@ configure_plugin = lightbulb.Plugin("Configure")
 
 
 @configure_plugin.command
-@lightbulb.command("configure", "Configure the bot.")
+@lightbulb.command("configure", "Skonfiguruj bota")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
 async def configure_group(_: lightbulb.SlashContext) -> None:
     pass
