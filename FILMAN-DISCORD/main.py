@@ -33,6 +33,16 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 async def on_stopping(_: hikari.StoppingEvent) -> None:
     await bot.d.client_session.close()
 
+@tasks.task(s=10, auto_start=True, pass_app=True)
+async def presence(app: lightbulb.BotApp) -> None:
+
+    await app.update_presence(
+        status=hikari.Status.ONLINE,
+        activity=hikari.Activity(
+            name="/tracker me",
+            type=hikari.ActivityType.COMPETING,
+        ),
+    )
 
 @tasks.task(s=10, auto_start=True, pass_app=True)
 async def notifications_task(app: lightbulb.BotApp) -> None:
@@ -144,6 +154,13 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     user_info = data[2]
                     destiantions_list = data[3]
 
+                    #print everything from embedes
+                    print("movie_title", movie["title"])
+                    print("movie_year", movie["year"])
+                    print("comment", user_rate["comment"])
+                    print("favourite", user_rate["favourite"])
+                    print("rate", user_rate["rate"])
+
                     movie_url = filmweb_movie_url_generator(
                         movie["title"], movie["year"], movie["id"]
                     )
@@ -174,7 +191,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     if user_rate["comment"]:
                         embed.add_field(
                             name="Komentarz",
-                            value=f"{user_rate['comment']}\u200b",
+                            value=f"{user_rate['comment']}",
                             inline=True,
                         )
 
@@ -213,8 +230,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     )
 
                     embed.set_footer(text=f"Filman • github/suchencjusz", icon=None)
-
-                    # TODO INFORMUJ SERWER O WYKONANYM TASKU DONE STATUS CNIE
 
                     for destination in destiantions_list:
                         await send_discord_message(

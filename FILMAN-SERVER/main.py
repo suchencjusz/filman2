@@ -269,6 +269,15 @@ async def scrap_all_users():
         return {"message": "OK"}
     else:
         raise HTTPException(status_code=500, detail=result)
+    
+@app.get("/task/scrap/all/movies")
+async def scrap_all_movies():
+    tasks_manager = TasksManager()
+    result = tasks_manager.add_scrap_movies_task()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
 
 
 @app.get("/tasks/update/stuck")
@@ -329,6 +338,9 @@ async def add_user_to_guild(guild_in: GuildIn):
 
     if result == "User not found in database":
         raise HTTPException(status_code=404, detail=result)
+    
+    if result == "Server not configured":
+        raise HTTPException(status_code=405, detail=result)
 
     if result is False:
         raise HTTPException(status_code=500, detail=result)

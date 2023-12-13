@@ -51,6 +51,8 @@ class TasksManager:
         db.connection.commit()
         db.connection.close()
 
+        return True
+
     def delete_old_tasks(self):
         db = Database()
 
@@ -70,6 +72,8 @@ class TasksManager:
         )
         db.connection.commit()
         db.connection.close()
+
+        return True
 
     def update_task_status(self, id_task: int, status: str):
         db = Database()
@@ -109,6 +113,17 @@ class TasksManager:
 
         for user in all_users:
             self.new_task("check_user_new_movies", user.id_filmweb)
+
+        return True
+
+    def add_scrap_movies_task(self):
+        db = Database()
+
+        db.cursor.execute("SELECT id FROM movies")
+        result = db.cursor.fetchall()
+
+        for movie in result:
+            self.new_task("scrap_movie", movie[0])
 
         return True
 
