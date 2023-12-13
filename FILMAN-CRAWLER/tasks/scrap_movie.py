@@ -55,7 +55,7 @@ class Scraper:
 
         title = info_data.get("title", None)
         year = int(info_data.get("year", None))
-        poster_url = info_data.get("posterPath", None)
+        poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None)
 
         if title is None or year is None or poster_url is None:

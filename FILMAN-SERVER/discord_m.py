@@ -152,12 +152,15 @@ class DiscordManager:
         result = db.cursor.fetchone()
 
         if result is None:
-            db.cursor.execute(
-                f"INSERT INTO discord_destinations (id_filmweb, guild_id) VALUES ((SELECT id_filmweb FROM users WHERE id_discord = %s), %s)",
-                (id_discord, guild_id),
-            )
-            db.connection.commit()
-
+            try:
+                db.cursor.execute(
+                    f"INSERT INTO discord_destinations (id_filmweb, guild_id) VALUES ((SELECT id_filmweb FROM users WHERE id_discord = %s), %s)",
+                    (id_discord, guild_id),
+                )
+                db.connection.commit()
+            except Exception:
+                return "Server not configured"
+            
         db.connection.close()
 
         return True

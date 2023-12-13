@@ -30,7 +30,7 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
             if resp.status == 404:
                 embed = hikari.Embed(
                     title=f"Nie znaleziono użytkownika '{filmweb_username}' na filmwebie!",
-                    colour=0xFF0000,
+                    colour=0xFF4400,
                     timestamp=datetime.now().astimezone(),
                 )
 
@@ -44,7 +44,7 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
             if resp.status == 409:
                 embed = hikari.Embed(
                     title=f"Użytkownik '{filmweb_username}' jest już monitorowany!",
-                    colour=0xFF0000,
+                    colour=0xFF4400,
                     timestamp=datetime.now().astimezone(),
                 )
 
@@ -77,13 +77,6 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
         )
 
         embed.add_field(
-            name="Uwaga!",
-            value="""Powiadomienia nie będą działać, dopóki nie skonfigurujesz ich na serwerze!
-            W tym celu użyj komendy `/configure channel`""",
-            inline=True,
-        )
-
-        embed.add_field(
             name="Powiadomienia na tym serwerze",
             value="Aby włączyć powiadomienia na tym serwerze, użyj komendy `/tracker here`",
             inline=True,
@@ -107,10 +100,33 @@ async def here_subcommand(ctx: lightbulb.SlashContext) -> None:
     ) as resp:
         if not resp.ok:
             if resp.status == 404:
-                await ctx.respond(
-                    f"Nie znaleziono Ciebie w bazie danych :c Użyj /tracker me, aby się dodać!",
-                    flags=hikari.MessageFlag.EPHEMERAL,
+                embed = hikari.Embed(
+                    title=f"Nie znaleziono Ciebie w bazie danych :c Użyj /tracker me, aby się dodać!",
+                    colour=0xFF4400,
+                    timestamp=datetime.now().astimezone(),
                 )
+
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+
+                await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+                return
+
+            if resp.status == 405:
+                embed = hikari.Embed(
+                    title=f"Nie znaleziono serwera w bazie danych :c Użyj /configure channel, aby go dodać!",
+                    colour=0xFF4400,
+                    timestamp=datetime.now().astimezone(),
+                )
+
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+
+                await ctx.respond(embed)
                 return
 
             await ctx.respond(
