@@ -28,6 +28,8 @@ class SeriesManager:
 
         result = db.cursor.fetchone()
 
+        series.other_year = 0 if series.other_year is None else series.other_year
+
         if result is None:
             db.cursor.execute(
                 f"INSERT INTO series (id, updated_unixtime, title, year, other_year, poster_uri, community_rate) VALUES (%s, %s, %s, %s, %s, %s, %s)",

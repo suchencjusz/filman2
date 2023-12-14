@@ -231,15 +231,29 @@ class SeriesUpdateIn(BaseModel):
     id: int
     title: str
     year: int
-    other_year: Optional[int] = None
+    other_year: Optional[int]
     poster_uri: str
     community_rate: float
 
-@app.get("/series/update")
+@app.post("/series/update")
 async def update_series(series_update_in: SeriesUpdateIn):
     series_manager = SeriesManager()
 
-    # tu skonczyles
+    result = series_manager.add_series_to_db(
+        SeriesManagerSeries(
+            id=series_update_in.id,
+            title=series_update_in.title,
+            year=series_update_in.year,
+            other_year=series_update_in.other_year,
+            poster_uri=series_update_in.poster_uri,
+            community_rate=series_update_in.community_rate,
+        )
+    )
+
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
 
 
 ##################################################
@@ -329,6 +343,15 @@ async def scrap_all_users():
 async def scrap_all_movies():
     tasks_manager = TasksManager()
     result = tasks_manager.add_scrap_movies_task()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
+    
+@app.get("/task/scrap/all/series")
+async def scrap_all_series():
+    tasks_manager = TasksManager()
+    result = tasks_manager.add_scrap_series_task()
     if result is True:
         return {"message": "OK"}
     else:

@@ -79,6 +79,10 @@ class UserManager:
             "check_user_new_movies",
             f"{id_filmweb}",
         )
+        tasks_manager.new_task(
+            "check_user_new_series",
+            f"{id_filmweb}",
+        )
 
         return True
 

@@ -127,6 +127,17 @@ class TasksManager:
             self.new_task("scrap_movie", movie[0])
 
         return True
+    
+    def add_scrap_series_task(self):
+        db = Database()
+
+        db.cursor.execute("SELECT id FROM series")
+        result = db.cursor.fetchall()
+
+        for series in result:
+            self.new_task("scrap_series", series[0])
+
+        return True
 
     def new_task(self, type: str, job: str):
         # status: waiting, in_progress, done, failed

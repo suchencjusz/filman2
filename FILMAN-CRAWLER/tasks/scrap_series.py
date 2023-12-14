@@ -55,16 +55,19 @@ class Scraper:
 
         title = info_data.get("title", None)
         year = int(info_data.get("year", None))
-        other_year = int(info_data.get("otherYear", None))
+        other_year = int(info_data.get("otherYear", 0))
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None)
 
         if title is None or year is None or poster_url is None:
             return False
+        
+        return self.update_data(
+            self.series_id, title, year, other_year, poster_url, community_rate, task.id_task
+        )
 
 
-
-    def update_data(self, series_id, title, year, other_year ,poster_url, community_rate, id_task):
+    def update_data(self, series_id, title, year, other_year, poster_url, community_rate, id_task):
         r = requests.post(
             f"{self.endpoint_url}/series/update",
             headers=self.headers,
@@ -77,18 +80,6 @@ class Scraper:
                 "community_rate": float(community_rate),
             },
         )
-
-        # r = requests.post(
-        #     f"{self.endpoint_url}/movie/update",
-        #     headers=self.headers,
-        #     json={
-        #         "id": int(movie_id),
-        #         "title": str(title),
-        #         "year": int(year),
-        #         "poster_uri": str(poster_url),
-        #         "community_rate": float(community_rate),
-        #     },
-        # )
 
         if r.status_code != 200:
             logging.error(f"Error updating series data: HTTP {r.status_code}")
