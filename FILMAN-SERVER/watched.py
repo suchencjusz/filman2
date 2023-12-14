@@ -1,19 +1,21 @@
 from db import Database
 from movie import Movie, MovieManager
+from series import Series, SeriesManager
 from tasks import TasksManager
 from users import UserManager
 from discord_m import DiscordManager
 
+
 class Watched:
     def __init__(
-        self, id_watched, id_filmweb, movie_id, rate, comment, favourite, unix_timestamp
+        self, id_watched, id_filmweb, movie_id, rate, comment, favorite, unix_timestamp
     ):
         self.id_watched = id_watched
         self.id_filmweb = id_filmweb
         self.movie_id = movie_id
         self.rate = rate
         self.comment = comment
-        self.favourite = favourite
+        self.favorite = favorite
         self.unix_timestamp = unix_timestamp
 
     def __str__(self):
@@ -48,13 +50,76 @@ class WatchedManager:
 
         return True
 
+    def add_watched_series(
+        self,
+        id_filmweb: str,
+        series_id: int,
+        rate: int,
+        comment: str,
+        favorite: bool,
+        unix_timestamp: int,
+        without_discord: bool,
+    ):
+        db = Database()
+        series_manager = SeriesManager()
+
+        # check series is in db
+        db.cursor.execute(f"SELECT * FROM series WHERE id = %s", (series_id,))
+        result = db.cursor.fetchone()
+
+        if result is None:
+            # if not, create task to scrap series
+
+            series_manager.add_series_to_db(
+                Series(
+                    id=series_id,
+                    title="",
+                    year=0,
+                    other_year=0,
+                    poster_uri="",
+                    community_rate=0,
+                )
+            )
+
+            task_manager = TasksManager()
+            task_manager.new_task("scrap_series", series_id)
+
+        # check it is not already in watched
+        db.cursor.execute(
+            f"SELECT * FROM watched_series WHERE id_filmweb = %s AND series_id = %s",
+            (id_filmweb, series_id),
+        )
+
+        result = db.cursor.fetchone()
+
+        if result is not None:
+            print("Already watched")
+            return "Already watched"
+        
+        # add to watched
+        db.cursor.execute(
+            f"INSERT INTO watched_series (id_filmweb, series_id, rate, comment, favourite, unix_timestamp) VALUES (%s, %s, %s, %s, %s, %s)",
+            (id_filmweb, series_id, rate, comment, favorite, unix_timestamp),
+        )
+
+        db.connection.commit()
+        db.connection.close()
+
+        if without_discord is True:
+            return True
+        
+        task_manager = TasksManager()
+        task_manager.new_task("send_discord", f"{id_filmweb},{series_id}")
+
+        return True
+        
     def add_watched_movie(
         self,
         id_filmweb: str,
         movie_id: int,
         rate: int,
         comment: str,
-        favourite: bool,
+        favorite: bool,
         unix_timestamp: int,
         without_discord: bool,
     ):
@@ -96,7 +161,7 @@ class WatchedManager:
         # add to watched
         db.cursor.execute(
             f"INSERT INTO watched_movies (id_filmweb, movie_id, rate, comment, favourite, unix_timestamp) VALUES (%s, %s, %s, %s, %s, %s)",
-            (id_filmweb, movie_id, rate, comment, favourite, unix_timestamp),
+            (id_filmweb, movie_id, rate, comment, favorite, unix_timestamp),
         )
         db.connection.commit()
         db.connection.close()
@@ -119,7 +184,7 @@ class WatchedManager:
 
         if result is None:
             return None
-        
+
         if len(result) == 0:
             return None
 

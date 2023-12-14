@@ -113,6 +113,7 @@ class TasksManager:
 
         for user in all_users:
             self.new_task("check_user_new_movies", user.id_filmweb)
+            self.new_task("check_user_new_series", user.id_filmweb)
 
         return True
 
@@ -151,7 +152,7 @@ class TasksManager:
         types_placeholder = ", ".join(["%s"] * len(types))
 
         db.cursor.execute(
-            f"SELECT * FROM tasks WHERE type IN ({types_placeholder}) AND status = %s ORDER BY id_task ASC LIMIT 10",
+            f"SELECT * FROM tasks WHERE type IN ({types_placeholder}) AND status = %s ORDER BY id_task ASC LIMIT 5",
             (*types, status),
         )
 

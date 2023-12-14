@@ -9,9 +9,7 @@ class Movie:
         self.id = kwargs.get("id")
         self.title = kwargs.get("title")
         self.year = kwargs.get("year")
-        self.poster_uri = kwargs.get(
-            "poster_uri"
-        )  # https://fwcdn.pl/fpo/20/32/32032/6933343.$.jpg
+        self.poster_uri = kwargs.get("poster_uri")
         self.community_rate = kwargs.get("community_rate")
 
     def __str__(self):

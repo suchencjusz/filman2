@@ -22,18 +22,18 @@ class Task:
 
 class Watched:
     def __init__(
-        self, id_watched, id_filmweb, movie_id, rate, comment, favourite, unix_timestamp
+        self, id_watched, id_filmweb, movie_id, rate, comment, favorite, unix_timestamp
     ):
         self.id_watched = id_watched
         self.id_filmweb = id_filmweb
         self.movie_id = movie_id
         self.rate = rate
         self.comment = comment
-        self.favourite = favourite
+        self.favorite = favorite
         self.unix_timestamp = unix_timestamp
 
     def __str__(self):
-        return f"{self.id_watched} {self.id_filmweb} {self.movie_id} {self.rate} {self.comment} {self.favourite} {self.unix_timestamp}"
+        return f"{self.id_watched} {self.id_filmweb} {self.movie_id} {self.rate} {self.comment} {self.favorite} {self.unix_timestamp}"
 
     def to_dict(self):
         return {
@@ -42,7 +42,7 @@ class Watched:
             "movie_id": self.movie_id,
             "rate": self.rate,
             "comment": self.comment,
-            "favourite": self.favourite,
+            "favorite": self.favorite,
             "unix_timestamp": self.unix_timestamp,
         }
 
@@ -83,6 +83,7 @@ class Scraper:
         first_time_scrap = user_already_watched_data is None
 
         if last_100_watched_data is None:
+            self.update_task_status_done(task.id_task)
             return "Private profile"
 
         last_100_watched_data = ujson.loads(last_100_watched_data)
@@ -103,6 +104,7 @@ class Scraper:
                 new_movies_ids.append(filmweb_watched[0])
 
         if len(new_movies_ids) == 0:
+            self.update_task_status_done(task.id_task)
             return "No new movies"
 
         new_movies_watched = []
@@ -123,7 +125,7 @@ class Scraper:
                 movie_id=movie_id,
                 rate=movie_rate_data["rate"],
                 comment=movie_rate_data.get("comment", None),
-                favourite=bool(movie_rate_data.get("favourite", False)),
+                favorite=bool(movie_rate_data.get("favorite", False)),
                 unix_timestamp=movie_rate_data["timestamp"],
             )
 
@@ -160,11 +162,19 @@ class Scraper:
             logging.error(r.text)
             return "Error adding movies"
 
+        self.update_task_status_done(id_task)
+
+        if r.status_code != 200:
+            return "Error updating task"
+
+        return True
+        
+    def update_task_status_done(self, id_task: int):
         r = requests.get(
             f"{self.endpoint_url}/task/update?id_task={id_task}&status=done"
         )
 
         if r.status_code != 200:
-            return "Error updating task"
+            return False
 
         return True

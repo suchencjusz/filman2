@@ -7,8 +7,8 @@ import logging
 from fake_useragent import UserAgent
 
 from tasks.scrap_movie import Scraper as movie_scrapper
-from tasks.scrap_user_watched import Scraper as user_watched_scrapper
-
+from tasks.scrap_user_watched_movies import Scraper as user_watched_movies_scrapper
+from tasks.scrap_user_watched_series import Scraper as user_watched_series_scrapper
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -93,6 +93,7 @@ def fetch_tasks_from_endpoint():
     allowed_tasks = [
         "scrap_movie",
         "check_user_new_movies",
+        "check_user_new_series",
     ]
 
     try:
@@ -149,12 +150,26 @@ def main():
                         executor.submit(m_scraper.scrap, task)
 
                     if task.type == "check_user_new_movies":
-                        m_scraper = user_watched_scrapper(
+                        m_scraper = user_watched_movies_scrapper(
                             headers=HEADERS,
                             movie_id=task.job,
                             endpoint_url=CORE_ENDPOINT,
                         )
                         executor.submit(m_scraper.scrap, task)
+
+                    if task.type == "check_user_new_series":
+                        logging.info("check_user_new_series")
+                        logging.info("check_user_new_series")
+                        logging.info("check_user_new_series")
+                        logging.info("check_user_new_series")
+                        s_scraper = user_watched_series_scrapper(
+                            headers=HEADERS,
+                            series_id=task.job,
+                            endpoint_url=CORE_ENDPOINT,
+                        )
+                        executor.submit(s_scraper.scrap, task)
+
+                    
 
             else:
                 logging.info("No tasks found")

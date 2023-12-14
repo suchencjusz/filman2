@@ -9,6 +9,10 @@ from typing import List, Optional
 
 from movie import Movie as MovieManagerMovie
 from movie import MovieManager
+
+from series import Series as SeriesManagerSeries
+from series import SeriesManager
+
 from watched import WatchedManager
 from users import UserManager
 from discord_m import DiscordManager
@@ -108,7 +112,7 @@ class MovieWatched(BaseModel):
     movie_id: int
     rate: int
     comment: Optional[str] = None
-    favourite: bool = False
+    favorite: bool = False
     unix_timestamp: int
 
 
@@ -128,9 +132,41 @@ async def add_many_movies(movies_in: MovieWatchedList):
             movie.movie_id,
             movie.rate,
             movie.comment,
-            movie.favourite,
+            movie.favorite,
             movie.unix_timestamp,
             movies_in.without_discord,
+        )
+
+
+class SeriesWatched(BaseModel):
+    id_watched: Optional[int] = None
+    id_filmweb: str
+    series_id: int
+    rate: int
+    comment: Optional[str] = None
+    favorite: bool = False
+    unix_timestamp: int
+
+
+class SeriesWatchedList(BaseModel):
+    id_filmweb: str
+    series: list[SeriesWatched]
+    without_discord: Optional[bool] = False
+
+
+@app.post("/user/watched/series/add_many")
+async def add_many_series(series_in: SeriesWatchedList):
+    watched_manager = WatchedManager()
+
+    for series in series_in.series:
+        result = watched_manager.add_watched_series(
+            series_in.id_filmweb,
+            series.series_id,
+            series.rate,
+            series.comment,
+            series.favorite,
+            series.unix_timestamp,
+            series_in.without_discord,
         )
 
 
@@ -186,6 +222,24 @@ async def get_user_destinations(id_discord: int):
         raise HTTPException(status_code=500, detail="No destinations found")
     else:
         return result
+
+##################################################
+# SERIES 
+##################################################
+    
+class SeriesUpdateIn(BaseModel):
+    id: int
+    title: str
+    year: int
+    other_year: Optional[int] = None
+    poster_uri: str
+    community_rate: float
+
+@app.get("/series/update")
+async def update_series(series_update_in: SeriesUpdateIn):
+    series_manager = SeriesManager()
+
+    # tu skonczyles
 
 
 ##################################################
@@ -269,7 +323,8 @@ async def scrap_all_users():
         return {"message": "OK"}
     else:
         raise HTTPException(status_code=500, detail=result)
-    
+
+
 @app.get("/task/scrap/all/movies")
 async def scrap_all_movies():
     tasks_manager = TasksManager()
@@ -279,6 +334,14 @@ async def scrap_all_movies():
     else:
         raise HTTPException(status_code=500, detail=result)
 
+@app.get("/tasks/scrap/all/series")
+async def scrap_all_series():
+    tasks_manager = TasksManager()
+    result = tasks_manager.add_scrap_series_task()
+    if result is True:
+        return {"message": "OK"}
+    else:
+        raise HTTPException(status_code=500, detail=result)
 
 @app.get("/tasks/update/stuck")
 async def update_stuck_tasks():
@@ -338,7 +401,7 @@ async def add_user_to_guild(guild_in: GuildIn):
 
     if result == "User not found in database":
         raise HTTPException(status_code=404, detail=result)
-    
+
     if result == "Server not configured":
         raise HTTPException(status_code=405, detail=result)
 
