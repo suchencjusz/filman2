@@ -153,3 +153,16 @@ class FilmwebUserWatchedSeriesCreate(BaseModel):
 
     class Config:
         orm_mode = True
+
+#
+# TASKS
+#
+
+class Task(BaseModel):
+    task_id: int
+    task_status: str
+    task_type: str
+    task_job: str
+    task_created: datetime
+    task_started: datetime | None
+    task_finished: datetime | None

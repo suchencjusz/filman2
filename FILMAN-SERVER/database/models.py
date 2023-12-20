@@ -112,3 +112,20 @@ class FilmWebUserWatchedSeries(__FilmwebWatched):
     )
 
     series = relationship("FilmWebSeries", backref="filmweb_user_watched_series")
+
+
+#
+# TASKS
+#
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    task_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    task_status = Column(String(16))
+    task_type = Column(String(32))
+    task_job = Column(String(256))
+    task_created = Column(DateTime)
+    task_started = Column(DateTime)
+    task_finished = Column(DateTime)
