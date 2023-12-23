@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
+from enum import Enum
+
+from typing import Optional, List, Dict, Any
 
 #
 # USER
@@ -154,15 +157,47 @@ class FilmwebUserWatchedSeriesCreate(BaseModel):
     class Config:
         orm_mode = True
 
+
 #
 # TASKS
 #
 
+
+class TaskTypes(str, Enum):
+    SCRAP_USER = "scrap_user"
+    SCRAP_FILMWEB_MOVIE = "scrap_filmweb_movie"
+    SCRAP_FILMWEB_SERIES = "scrap_filmweb_series"
+    SCRAP_FILMWEB_USER_WATCHED_MOVIES = "scrap_filmweb_user_watched_movies"
+    SCRAP_FILMWEB_USER_WATCHED_SERIES = "scrap_filmweb_user_watched_series"
+    SEND_DISCORD_NOTIFICATION = "send_discord_notification"
+
+
+class TaskStatus(str, Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    ERROR = "error"
+
+
 class Task(BaseModel):
     task_id: int
-    task_status: str
-    task_type: str
+    task_status: TaskStatus
+    task_type: TaskTypes
     task_job: str
     task_created: datetime
-    task_started: datetime | None
-    task_finished: datetime | None
+    task_started: Optional[datetime] = None
+    task_finished: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+class TaskCreate(BaseModel):
+    task_status: TaskStatus
+    task_type: TaskTypes
+    task_job: str
+    task_created: Optional[datetime] = None
+    task_started: Optional[datetime] = None
+    task_finished: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True

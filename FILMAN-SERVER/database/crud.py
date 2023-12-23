@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 import sqlalchemy.exc
 
+from datetime import datetime
+
 from . import models, schemas
 
 #
@@ -212,3 +214,64 @@ def get_filmweb_user_watched_movies_ids(db: Session, id_filmweb: str):
         .all()
     )
     return [id_media for (id_media,) in result]  # extract ids from tuples
+
+
+#
+# TASKS
+#
+
+
+def create_task(db: Session, task: schemas.TaskCreate):
+    db_task = models.Task(**task.model_dump())
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
+
+
+def __change_task_status(db: Session, task_id: int, task_status: schemas.TaskStatus):
+    db_task = db.query(models.Task).filter(models.Task.task_id == task_id).first()
+    if db_task is None:
+        return None
+
+    db_task.task_status = task_status
+    db_task.task_started = (
+        datetime.now() if task_status == schemas.TaskStatus.RUNNING else None
+    )
+    db_task.task_finished = (
+        datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
+    )
+
+    db.commit()
+    db.refresh(db_task)
+    return db_task
+
+
+def update_task_status(db: Session, task_id: int, task_status: schemas.TaskStatus):
+    return __change_task_status(db, task_id, task_status)
+
+
+def get_task_to_do(db: Session, task_types: schemas.TaskTypes, head: bool = False):
+    task_to_do = (
+        db.query(models.Task)
+        .filter(
+            models.Task.task_status == schemas.TaskStatus.QUEUED,
+            models.Task.task_type.in_(task_types),
+        )
+        .first()
+    )
+
+    if task_to_do is None:
+        return None
+
+    if head:
+        return task_to_do
+    else:
+        return __change_task_status(db, task_to_do.task_id, schemas.TaskStatus.RUNNING)
+
+
+def remove_completed_tasks(db: Session):
+    db.query(models.Task).filter(
+        models.Task.task_status == schemas.TaskStatus.COMPLETED
+    ).delete()
+    db.commit()

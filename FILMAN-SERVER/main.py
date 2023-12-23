@@ -13,9 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from database import crud, models, schemas
 from database.db import SessionLocal, engine
 
-from routes import users
-from routes import discord
-from routes import filmweb
+from routes import users, discord, filmweb, tasks
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -33,6 +31,7 @@ app = FastAPI()
 app.include_router(users.users_router)
 app.include_router(discord.discord_router)
 app.include_router(filmweb.filmweb_router)
+app.include_router(tasks.tasks_router)
 
 
 @app.get("/sentry-debug")
