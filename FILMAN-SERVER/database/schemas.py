@@ -83,6 +83,8 @@ class DiscordDestinationsCreate(BaseModel):
 # FILMWEB
 #
 
+# MOVIES
+
 
 class FilmWebMovie(BaseModel):
     id: int
@@ -132,8 +134,35 @@ class FilmWebUserWatchedMovieCreate(BaseModel):
         orm_mode = True
 
 
-class FilmwebUserWatchedSeries(BaseModel):
-    series: FilmWebMovie
+# SERIES
+
+
+class FilmWebSeries(BaseModel):
+    id: int
+    title: str
+    year: int
+    other_year: int
+    poster_url: str
+    community_rate: float
+
+    class Config:
+        orm_mode = True
+
+
+class FilmWebSeriesCreate(BaseModel):
+    id: int
+    title: str | None
+    year: int | None
+    other_year: int | None
+    poster_url: str | None
+    community_rate: float | None
+
+    class Config:
+        orm_mode = True
+
+
+class FilmWebUserWatchedSeries(BaseModel):
+    series: FilmWebSeries
     id_filmweb: str
 
     date: datetime
@@ -145,17 +174,30 @@ class FilmwebUserWatchedSeries(BaseModel):
         orm_mode = True
 
 
-class FilmwebUserWatchedSeriesCreate(BaseModel):
-    id_media: int
-    id_filmweb: str
+# class FilmwebUserWatchedSeries(BaseModel):
+#     series: FilmWebMovie
+#     id_filmweb: str
 
-    date: datetime
-    rate: int | None
-    comment: str | None
-    favorite: bool
+#     date: datetime
+#     rate: int | None
+#     comment: str | None
+#     favorite: bool
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
+
+
+# class FilmwebUserWatchedSeriesCreate(BaseModel):
+#     id_media: int
+#     id_filmweb: str
+
+#     date: datetime
+#     rate: int | None
+#     comment: str | None
+#     favorite: bool
+
+#     class Config:
+#         orm_mode = True
 
 
 #
@@ -190,6 +232,7 @@ class Task(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class TaskCreate(BaseModel):
     task_status: TaskStatus

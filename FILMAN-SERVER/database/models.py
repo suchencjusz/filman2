@@ -78,6 +78,8 @@ class FilmWebMovie(__FilmwebMedia):
 class FilmWebSeries(__FilmwebMedia):
     __tablename__ = "filmweb_series"
 
+    other_year = Column(SmallInteger)
+
 
 class __FilmwebWatched(Base):
     __abstract__ = True

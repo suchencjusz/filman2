@@ -73,9 +73,9 @@ class Scraper:
 
     def scrap(self, task):
         last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.job}/vote/film"
-        user_already_watched = (
-            f"{self.endpoint_url}/user/watched/film/all?id_filmweb={task.job}"
-        )
+        # user_already_watched = (
+        #     f"{self.endpoint_url}/user/watched/film/all?id_filmweb={task.job}"
+        # )
 
         last_100_watched_data = self.fetch(last_100_watched)
         user_already_watched_data = self.fetch(user_already_watched)
@@ -148,14 +148,14 @@ class Scraper:
         if len(movies_watched) == 0:
             return "No new movies"
 
-        r = requests.post(
-            f"{self.endpoint_url}/user/watched/film/add_many",
-            json={
-                "id_filmweb": filmweb_id,
-                "movies": [movie.to_dict() for movie in movies_watched],
-                "without_discord": without_discord,
-            },
-        )
+        # r = requests.post(
+        #     f"{self.endpoint_url}/user/watched/film/add_many",
+        #     json={
+        #         "id_filmweb": filmweb_id,
+        #         "movies": [movie.to_dict() for movie in movies_watched],
+        #         "without_discord": without_discord,
+        #     },
+        # )
 
         if r.status_code != 200:
             logging.error(f"Error adding movies: HTTP {r.status_code}")
@@ -170,9 +170,9 @@ class Scraper:
         return True
         
     def update_task_status_done(self, id_task: int):
-        r = requests.get(
-            f"{self.endpoint_url}/task/update?id_task={id_task}&status=done"
-        )
+        # r = requests.get(
+        #     f"{self.endpoint_url}/task/update?id_task={id_task}&status=done"
+        # )
 
         if r.status_code != 200:
             return False

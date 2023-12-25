@@ -19,6 +19,10 @@ def get_db():
     finally:
         db.close()
 
+#
+# MOVIES
+#
+        
 
 @filmweb_router.get("/get/movie", response_model=schemas.FilmWebMovie)
 async def get_movie(
@@ -53,6 +57,10 @@ async def update_movie(
         return db_movie
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Movie already exists")
+
+#
+# MOVIES WATCHED
+#
 
 
 @filmweb_router.post(
@@ -117,3 +125,39 @@ async def get_watched_movies(
     print(watched_movies)
 
     return watched_movies
+
+#
+# SERIES
+#
+
+@filmweb_router.get("/get/series", response_model=schemas.FilmWebSeries)
+async def get_series(
+    id: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    series = crud.get_series_filmweb_id(db, id)
+    if series is None:
+        raise HTTPException(status_code=404, detail="Series not found")
+    return series
+
+@filmweb_router.post("/add/series", response_model=schemas.FilmWebSeries)
+async def add_series(
+    series: schemas.FilmWebSeriesCreate,
+    db: Session = Depends(get_db),
+):
+    try:
+        db_series = crud.create_filmweb_series(db, series)
+        return db_series
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Series already exists")
+    
+@filmweb_router.post("/update/series", response_model=schemas.FilmWebSeries)
+async def update_series(
+    series: schemas.FilmWebSeries,
+    db: Session = Depends(get_db),
+):
+    try:
+        db_series = crud.update_filmweb_series(db, series)
+        return db_series
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Series already exists")

@@ -68,28 +68,28 @@ class Scraper:
 
 
     def update_data(self, series_id, title, year, other_year, poster_url, community_rate, id_task):
-        r = requests.post(
-            f"{self.endpoint_url}/series/update",
-            headers=self.headers,
-            json={
-                "id": int(series_id),
-                "title": str(title),
-                "year": int(year),
-                "other_year": int(other_year),
-                "poster_uri": str(poster_url),
-                "community_rate": float(community_rate),
-            },
-        )
+        # r = requests.post(
+        #     f"{self.endpoint_url}/series/update",
+        #     headers=self.headers,
+        #     json={
+        #         "id": int(series_id),
+        #         "title": str(title),
+        #         "year": int(year),
+        #         "other_year": int(other_year),
+        #         "poster_uri": str(poster_url),
+        #         "community_rate": float(community_rate),
+        #     },
+        # )
 
         if r.status_code != 200:
             logging.error(f"Error updating series data: HTTP {r.status_code}")
             logging.error(r.text)
             return False
 
-        r = requests.get(
-            f"{self.endpoint_url}/task/update?id_task={id_task}&status=done",
-            headers=self.headers,
-        )
+        # r = requests.get(
+        #     f"{self.endpoint_url}/task/update?id_task={id_task}&status=done",
+        #     headers=self.headers,
+        # )
 
         if r.status_code != 200:
             return False

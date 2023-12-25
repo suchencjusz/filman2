@@ -154,7 +154,32 @@ def update_filmweb_movie(db: Session, movie: schemas.FilmWebMovie):
     db.refresh(db_movie)
     return db_movie
 
+#
+# FILMWEB SERIES
+#
 
+def get_series_filmweb_id(db: Session, id: int):
+    return db.query(models.FilmWebSeries).filter(models.FilmWebSeries.id == id).first()
+
+def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
+    db_series = models.FilmWebSeries(**series.model_dump())
+    db.add(db_series)
+    db.commit()
+    db.refresh(db_series)
+    return db_series
+
+def update_filmweb_series(db: Session, series: schemas.FilmWebSeries):
+    db_series = get_series_filmweb_id(db, series.id)
+    if db_series is None:
+        return create_filmweb_series(db, series)
+    db_series.title = series.title
+    db_series.year = series.year
+    db_series.poster_url = series.poster_url
+    db_series.community_rate = series.community_rate
+    db_series.other_year = series.other_year
+    db.commit()
+    db.refresh(db_series)
+    return db_series
 #
 # FILMWEB WATCHED
 #
