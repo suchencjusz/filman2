@@ -168,7 +168,7 @@ def do_task(task: Task):
 def main():
     logging.info("Program started")
 
-    min_wait = 3  # Minimum wait time in seconds
+    min_wait = 2   # Minimum wait time in seconds
     max_wait = 60  # Maximum wait time in seconds
     wait_time = min_wait
 
@@ -186,6 +186,7 @@ def main():
                     logging.info("No tasks found")
                     wait_time = min_wait
 
+            time.sleep(wait_time) 
 
 if __name__ == "__main__":
     main()

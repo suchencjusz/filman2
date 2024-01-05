@@ -260,12 +260,14 @@ def __change_task_status(db: Session, task_id: int, task_status: schemas.TaskSta
         return None
 
     db_task.task_status = task_status
-    db_task.task_started = (
-        datetime.now() if task_status == schemas.TaskStatus.RUNNING else None
-    )
-    db_task.task_finished = (
-        datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
-    )
+
+    task_started = datetime.now() if task_status == schemas.TaskStatus.RUNNING else None
+    if task_started is not None:
+        db_task.task_started = task_started
+
+    task_finished = datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
+    if task_finished is not None:
+        db_task.task_finished = task_finished
 
     db.commit()
     db.refresh(db_task)

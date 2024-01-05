@@ -63,6 +63,15 @@ class FilmWeb(Updaters):
         poster_url: str
         community_rate: float
 
+    class FilmWebSeries(BaseModel):
+        id: int
+        title: str
+        year: int
+        other_year: int
+        poster_url: str
+        community_rate: float
+
+
     def update_movie(self, movie: FilmWebMovie):
         r = requests.post(
             f"{self.endpoint_url}/filmweb/update/movie",
@@ -78,6 +87,27 @@ class FilmWeb(Updaters):
 
         if r.status_code != 200:
             logging.error(f"Error updating movie data: HTTP {r.status_code}")
+            logging.error(r.text)
+            return False
+
+        return True
+
+    def update_series(self, series: FilmWebSeries):
+        r = requests.post(
+            f"{self.endpoint_url}/filmweb/update/series",
+            headers=self.headers,
+            json={
+                "id": int(series.id),
+                "title": str(series.title),
+                "year": int(series.year),
+                "other_year": int(series.other_year),
+                "poster_url": str(series.poster_url),
+                "community_rate": float(series.community_rate),
+            },
+        )
+
+        if r.status_code != 200:
+            logging.error(f"Error updating series data: HTTP {r.status_code}")
             logging.error(r.text)
             return False
 

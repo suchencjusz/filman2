@@ -9,7 +9,7 @@ from lightbulb.ext import tasks
 
 
 # bot = lightbulb.BotApp(
-#     "MTE4MjM3MTY1ODM0NzA2NTM5NA.Gr7OHu.Y3PW4Dl98nLZAzAw1eJfvAzpushE3GXyM0qAX8",
+#     "MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360",
 #     intents=hikari.Intents.ALL,
 #     banner=None,
 # )
