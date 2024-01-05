@@ -1,5 +1,8 @@
 FROM python:3.11-slim-bullseye
 
+RUN apt update
+RUN apt install -y pkg-config default-libmysqlclient-dev build-essential
+
 WORKDIR /FILMAN-SERVER
 
 COPY requirements.txt requirements.txt

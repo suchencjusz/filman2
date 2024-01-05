@@ -10,25 +10,20 @@ services:
       context: .
       dockerfile: FILMAN-SERVER/Dockerfile
     environment:
-      - MYSQL_HOST=host.docker.internal
-      # - MYSQL_USER=root
-      # - MYSQL_PASSWORD=
-      - MYSQL_DATABASE=filmweb_test2
+      - SQLALCHEMY_DATABASE_URL=mysql://y168:1B00_3267ae@mysql.mikr.us/db_y168
     restart: unless-stopped
-    # extra_hosts:
-    #   - "host.docker.internal"
 
-  filman-discord:
-    depends_on:
-      - filman-server
-    container_name: filman-discord
-    build:
-      # context: /FILMAN-DISCORD
-      context: .
-      dockerfile: FILMAN-DISCORD/Dockerfile
-    environment:
-      - DISCORD_TOKEN=MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360
-    restart: unless-stopped
+  # filman-discord:
+  #   depends_on:
+  #     - filman-server
+  #   container_name: filman-discord
+  #   build:
+  #     # context: /FILMAN-DISCORD
+  #     context: .
+  #     dockerfile: FILMAN-DISCORD/Dockerfile
+  #   environment:
+  #     - DISCORD_TOKEN=MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360
+  #   restart: unless-stopped
 
   filman-crawler:
     depends_on:

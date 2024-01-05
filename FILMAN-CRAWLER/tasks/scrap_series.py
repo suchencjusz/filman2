@@ -13,9 +13,9 @@ logging.basicConfig(
 
 
 class Scraper:
-    def __init__(self, headers=None, movie_id=None, endpoint_url=None):
+    def __init__(self, headers=None, series_id=None, endpoint_url=None):
         self.headers = headers
-        self.movie_id = movie_id
+        self.series_id = series_id
         self.endpoint_url = endpoint_url
 
     def fetch(self, url):
@@ -25,7 +25,7 @@ class Scraper:
             return None
         return response.text
 
-    def scrap(self, task: Task):
+    def scrap(self, task):
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
         rating_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/rating"
 
@@ -40,6 +40,7 @@ class Scraper:
 
         title = info_data.get("title", None)
         year = int(info_data.get("year", None))
+        other_year = int(info_data.get("otherYear", 0))
         poster_url = info_data.get(
             "posterPath", "https://vectorified.com/images/no-data-icon-23.png"
         )
@@ -48,23 +49,27 @@ class Scraper:
         if title is None or year is None or poster_url is None:
             return False
 
-        update = self.update_data(
-            self.movie_id, title, year, poster_url, community_rate, task.task_id
+        return self.update_data(
+            self.series_id,
+            title,
+            year,
+            other_year,
+            poster_url,
+            community_rate,
+            task.task_id,
         )
 
-        if update is True:
-            logging.info(f"Updated movie {title} ({year})")
-
-        return update
-
-    def update_data(self, movie_id, title, year, poster_url, community_rate, task_id):
+    def update_data(
+        self, series_id, title, year, other_year, poster_url, community_rate, task_id
+    ):
         try:
             filmweb = FilmWeb(self.headers, self.endpoint_url)
-            filmweb.update_movie(
-                FilmWeb.FilmWebMovie(
-                    id=movie_id,
+            filmweb.update_series(
+                FilmWeb.FilmWebSeries(
+                    id=series_id,
                     title=title,
                     year=year,
+                    other_year=other_year,
                     poster_url=poster_url,
                     community_rate=community_rate,
                 )
@@ -74,7 +79,7 @@ class Scraper:
             tasks.update_task_status(task_id, TaskStatus.COMPLETED)
 
         except Exception as e:
-            logging.error(f"Error updating movie data: {e}")
+            logging.error(f"Error updating series data: {e}")
             return False
 
         return True

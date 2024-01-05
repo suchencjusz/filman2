@@ -9,7 +9,7 @@ from lightbulb.ext import tasks
 
 
 # bot = lightbulb.BotApp(
-#     "MTE4MjM3MTY1ODM0NzA2NTM5NA.Gr7OHu.Y3PW4Dl98nLZAzAw1eJfvAzpushE3GXyM0qAX8",
+#     "MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360",
 #     intents=hikari.Intents.ALL,
 #     banner=None,
 # )
@@ -158,7 +158,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     print("movie_title", movie["title"])
                     print("movie_year", movie["year"])
                     print("comment", user_rate["comment"])
-                    print("favourite", user_rate["favourite"])
+                    print("favorite", user_rate["favorite"])
                     print("rate", user_rate["rate"])
 
                     movie_url = filmweb_movie_url_generator(
@@ -188,27 +188,19 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                         inline=True,
                     )
 
-                    if user_rate["comment"]:
-                        embed.add_field(
-                            name="Komentarz",
-                            value=f"{user_rate['comment']}",
-                            inline=True,
-                        )
-
-                    if user_rate["favourite"] != 0:
+                    if user_rate["favorite"] != 0:
                         embed.add_field(
                             name="Ulubiony",
                             value=f"❤️ Tak",
                             inline=True,
                         )
 
-                    # if user_rate["comment"] or user_rate["favourite"] != 0:
-                    #     blank_field = "\u200b"
-                    #     embed.add_field(
-                    #         name=blank_field,
-                    #         value=blank_field,
-                    #         inline=False,
-                    #     )
+                    if user_rate["comment"]:
+                        embed.add_field(
+                            name="Komentarz",
+                            value=f"{user_rate['comment']}",
+                            inline=True,
+                        )
 
                     if user_rate["rate"] != 0:
                         embed.add_field(
