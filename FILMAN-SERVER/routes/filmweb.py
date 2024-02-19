@@ -73,6 +73,9 @@ async def add_watched_movie(
     try:
         db_movie = crud.create_filmweb_user_watched_movie(db, user_watched_movie)
 
+        # tu sie powinien tworzyc task do crawlera
+        # ze sie musi pobrac film z filmweba i dodac do bazy
+
         if db_movie is None or db_movie is IntegrityError:
             raise HTTPException(status_code=404, detail="Movie not found")
 

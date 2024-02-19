@@ -49,15 +49,25 @@ async def get_user(
 
 @users_router.get("/add_to_guild", response_model=schemas.DiscordDestinations)
 async def add_to_guild(
-    user_id: int,
+    discord_user_id: int,
     discord_guild_id: int,
     db: Session = Depends(get_db),
 ):
+    user_id = crud.get_user(db, id=None, filmweb_id=None, discord_id=discord_user_id)
+
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_id = user_id.id
+
     guild = crud.get_guild(db, discord_guild_id)
+
     if guild is None:
         raise HTTPException(status_code=404, detail="Guild not found")
 
-    discord_destination = crud.set_discord_destination(db, user_id, discord_guild_id)
+    discord_destination = crud.set_user_destination(
+        db, user_id=user_id, discord_guild_id=discord_guild_id
+    )
 
     return discord_destination
 
