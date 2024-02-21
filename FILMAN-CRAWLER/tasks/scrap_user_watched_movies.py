@@ -1,50 +1,10 @@
 import logging
 import requests
 import ujson
+import datetime
 
-
-class Task:
-    def __init__(
-        self, id_task, status, type, job, unix_timestamp, unix_timestamp_last_update
-    ):
-        self.id_task = id_task
-        self.status = status
-        self.type = type
-        self.job = job
-        self.unix_timestamp = unix_timestamp
-        self.unix_timestamp_last_update = unix_timestamp_last_update
-
-    def __str__(self):
-        return (
-            f"{self.id_task} {self.status} {self.type} {self.job} {self.unix_timestamp}"
-        )
-
-
-class Watched:
-    def __init__(
-        self, id_watched, id_filmweb, movie_id, rate, comment, favorite, unix_timestamp
-    ):
-        self.id_watched = id_watched
-        self.id_filmweb = id_filmweb
-        self.movie_id = movie_id
-        self.rate = rate
-        self.comment = comment
-        self.favorite = favorite
-        self.unix_timestamp = unix_timestamp
-
-    def __str__(self):
-        return f"{self.id_watched} {self.id_filmweb} {self.movie_id} {self.rate} {self.comment} {self.favorite} {self.unix_timestamp}"
-
-    def to_dict(self):
-        return {
-            "id_watched": self.id_watched,
-            "id_filmweb": self.id_filmweb,
-            "movie_id": self.movie_id,
-            "rate": self.rate,
-            "comment": self.comment,
-            "favorite": self.favorite,
-            "unix_timestamp": self.unix_timestamp,
-        }
+from .utils import Task, TaskTypes, TaskStatus, DiscordNotifications
+from .utils import Tasks, FilmWeb
 
 
 # https://www.filmweb.pl/api/v1/user/tirstus/vote/film
@@ -59,122 +19,146 @@ logging.basicConfig(
 
 
 class Scraper:
-    def __init__(self, headers=None, movie_id=None, endpoint_url=None):
+    def __init__(self, headers=None, endpoint_url=None):
         self.headers = headers
-        self.movie_id = movie_id
         self.endpoint_url = endpoint_url
 
-    def fetch(self, url):
-        response = requests.get(url, headers=self.headers)
+    def fetch(self, url, params=None):
+        response = requests.get(url, headers=self.headers, params=params)
         if response.status_code != 200:
             logging.error(f"Error fetching {url}: HTTP {response.status_code}")
             return None
+
+        # r = requests.get(
+        #         f"{CORE_ENDPOINT}/tasks/get/task/to_do",
+        #         params={"task_types": TASK_TYPES},
+        #         headers=HEADERS,
+        #     )
+
         return response.text
 
     def scrap(self, task):
-        last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.job}/vote/film"
-        # user_already_watched = (
-        #     f"{self.endpoint_url}/user/watched/film/all?id_filmweb={task.job}"
-        # )
+        filmweb = FilmWeb(self.headers, self.endpoint_url)
+        tasks = Tasks(self.headers, self.endpoint_url)
 
-        last_100_watched_data = self.fetch(last_100_watched)
-        user_already_watched_data = self.fetch(user_already_watched)
+        last_100_watched = (
+            f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
+        )
+        user_already_watched = f"{self.endpoint_url}/filmweb/watched/movies/get/ids"
 
-        first_time_scrap = user_already_watched_data is None
+        try:
+            last_100_watched_data = self.fetch(last_100_watched)
+            user_already_watched_data = self.fetch(
+                user_already_watched, params={"filmweb_id": task.task_job}
+            )
+        except Exception as e:
+            logging.error(f"Error fetching data: {e}")
+            return "Error fetching data"
 
         if last_100_watched_data is None:
             self.update_task_status_done(task.id_task)
+            logging.error(f"Error fetching last 100 watched for {task.task_job}")
             return "Private profile"
 
         last_100_watched_data = ujson.loads(last_100_watched_data)
 
-        if user_already_watched_data is None:
-            user_already_watched_data = []
-        else:   
-            user_already_watched_data = ujson.loads(user_already_watched_data)
+        user_already_watched_data = set(user_already_watched_data or [])
 
-            user_already_watched_data = list(
-                map(lambda x: x["movie_id"], user_already_watched_data)
-            )
+        first_time_scrap = True if user_already_watched_data == [] else False
 
-        new_movies_ids = []
+        new_movies_watched = [
+            movie
+            for movie in last_100_watched_data
+            if movie[0] not in user_already_watched_data
+        ]
 
-        for filmweb_watched in last_100_watched_data:
-            if filmweb_watched[0] not in user_already_watched_data:
-                new_movies_ids.append(filmweb_watched[0])
+        logging.info(f"Found {len(new_movies_watched)} new movies watched")
 
-        if len(new_movies_ids) == 0:
-            self.update_task_status_done(task.id_task)
-            return "No new movies"
+        new_movies_watched_parsed = []
 
-        new_movies_watched = []
+        for movie in new_movies_watched:
+            #  f"https://www.filmweb.pl/api/v1/user/{task.job}/vote/film/{movie_id}"
 
-        for movie_id in new_movies_ids:
-            movie_rate_data = self.fetch(
-                f"https://www.filmweb.pl/api/v1/user/{task.job}/vote/film/{movie_id}"
-            )
+            try:
+                movie_rate_data = self.fetch(
+                    f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}"
+                )
 
-            if movie_rate_data is None:
+                if movie_rate_data is None:
+                    continue
+
+                movie_rate_data = ujson.loads(movie_rate_data)
+
+                new_movies_watched_parsed.append(
+                    filmweb.FilmWebUserWatchedMovie(
+                        id_media=movie[0],
+                        id_filmweb=task.task_job,
+                        date=datetime.datetime.fromtimestamp(movie_rate_data["timestamp"] / 1000),
+                        rate=movie_rate_data.get("rate", 0),
+                        comment=movie_rate_data.get("comment", None),
+                        favorite=bool(movie_rate_data.get("favorite", False)),
+                    )
+                )
+            except Exception as e:
+                logging.error(f"Error parsing movie data: {e}")
                 continue
 
-            movie_rate_data = ujson.loads(movie_rate_data)
+        logging.info(f"Found {len(new_movies_watched_parsed)} new movies parsed")
 
-            movie_watched = Watched(
-                None,
-                task.job,
-                movie_id=movie_id,
-                rate=movie_rate_data["rate"],
-                comment=movie_rate_data.get("comment", None),
-                favorite=bool(movie_rate_data.get("favorite", False)),
-                unix_timestamp=movie_rate_data["timestamp"],
+        if len(new_movies_watched_parsed) == 0:
+            tasks.update_task_status(task.id_task, TaskStatus.DONE)
+            return "No new movies"
+
+        logging.info("Preparing to update data...")
+        try:
+            result = self.update_data(
+                task.task_job,
+                new_movies_watched_parsed,
+                first_time_scrap,
+                task.task_id,
             )
-
-            new_movies_watched.append(movie_watched)
-
-        return self.update_data(
-            task.job,
-            new_movies_watched,
-            task.id_task,
-            first_time_scrap,
-        )
+            logging.info("Data updated successfully.")
+            return result
+        except Exception as e:
+            logging.error(f"Error updating data: {e}")
+            return "Error updating data"
 
     def update_data(
         self,
         filmweb_id: str,
         movies_watched: list,
-        id_task: int,
-        without_discord: bool,
+        first_time_scrap: bool,
+        task_id: int,
     ):
-        if len(movies_watched) == 0:
-            return "No new movies"
+        logging.info(
+            f"Updating data for {filmweb_id} with {len(movies_watched)} movies"
+        )
 
-        # r = requests.post(
-        #     f"{self.endpoint_url}/user/watched/film/add_many",
-        #     json={
-        #         "id_filmweb": filmweb_id,
-        #         "movies": [movie.to_dict() for movie in movies_watched],
-        #         "without_discord": without_discord,
-        #     },
-        # )
+        filmweb = FilmWeb(self.headers, self.endpoint_url)
+        tasks = Tasks(self.headers, self.endpoint_url)
+        dc_notifications = DiscordNotifications(self.headers, self.endpoint_url)
 
-        if r.status_code != 200:
-            logging.error(f"Error adding movies: HTTP {r.status_code}")
-            logging.error(r.text)
-            return "Error adding movies"
+        for movie in movies_watched:
 
-        self.update_task_status_done(id_task)
+            try:
+                if filmweb.add_watched_movie(movie):
+                    if first_time_scrap is False:
+                        if (
+                            dc_notifications.send_notification(filmweb_id=filmweb_id)
+                            is False
+                        ):
+                            logging.error(
+                                f"Error sending discord notification for {filmweb_id}"
+                            )
+                            continue
+                else:
+                    logging.error(f"Error updating movie data: {e}")
+                    continue
 
-        if r.status_code != 200:
-            return "Error updating task"
+            except Exception as e:
+                logging.error(f"Exception while updating movie data: {e}")
+                continue
 
-        return True
-        
-    def update_task_status_done(self, id_task: int):
-        # r = requests.get(
-        #     f"{self.endpoint_url}/task/update?id_task={id_task}&status=done"
-        # )
-
-        if r.status_code != 200:
-            return False
+        tasks.update_task_status(task_id, TaskStatus.DONE)
 
         return True

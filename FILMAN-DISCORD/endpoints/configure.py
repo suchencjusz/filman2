@@ -56,7 +56,7 @@ async def channel_subcommand(
 
     if hikari.Permissions.ADMINISTRATOR not in author_permissions:
         embed = hikari.Embed(
-            title="Tylko administratorzy mogą to zrobić!",
+            title="Tylko administratorzy serwera mogą to zrobić!",
             colour=0xFF4400,
             timestamp=datetime.now().astimezone(),
         )
@@ -71,7 +71,7 @@ async def channel_subcommand(
 
     async with ctx.bot.d.client_session.post(
         "http://filman-server:8000/discord/configure/guild",
-        json={"guild_id": ctx.guild_id, "channel_id": text_channel.id},
+        json={"discord_guild_id": ctx.guild_id, "discord_channel_id": text_channel.id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(

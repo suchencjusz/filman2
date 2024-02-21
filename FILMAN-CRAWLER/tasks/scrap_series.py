@@ -20,6 +20,7 @@ class Scraper:
 
     def fetch(self, url):
         response = requests.get(url, headers=self.headers)
+
         if response.status_code != 200:
             logging.error(f"Error fetching {url}: HTTP {response.status_code}")
             return None

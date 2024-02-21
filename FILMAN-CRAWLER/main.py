@@ -24,28 +24,28 @@ logging.basicConfig(
     filename="app.log",
     filemode="w",
     format="%(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
+    level=logging.DEBUG,
 )
 
 # Set up logging
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
-# Create handlers
-c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler("app.log")
-c_handler.setLevel(logging.INFO)
-f_handler.setLevel(logging.INFO)
+# # Create handlers
+# c_handler = logging.StreamHandler()
+# f_handler = logging.FileHandler("app.log")
+# c_handler.setLevel(logging.INFO)
+# f_handler.setLevel(logging.INFO)
 
-# Create formatters and add it to handlers
-c_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-f_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
+# # Create formatters and add it to handlers
+# c_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+# f_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+# c_handler.setFormatter(c_format)
+# f_handler.setFormatter(f_format)
 
-# Add handlers to the logger
-logger.addHandler(c_handler)
-logger.addHandler(f_handler)
+# # Add handlers to the logger
+# logger.addHandler(c_handler)
+# logger.addHandler(f_handler)
 
 CORE_ENDPOINT = os.environ.get("CORE_ENDPOINT", "http://localhost:8001")
 
@@ -124,6 +124,7 @@ def check_there_are_any_tasks():
         logging.error(f"Error checking tasks: {e}")
         return False
 
+
 def get_task_to_do() -> Task:
     try:
         r = requests.get(
@@ -134,9 +135,11 @@ def get_task_to_do() -> Task:
 
         if r.status_code != 200:
             return None
-        
-        return Task(**r.json())
-    
+
+        task = Task(**r.json())
+        logging.info(f"Fetched task: {task}")
+        return task
+
     except Exception as e:
         logging.error(f"Error getting task to do: {e}")
         return None
@@ -144,31 +147,37 @@ def get_task_to_do() -> Task:
 
 def do_task(task: Task):
     if task.task_type == TaskTypes.SCRAP_FILMWEB_MOVIE:
-        scraper = movie_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job)
+        scraper = movie_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
-        scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
+        scraper = series_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES:
-        scraper = user_watched_movies_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job)
+        scraper = user_watched_movies_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
-        scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job)
+        scraper = user_watched_series_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job
+        )
         scraper.scrap(task)
 
     else:
         logging.error(f"Unknown task type: {task.task_type}")
 
 
-    
-
 def main():
     logging.info("Program started")
 
-    min_wait = 2   # Minimum wait time in seconds
+    min_wait = 2  # Minimum wait time in seconds
     max_wait = 60  # Maximum wait time in seconds
     wait_time = min_wait
 
@@ -186,7 +195,8 @@ def main():
                     logging.info("No tasks found")
                     wait_time = min_wait
 
-            time.sleep(wait_time) 
+            time.sleep(wait_time)
+
 
 if __name__ == "__main__":
     main()

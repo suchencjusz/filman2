@@ -55,6 +55,28 @@ class Tasks(Updaters):
         return True
 
 
+class DiscordNotifications(Updaters):
+    def send_notification(self, filmweb_id: str):
+        r = requests.post(
+            f"{self.endpoint_url}/tasks/create",
+            headers=self.headers,
+            json=Task(
+                task_id=0,
+                task_status=TaskStatus.QUEUED,
+                task_type=TaskTypes.SEND_DISCORD_NOTIFICATION,
+                task_job=filmweb_id,
+                task_created=datetime.now(),
+            ),
+        )
+
+        if r.status_code != 200:
+            logging.error(f"Error sending discord notification: HTTP {r.status_code}")
+            logging.error(r.text)
+            return False
+
+        return True
+
+
 class FilmWeb(Updaters):
     class FilmWebMovie(BaseModel):
         id: int
@@ -71,6 +93,13 @@ class FilmWeb(Updaters):
         poster_url: str
         community_rate: float
 
+    class FilmWebUserWatchedMovie(BaseModel):
+        id_media: int
+        id_filmweb: str
+        date: datetime
+        rate: int
+        comment: Optional[str]
+        favorite: bool
 
     def update_movie(self, movie: FilmWebMovie):
         r = requests.post(
@@ -108,6 +137,28 @@ class FilmWeb(Updaters):
 
         if r.status_code != 200:
             logging.error(f"Error updating series data: HTTP {r.status_code}")
+            logging.error(r.text)
+            return False
+
+        return True
+
+    def add_watched_movie(self, info: FilmWebUserWatchedMovie):
+        r = requests.post(
+            f"{self.endpoint_url}/filmweb/watched/movies/add",
+            headers=self.headers,
+            json={
+                "id_media": int(info.id_media),
+                "id_filmweb": str(info.id_filmweb),
+                "date": info.date.isoformat(),
+                "rate": int(info.rate),
+                "comment": info.comment,
+                "favorite": bool(info.favorite),
+            },
+
+        )
+
+        if r.status_code != 200:
+            logging.error(f"Error adding watched movie: HTTP {r.status_code}")
             logging.error(r.text)
             return False
 
