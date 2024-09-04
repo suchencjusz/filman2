@@ -1,0 +1,91 @@
+version: "3.6"
+
+volumes:
+  mariadb:
+    driver: local
+
+networks:
+  db:
+    driver: bridge
+
+services:
+  filman-server:
+    container_name: filman-server
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    build:
+      context: .
+      dockerfile: FILMAN-SERVER/Dockerfile
+
+    environment:
+      - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_dev
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - db
+
+    restart: unless-stopped
+
+  filman-discord:
+    container_name: filman-discord
+    depends_on:
+      - filman-server
+    build:
+      context: .
+      dockerfile: FILMAN-DISCORD/Dockerfile
+
+    environment:
+      - DISCORD_TOKEN=
+    
+    networks:
+      - db
+
+    restart: unless-stopped
+
+  filman-crawler:
+    container_name: filman-crawler
+    depends_on:
+      - filman-server
+    build:
+      context: .
+      dockerfile: FILMAN-CRAWLER/Dockerfile
+
+    environment:
+      - CORE_ENDPOINT=http://filman-server:8000
+    
+    networks:
+      - db
+
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.6
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_USER: root1234
+      MYSQL_PASSWORD: root1234
+    expose:
+        - "40000"
+    ports:
+        - "40000:3306"
+    volumes:
+     - mariadb:/var/lib/mysql
+    networks:
+      - db
+              
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    expose:
+      - "40001"
+    ports:
+      - "40001:80"
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_PORT=3306 
+    networks:
+      - db
