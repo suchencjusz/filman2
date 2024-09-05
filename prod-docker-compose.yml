@@ -1,0 +1,43 @@
+# version: "3.6"
+
+# services:
+#   filman-server:
+#     container_name: filman-server
+#     image: suchencjusz/filman-server:main
+#     ports:
+#       - "8000:8000"
+#     build:
+#       context: /FILMAN-SERVER
+#       dockerfile: Dockerfile
+#     environment:
+#       - MYSQL_HOST=mysql.mikr.us
+#       - MYSQL_USER=t345
+#       - MYSQL_PASSWORD=01D0_350899
+#       - MYSQL_DATABASE=db_t345
+#     restart: unless-stopped
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+
+#   filman-discord:
+#     depends_on:
+#       - filman-server
+#     container_name: filman-discord
+#     image: suchencjusz/filman-discord:main
+#     build:
+#       context: /FILMAN-DISCORD
+#       dockerfile: Dockerfile
+#     environment:
+#       - DISCORD_TOKEN=
+#     restart: unless-stopped
+
+#   filman-crawler:
+#     depends_on:
+#       - filman-server
+#     container_name: filman-crawler
+#     image: suchencjusz/filman-crawler:main
+#     build:
+#       context: /FILMAN-CRAWLER
+#       dockerfile: Dockerfile
+#     environment:
+#       - CORE_ENDPOINT=http://filman-server:8000
+#     restart: unless-stopped

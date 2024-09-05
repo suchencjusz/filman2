@@ -95,7 +95,7 @@
 #         if result is not None:
 #             print("Already watched")
 #             return "Already watched"
-        
+
 #         # add to watched
 #         db.cursor.execute(
 #             f"INSERT INTO watched_series (id_filmweb, series_id, rate, comment, favourite, unix_timestamp) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -107,12 +107,12 @@
 
 #         if without_discord is True:
 #             return True
-        
+
 #         task_manager = TasksManager()
 #         task_manager.new_task("send_discord", f"{id_filmweb},{series_id}")
 
 #         return True
-        
+
 #     def add_watched_movie(
 #         self,
 #         id_filmweb: str,

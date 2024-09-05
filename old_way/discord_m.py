@@ -160,7 +160,7 @@
 #                 db.connection.commit()
 #             except Exception:
 #                 return "Server not configured"
-            
+
 #         db.connection.close()
 
 #         return True

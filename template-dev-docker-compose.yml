@@ -17,7 +17,7 @@ services:
       - "8000"
     build:
       context: .
-      dockerfile: FILMAN-SERVER/Dockerfile
+      dockerfile: src/filman-server/Dockerfile
 
     environment:
       - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_dev
@@ -35,7 +35,7 @@ services:
       - filman-server
     build:
       context: .
-      dockerfile: FILMAN-DISCORD/Dockerfile
+      dockerfile: src/filman-discord/Dockerfile
 
     environment:
       - DISCORD_TOKEN=
@@ -51,7 +51,7 @@ services:
       - filman-server
     build:
       context: .
-      dockerfile: FILMAN-CRAWLER/Dockerfile
+      dockerfile: src/filman-crawler/Dockerfile
 
     environment:
       - CORE_ENDPOINT=http://filman-server:8000

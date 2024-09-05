@@ -127,7 +127,7 @@
 #             self.new_task("scrap_movie", movie[0])
 
 #         return True
-    
+
 #     def add_scrap_series_task(self):
 #         db = Database()
 

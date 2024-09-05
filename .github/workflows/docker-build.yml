@@ -1,9 +1,9 @@
-name: 🐳 Build Docker image
+name: 🐳 Build & depoly docker image
 
 on:
-    push:
-      branches:
-        - 'main'
+  push:
+    branches:
+      - 'main'
   
 jobs:
   docker:
@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
         - image: suchencjusz/filman-crawler
-          dockerfile: FILMAN-CRAWLER/Dockerfile
+          dockerfile: filman_crawler/Dockerfile
         - image: suchencjusz/filman-discord
-          dockerfile: FILMAN-DISCORD/Dockerfile
+          dockerfile: filman_discord/Dockerfile
         - image: suchencjusz/filman-server
-          dockerfile: FILMAN-SERVER/Dockerfile
+          dockerfile: filman_server/Dockerfile
     steps:
       -
           name: Checkout
