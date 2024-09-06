@@ -10,10 +10,10 @@
 #       context: /FILMAN-SERVER
 #       dockerfile: Dockerfile
 #     environment:
-#       - MYSQL_HOST=mysql.mikr.us
-#       - MYSQL_USER=t345
-#       - MYSQL_PASSWORD=01D0_350899
-#       - MYSQL_DATABASE=db_t345
+#       - MYSQL_HOST=
+#       - MYSQL_USER=
+#       - MYSQL_PASSWORD=
+#       - MYSQL_DATABASE=
 #     restart: unless-stopped
 #     extra_hosts:
 #       - "host.docker.internal:host-gateway"

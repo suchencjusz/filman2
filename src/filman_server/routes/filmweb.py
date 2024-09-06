@@ -16,28 +16,28 @@ filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 # MOVIES
 #
 
+# not even used
+# @filmweb_router.get("/get/movie", response_model=schemas.FilmWebMovie)
+# async def get_movie(
+#     id: Optional[int] = None,
+#     db: Session = Depends(get_db),
+# ):
+#     movie = crud.get_movie_filmweb_id(db, id)
+#     if movie is None:
+#         raise HTTPException(status_code=404, detail="Movie not found")
+#     return movie
 
-@filmweb_router.get("/get/movie", response_model=schemas.FilmWebMovie)
-async def get_movie(
-    id: Optional[int] = None,
-    db: Session = Depends(get_db),
-):
-    movie = crud.get_movie_filmweb_id(db, id)
-    if movie is None:
-        raise HTTPException(status_code=404, detail="Movie not found")
-    return movie
-
-
-@filmweb_router.post("/add/movie", response_model=schemas.FilmWebMovie)
-async def add_movie(
-    movie: schemas.FilmWebMovieCreate,
-    db: Session = Depends(get_db),
-):
-    try:
-        db_movie = crud.create_filmweb_movie(db, movie)
-        return db_movie
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Movie already exists")
+# not even used
+# @filmweb_router.post("/add/movie", response_model=schemas.FilmWebMovie)
+# async def add_movie(
+#     movie: schemas.FilmWebMovieCreate,
+#     db: Session = Depends(get_db),
+# ):
+#     try:
+#         db_movie = crud.create_filmweb_movie(db, movie)
+#         return db_movie
+#     except IntegrityError:
+#         raise HTTPException(status_code=400, detail="Movie already exists")
 
 
 @filmweb_router.post("/update/movie", response_model=schemas.FilmWebMovie)
