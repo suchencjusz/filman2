@@ -1,7 +1,9 @@
-from sqlalchemy.orm import Session
-import sqlalchemy.exc
-
 from datetime import datetime
+
+import sqlalchemy.exc
+from sqlalchemy.orm import Session
+
+import logging
 
 from . import models, schemas
 
@@ -10,34 +12,71 @@ from . import models, schemas
 #
 
 
-def get_user(db: Session, id: int | None, filmweb_id: str | None, discord_id: int | None):
+def get_user(
+    db: Session,
+    id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+) -> models.User | None:
     if id:
         return db.query(models.User).filter(models.User.id == id).first()
     elif filmweb_id:
-        return db.query(models.User).filter(models.User.filmweb_id == filmweb_id).first()
+        return (
+            db.query(models.User)
+            .join(models.FilmWebUserMapping)
+            .filter(models.FilmWebUserMapping.filmweb_id == filmweb_id)
+            .first()
+        )
     elif discord_id:
         return db.query(models.User).filter(models.User.discord_id == discord_id).first()
     else:
         return None
 
 
-def create_user(db: Session, user: schemas.UserCreate):
-    db_user = models.User(**user.model_dump())
+def create_user(
+    db: Session,
+    user: schemas.UserCreate,
+) -> models.User:
+    db_user = models.User(discord_id=user.discord_id)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
 
-def get_user_destinations(db: Session, user_id: int):
-    return db.query(models.DiscordDestinations).filter_by(user_id=user_id).all()
+def get_user_destinations(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+) -> list[models.DiscordDestinations] | None:
+    user = get_user(db, user_id, None, discord_user_id)
+
+    if user is None:
+        return None
+
+    return db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
 
 
-def get_user_destination(db: Session, user_id: int, discord_guild_id: int):
-    return db.query(models.DiscordDestinations).filter_by(user_id=user_id, discord_guild_id=discord_guild_id).first()
+# It is used to check if user is in discord guild only for that!
+def get_user_destination(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+    discord_guild_id: int,
+) -> models.DiscordDestinations | None:
+    user = get_user(db, user_id, None, discord_user_id)
+
+    if user is None:
+        return None
+
+    return db.query(models.DiscordDestinations).filter_by(user_id=user.id, discord_guild_id=discord_guild_id).first()
 
 
-def set_user_destination(db: Session, user_id: int, discord_guild_id: int):
+def set_user_destination(
+    db: Session,
+    user_id: int,
+    discord_guild_id: int,
+) -> models.DiscordDestinations:
     db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user_id, discord_guild_id=discord_guild_id).first()
 
     if db_dest is None:
@@ -52,11 +91,21 @@ def set_user_destination(db: Session, user_id: int, discord_guild_id: int):
     return db_dest
 
 
-def delete_user_destination(db: Session, user_id: int, discord_guild_id: int):
-    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user_id, discord_guild_id=discord_guild_id).first()
+def delete_user_destination(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+    discord_guild_id: int,
+) -> models.DiscordDestinations | None:
+    user = get_user(db, user_id, None, discord_user_id)
+
+    if user is None:
+        return None
+
+    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user.id, discord_guild_id=discord_guild_id).first()
 
     if db_dest is None:
-        raise Exception("User not in guild")
+        return None
 
     db.delete(db_dest)
     db.commit()
@@ -64,12 +113,25 @@ def delete_user_destination(db: Session, user_id: int, discord_guild_id: int):
     return db_dest
 
 
-def delete_user_destitations(db: Session, user_id: int):
-    destinations = db.query(models.DiscordDestinations).filter(models.DiscordDestinations.user_id == user_id)
+def delete_user_destitations(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+) -> models.DiscordDestinations | None:
+    user = get_user(db, user_id, None, discord_user_id)
 
-    destinations.delete()
+    if user is None:
+        return None
 
+    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
+    db_dest.delete()
     db.commit()
+
+    return None
+
+    # destinations = db.query(models.DiscordDestinations).filter(models.DiscordDestinations.user_id == user_id)
+    # destinations.delete()
+    # db.commit()
 
 
 #

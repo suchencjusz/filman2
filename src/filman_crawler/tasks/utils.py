@@ -1,11 +1,11 @@
 import logging
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
 import requests
 import ujson
-
-from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List, Dict, Any
 
 
 class TaskTypes(str, Enum):

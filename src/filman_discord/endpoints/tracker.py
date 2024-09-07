@@ -158,7 +158,7 @@ async def here_subcommand(ctx: lightbulb.SlashContext) -> None:
 async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.post(
         "http://filman_server:8000/users/remove_from_guild",
-        json={"user_id": ctx.author.id, "discord_guild_id": ctx.guild_id},
+        json={"discord_user_id": ctx.author.id, "discord_guild_id": ctx.guild_id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(
@@ -186,7 +186,7 @@ async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.post(
-        "http://filman_server:8000/users/remove_from_all_guilds",
+        "http://filman_server:8000/users/remove_from_all_guilds", # SPRAWDZ ENDPONT
         json={"id_discord": ctx.author.id},
     ) as resp:
         if not resp.ok:

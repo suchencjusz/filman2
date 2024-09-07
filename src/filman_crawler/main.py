@@ -1,16 +1,15 @@
+import logging
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
 import requests
 import ujson
-import time
-import logging
-
 from fake_useragent import UserAgent
-
-from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List, Dict, Any
-
 
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
 from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
@@ -20,9 +19,6 @@ from filman_crawler.tasks.scrap_user_watched_movies import (
 from filman_crawler.tasks.scrap_user_watched_series import (
     Scraper as user_watched_series_scrapper,
 )
-
-from concurrent.futures import ThreadPoolExecutor
-
 
 logging.basicConfig(
     filename="app.log",

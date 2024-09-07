@@ -24,6 +24,11 @@ jobs:
           pip install black  
           black . --check --diff
         continue-on-error: true  
+      - name: Lint with isort  
+        run: |  
+          pip install isort  
+          isort . --check --diff
+        continue-on-error: true
       - name: Test with pytest  
         run: |  
           pip install pytest pytest-cov coverage

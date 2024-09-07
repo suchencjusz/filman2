@@ -1,8 +1,8 @@
-from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
 
 #
 # USER
@@ -11,7 +11,6 @@ from typing import Optional, List, Dict, Any
 
 class User(BaseModel):
     id: int
-    filmweb_id: str
     discord_id: int
 
     class Config:
@@ -19,7 +18,6 @@ class User(BaseModel):
 
 
 class UserCreate(BaseModel):
-    filmweb_id: str
     discord_id: int
 
     class Config:
@@ -28,17 +26,16 @@ class UserCreate(BaseModel):
 
 class UserPreferences(BaseModel):
     id: int
-    discord_color: str
 
     class Config:
         orm_mode = True
 
 
-class UserPreferencesCreate(BaseModel):
-    discord_color: str
+# class UserPreferencesCreate(BaseModel):
+#     discord_color: str
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
 
 
 #
@@ -80,8 +77,30 @@ class DiscordDestinationsCreate(BaseModel):
 
 
 #
+# LETTERBOXD
+#
+
+
+class LetterboxdUserMapping(BaseModel):
+    letterboxd_id: str
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
+
+#
 # FILMWEB
 #
+
+
+class FilmWebUserMapping(BaseModel):
+    filmweb_id: str
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
 
 # MOVIES
 
@@ -174,30 +193,30 @@ class FilmWebUserWatchedSeries(BaseModel):
         orm_mode = True
 
 
-# class FilmwebUserWatchedSeries(BaseModel):
-#     series: FilmWebMovie
-#     id_filmweb: str
+class FilmwebUserWatchedSeries(BaseModel):
+    series: FilmWebSeries
+    id_filmweb: str
 
-#     date: datetime
-#     rate: int | None
-#     comment: str | None
-#     favorite: bool
+    date: datetime
+    rate: int | None
+    comment: str | None
+    favorite: bool
 
-#     class Config:
-#         orm_mode = True
+    class Config:
+        orm_mode = True
 
 
-# class FilmwebUserWatchedSeriesCreate(BaseModel):
-#     id_media: int
-#     id_filmweb: str
+class FilmwebUserWatchedSeriesCreate(BaseModel):
+    id_media: int
+    id_filmweb: str
 
-#     date: datetime
-#     rate: int | None
-#     comment: str | None
-#     favorite: bool
+    date: datetime
+    rate: int | None
+    comment: str | None
+    favorite: bool
 
-#     class Config:
-#         orm_mode = True
+    class Config:
+        orm_mode = True
 
 
 #

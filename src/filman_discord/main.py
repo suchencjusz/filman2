@@ -1,12 +1,10 @@
 import os
-import hikari
-import lightbulb
-import aiohttp
-
 from datetime import datetime
 
+import aiohttp
+import hikari
+import lightbulb
 from lightbulb.ext import tasks
-
 
 # bot = lightbulb.BotApp(
 #     "MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360",
@@ -120,7 +118,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         except hikari.BadRequestError as e:
             print(f"Error sending message: {e}")
 
-    allowed_tasks = ["send_discord"]
+    allowed_tasks = ["send_discord"] #TODO: repair tasks endpoint here
 
     async with bot.d.client_session.post(
         "http://filman_server:8000/tasks/get",
@@ -145,7 +143,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     if not resp.ok:
                         return
 
-                    data = await resp.json()
+                    data = await resp.json() # you have to diverse watched from user letterbox/watched filmweb/watched etc.
 
                     user_rate = data[0]
                     movie = data[1]

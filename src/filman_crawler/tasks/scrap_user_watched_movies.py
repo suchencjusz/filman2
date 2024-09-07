@@ -1,11 +1,10 @@
+import datetime
 import logging
+
 import requests
 import ujson
-import datetime
 
-from .utils import Task, TaskTypes, TaskStatus, DiscordNotifications
-from .utils import Tasks, FilmWeb
-
+from .utils import DiscordNotifications, FilmWeb, Task, Tasks, TaskStatus, TaskTypes
 
 # https://www.filmweb.pl/api/v1/user/tirstus/vote/film
 

@@ -1,19 +1,16 @@
-import uvicorn
+from typing import Any, Dict, List, Optional
+
 import sentry_sdk
-
-from sentry_sdk.integrations.starlette import StarletteIntegration
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-
-from typing import Optional, List, Dict, Any
-
+import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from filman_server.database import crud, models, schemas
 from filman_server.database.db import SessionLocal, engine
-
-from filman_server.routes import users, discord, filmweb, tasks
+from filman_server.routes import discord, filmweb, tasks, users
 
 models.Base.metadata.create_all(bind=engine)
 

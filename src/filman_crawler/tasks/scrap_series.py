@@ -1,9 +1,9 @@
 import logging
+
 import requests
 import ujson
 
-from .utils import Task, TaskTypes, TaskStatus
-from .utils import Tasks, FilmWeb
+from .utils import FilmWeb, Task, Tasks, TaskStatus, TaskTypes
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)-8s %(message)s",

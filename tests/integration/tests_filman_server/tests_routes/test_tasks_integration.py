@@ -1,17 +1,15 @@
-import pytest
-
 import logging
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from filman_server.main import app
 from filman_server.database import models, schemas
 from filman_server.database.db import Base, get_db
+from filman_server.main import app
 
-# Create an in-memory SQLite database engine for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # memory db is not working for some reason
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -122,8 +120,49 @@ def test_tasks_to_do_head(test_client):
 
 
 # get /tasks/get/task/to_do
-# def test_tasks_to_do_get(test_client):
-# TODO: Implement this test
+def test_tasks_to_do_get(test_client):
+    task_data_list = [
+        {
+            "task_status": "queued",
+            "task_type": "scrap_user",
+            "task_job": "sample_user",
+            "task_created": "2021-01-01T00:00:00",
+            "task_started": "2021-01-01T00:00:00",
+            "task_finished": "2021-01-01T00:00:00",
+        },
+        {
+            "task_status": "queued",
+            "task_type": "scrap_filmweb_movie",
+            "task_job": "283",
+            "task_created": "2021-01-01T00:00:00",
+            "task_started": "2021-01-01T00:00:00",
+            "task_finished": "2021-01-01T00:00:00",
+        },
+        {
+            "task_status": "queued",
+            "task_type": "scrap_filmweb_user_watched_series",
+            "task_job": "sample_user",
+            "task_created": "2021-01-01T00:00:00",
+            "task_started": "2021-01-01T00:00:00",
+            "task_finished": "2021-01-01T00:00:00",
+        },
+    ]
+
+    for task_data in task_data_list:
+        response = test_client.post("/tasks/create", json=task_data)
+        assert response.status_code == 200
+
+    for task_data in task_data_list:
+        response = test_client.get("/tasks/get/task/to_do", params={"task_types": [task_data["task_type"]]})
+        assert response.status_code == 200
+
+        task = response.json()
+
+        assert task["task_id"] > 0
+        assert [task["task_status"] in schemas.TaskStatus.__members__]
+        assert task["task_type"] == task_data["task_type"]
+        assert task["task_job"] == task_data["task_job"]
+        assert task["task_created"] is not None
 
 
 # get /tasks/create

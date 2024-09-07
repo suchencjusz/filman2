@@ -1,14 +1,14 @@
 from sqlalchemy import (
+    BIGINT,
+    VARCHAR,
     Boolean,
     Column,
-    ForeignKey,
-    Integer,
-    String,
-    VARCHAR,
-    SmallInteger,
     DateTime,
     Float,
-    BIGINT,
+    ForeignKey,
+    Integer,
+    SmallInteger,
+    String,
 )
 from sqlalchemy.orm import relationship
 
@@ -19,17 +19,22 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    filmweb_id = Column(String(128), index=True, unique=True)
     discord_id = Column(BIGINT, index=True, unique=True)
 
-    filmweb_watched_movies = relationship("FilmWebUserWatchedMovie", backref="user", cascade="all, delete-orphan")
+    discord_destinations = relationship("DiscordDestinations", back_populates="user", cascade="all, delete-orphan")
+
+    filmweb_user_mapping = relationship("FilmWebUserMapping", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
-class UserPreferences(Base):
-    __tablename__ = "user_preferences"
 
-    id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
-    discord_color = Column(VARCHAR(length=6))
+class FilmWebUserMapping(Base):
+    __tablename__ = "filmweb_user_mapping"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, unique=True)
+    filmweb_id = Column(String(128), index=True, unique=True)
+    
+    user = relationship("User", back_populates="filmweb_user_mapping")
 
 
 #
@@ -48,10 +53,9 @@ class DiscordGuilds(Base):
 class DiscordDestinations(Base):
     __tablename__ = "discord_destinations"
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
-    discord_guild_id = Column(BIGINT, ForeignKey("discord_guilds.discord_guild_id"))
-
-    user = relationship("User", backref="discord_destinations")
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    discord_guild_id = Column(BIGINT, ForeignKey("discord_guilds.discord_guild_id"), primary_key=True)
+    user = relationship("User", back_populates="discord_destinations")
 
 
 #
@@ -90,20 +94,22 @@ class __FilmwebWatched(Base):
 
 class FilmWebUserWatchedMovie(__FilmwebWatched):
     __tablename__ = "filmweb_user_watched_movies"
-
+    
     id_media = Column(Integer, ForeignKey("filmweb_movies.id"), primary_key=True, index=True)
-    id_filmweb = Column(String(128), ForeignKey("users.filmweb_id"), primary_key=True, index=True)
-
+    id_filmweb = Column(String(128), ForeignKey("filmweb_user_mapping.filmweb_id"), primary_key=True, index=True)
+    
     movie = relationship("FilmWebMovie", backref="filmweb_user_watched_movies")
+    filmweb_user_mapping = relationship("FilmWebUserMapping", backref="watched_movies")
 
 
 class FilmWebUserWatchedSeries(__FilmwebWatched):
     __tablename__ = "filmweb_user_watched_series"
-
+    
     id_media = Column(Integer, ForeignKey("filmweb_series.id"), primary_key=True, index=True)
-    id_filmweb = Column(String(128), ForeignKey("users.filmweb_id"), primary_key=True, index=True)
-
+    id_filmweb = Column(String(128), ForeignKey("filmweb_user_mapping.filmweb_id"), primary_key=True, index=True)
+    
     series = relationship("FilmWebSeries", backref="filmweb_user_watched_series")
+    filmweb_user_mapping = relationship("FilmWebUserMapping", backref="watched_series")
 
 
 #
