@@ -24,6 +24,29 @@ def test_db():
     session.add(user4)
     session.commit()
 
+    # Create filmweb movies
+    filmweb_movie1 = models.FilmWebMovie(
+        id=628,
+        title="Matrix",
+        year=1999,
+        poster_url="https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
+        community_rate=7.7,
+    )
+    session.add(filmweb_movie1)
+    session.commit()
+
+    # Create filmweb series
+    filmweb_series1 = models.FilmWebSeries(
+        id=430668,
+        title="Breaking Bad",
+        year=2008,
+        other_year=2013,
+        poster_url="https://fwcdn.pl/fpo/06/68/430668/7730445_2.10.webp",
+        community_rate=8.8,
+    )
+    session.add(filmweb_series1)
+    session.commit()
+
     # Create filmweb mappings
     filmweb_mapping1 = models.FilmWebUserMapping(user_id=user2.id, filmweb_id="filmweb123")
     filmweb_mapping2 = models.FilmWebUserMapping(user_id=user3.id, filmweb_id="kanye_west")
@@ -140,10 +163,41 @@ def test_get_user_empty_database():
 
 
 #
+# DISCORD GUILDS
+#
+
+
+def test_get_guild_by_id(test_db):
+    result = crud.get_guild(test_db, discord_guild_id=123456789)
+    assert result.discord_guild_id == 123456789
+    assert result.discord_channel_id == 100000
+
+
+def test_set_guild(test_db):
+    guild = models.DiscordGuilds(discord_guild_id=444444444, discord_channel_id=600000)
+    result = crud.set_guild(test_db, guild)
+    assert result.discord_guild_id == 444444444
+    assert result.discord_channel_id == 600000
+
+    result = crud.get_guild(test_db, discord_guild_id=444444444)
+    assert result.discord_guild_id == 444444444
+    assert result.discord_channel_id == 600000
+
+
+def test_delete_guild(test_db):
+    result = crud.delete_guild(test_db, discord_guild_id=444444444)
+    assert result.discord_guild_id == 444444444
+
+    result = crud.get_guild(test_db, discord_guild_id=444444444)
+    assert result is None
+
+
+#
 # DISCORD DESTINATIONS
 #
 
 # MULTIPLE DESTINATIONS
+
 
 def test_get_user_destinations_by_user_id(test_db):
     # User 1 should be in 1 guild
@@ -165,7 +219,7 @@ def test_get_user_destinations_by_user_id(test_db):
     result = crud.get_user_destinations(test_db, user_id=4, discord_user_id=None)
     assert len(result) == 4
     assert result[0].discord_guild_id in [123456789, 987654321, 111111111, 222222222]
-    
+
 
 def test_get_user_destinations_by_discord_user_id(test_db):
     # User 1 should be in 1 guild
@@ -188,15 +242,19 @@ def test_get_user_destinations_by_discord_user_id(test_db):
     assert len(result) == 4
     assert result[0].discord_guild_id in [123456789, 987654321, 111111111, 222222222]
 
+
 def test_get_user_destinations_by_non_existent_user_id(test_db):
     result = crud.get_user_destinations(test_db, user_id=999, discord_user_id=None)
     assert result is None
+
 
 def test_get_user_destinations_by_non_existent_discord_user_id(test_db):
     result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=999999999)
     assert result is None
 
+
 # SINGLE DESTINATION
+
 
 def test_get_user_destination_by_user_id_user_in_guild(test_db):
     result = crud.get_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789)
@@ -214,6 +272,7 @@ def test_get_user_destination_by_user_id_user_in_guild(test_db):
     result = crud.get_user_destination(test_db, user_id=4, discord_user_id=None, discord_guild_id=987654321)
     assert result.user_id == 4
 
+
 def test_get_user_destination_by_user_id_user_not_in_guild(test_db):
     result = crud.get_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321)
     assert result is None
@@ -226,3 +285,216 @@ def test_get_user_destination_by_user_id_user_not_in_guild(test_db):
 
     result = crud.get_user_destination(test_db, user_id=4, discord_user_id=None, discord_guild_id=333333333)
     assert result is None
+
+
+# SET DESTINATION
+
+
+def test_set_user_destination(test_db):
+    # let user 1 be in 5 guilds
+    result = crud.set_user_destination(test_db, user_id=1, discord_guild_id=123456789)
+    assert result.user_id == 1
+
+    result = crud.set_user_destination(test_db, user_id=1, discord_guild_id=987654321)
+    assert result.user_id == 1
+
+    result = crud.set_user_destination(test_db, user_id=1, discord_guild_id=111111111)
+    assert result.user_id == 1
+
+    result = crud.set_user_destination(test_db, user_id=1, discord_guild_id=222222222)
+    assert result.user_id == 1
+
+    result = crud.set_user_destination(test_db, user_id=1, discord_guild_id=333333333)
+    assert result.user_id == 1
+
+    # check if user 1 is in 5 guilds
+    result = crud.get_user_destinations(test_db, user_id=1, discord_user_id=None)
+    assert len(result) == 5
+
+    for id in range(2, 5):
+        result = crud.get_user_destinations(test_db, user_id=id, discord_user_id=None)
+        assert len(result) == id
+
+
+# DELETE DESTINATION
+
+
+def test_delete_user_destination(test_db):
+    # remove 3 guilds from user 1
+
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789)
+    assert result.user_id == 1
+
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321)
+    assert result.user_id == 1
+
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=111111111)
+    assert result.user_id == 1
+
+    result = crud.get_user_destinations(test_db, user_id=1, discord_user_id=None)
+    assert len(result) == 2
+
+    for id in range(2, 5):
+        result = crud.get_user_destinations(test_db, user_id=id, discord_user_id=None)
+        assert len(result) == id
+
+
+# DELETE DESTINATIONS
+
+
+def test_delete_user_destinations(test_db):
+    # remove all guilds from user 1
+
+    result = crud.delete_user_destinations(test_db, user_id=1, discord_user_id=None)
+    assert result == None
+
+    result = crud.get_user_destinations(test_db, user_id=1, discord_user_id=None)
+    assert result is None or len(result) == 0
+
+    for id in range(2, 5):
+        result = crud.get_user_destinations(test_db, user_id=id, discord_user_id=None)
+        assert len(result) == id
+
+
+#
+# FILMWEB MOVIES
+#
+
+
+def test_get_filmweb_movie_by_id(test_db):
+    result = crud.get_movie_filmweb_id(test_db, id=628)
+    assert result.id == 628
+    assert result.title == "Matrix"
+    assert result.year == 1999
+    assert result.poster_url == "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp"
+    assert result.community_rate == 7.7
+
+
+def test_create_filmweb_movie(test_db):
+    movie = models.FilmWebMovie(
+        id=999,
+        title="Test",
+        year=2021,
+        poster_url="https://example.com/image.jpg",
+        community_rate=9.9,
+    )
+    result = crud.create_filmweb_movie(test_db, movie)
+    assert result.id == 999
+    assert result.title == "Test"
+    assert result.year == 2021
+    assert result.poster_url == "https://example.com/image.jpg"
+    assert result.community_rate == 9.9
+
+
+def test_create_filmweb_movie_existing(test_db):
+    movie = models.FilmWebMovie(
+        id=628,
+        title="Test",
+        year=2021,
+        poster_url="https://example.com/image.jpg",
+        community_rate=9.9,
+    )
+    result = crud.create_filmweb_movie(test_db, movie)
+    assert result.id == 628
+    assert result.title == "Matrix"
+    assert result.year == 1999
+    assert result.poster_url == "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp"
+    assert result.community_rate == 7.7
+
+
+def test_update_filmweb_movie(test_db):
+    movie = models.FilmWebMovie(
+        id=628,
+        title="Test number 2",
+        year=2022,
+        poster_url="https://example.com/image2.jpg",
+        community_rate=8.8,
+    )
+
+    result = crud.update_filmweb_movie(test_db, movie)
+    assert result.id == 628
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.poster_url == "https://example.com/image2.jpg"
+    assert result.community_rate == 8.8
+
+    result = crud.get_movie_filmweb_id(test_db, id=628)
+    assert result.id == 628
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.poster_url == "https://example.com/image2.jpg"
+    assert result.community_rate == 8.8
+
+
+#
+# FILMWEB SERIES
+#
+
+def test_get_filmweb_series_by_id(test_db):
+    result = crud.get_series_filmweb_id(test_db, id=430668)
+    assert result.id == 430668
+    assert result.title == "Breaking Bad"
+    assert result.year == 2008
+    assert result.other_year == 2013
+    assert result.poster_url == "https://fwcdn.pl/fpo/06/68/430668/7730445_2.10.webp"
+    assert result.community_rate == 8.8
+
+def test_create_filmweb_series(test_db):
+    series = models.FilmWebSeries(
+        id=999,
+        title="Test",
+        year=2021,
+        other_year=2022,
+        poster_url="https://example.com/image.jpg",
+        community_rate=9.9,
+    )
+    result = crud.create_filmweb_series(test_db, series)
+    assert result.id == 999
+    assert result.title == "Test"
+    assert result.year == 2021
+    assert result.other_year == 2022
+    assert result.poster_url == "https://example.com/image.jpg"
+    assert result.community_rate == 9.9
+
+def test_create_filmweb_series_existing(test_db):
+    series = models.FilmWebSeries(
+        id=430668,
+        title="Test",
+        year=2021,
+        other_year=2022,
+        poster_url="https://example.com/image.jpg",
+        community_rate=9.9,
+    )
+    result = crud.create_filmweb_series(test_db, series)
+    assert result.id == 430668
+    assert result.title == "Breaking Bad"
+    assert result.year == 2008
+    assert result.other_year == 2013
+    assert result.poster_url == "https://fwcdn.pl/fpo/06/68/430668/7730445_2.10.webp"
+    assert result.community_rate == 8.8
+
+def test_update_filmweb_series(test_db):
+    series = models.FilmWebSeries(
+        id=430668,
+        title="Test number 2",
+        year=2022,
+        other_year=2023,
+        poster_url="https://example.com/image2.jpg",
+        community_rate=5.8,
+    )
+
+    result = crud.update_filmweb_series(test_db, series)
+    assert result.id == 430668
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.other_year == 2023
+    assert result.poster_url == "https://example.com/image2.jpg"
+    assert result.community_rate == 5.8
+
+    result = crud.get_series_filmweb_id(test_db, id=430668)
+    assert result.id == 430668
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.other_year == 2023
+    assert result.poster_url == "https://example.com/image2.jpg"
+    assert result.community_rate == 5.8

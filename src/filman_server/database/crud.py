@@ -113,19 +113,13 @@ def delete_user_destination(
     return db_dest
 
 
-def delete_user_destitations(
+def delete_user_destinations(
     db: Session,
     user_id: int | None,
     discord_user_id: int | None,
 ) -> models.DiscordDestinations | None:
-    user = get_user(db, user_id, None, discord_user_id)
-
-    if user is None:
-        return None
-
-    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
-    db_dest.delete()
-    db.commit()
+    for dest in get_user_destinations(db, user_id, discord_user_id):
+        delete_user_destination(db, user_id, discord_user_id, dest.discord_guild_id)
 
     return None
 
@@ -143,6 +137,7 @@ def get_guild(db: Session, discord_guild_id: int):
     return db.query(models.DiscordGuilds).filter(models.DiscordGuilds.discord_guild_id == discord_guild_id).first()
 
 
+# set = create
 def set_guild(db: Session, guild: schemas.DiscordGuildsCreate):
     db_guild = get_guild(db, guild.discord_guild_id)
     if db_guild is None:
@@ -154,10 +149,31 @@ def set_guild(db: Session, guild: schemas.DiscordGuildsCreate):
 
 
 def create_guild(db: Session, guild: schemas.DiscordGuildsCreate):
-    db_guild = models.DiscordGuilds(**guild.model_dump())
+    # db_guild = models.DiscordGuilds(**guild.model_dump())
+    db_guild = models.DiscordGuilds(
+        discord_guild_id=guild.discord_guild_id,
+        discord_channel_id=guild.discord_channel_id,
+    )
+
     db.add(db_guild)
     db.commit()
     db.refresh(db_guild)
+    return db_guild
+
+
+# should by called when bot leaves discord server
+# also should remove connected destinations
+def delete_guild(db: Session, discord_guild_id: int):
+    db_guild = get_guild(db, discord_guild_id)
+    if db_guild is None:
+        return None
+
+    # delete all connected destinations
+    db.query(models.DiscordDestinations).filter(models.DiscordDestinations.discord_guild_id == discord_guild_id).delete()
+
+    db.delete(db_guild)
+    db.commit()
+
     return db_guild
 
 
@@ -170,8 +186,19 @@ def get_movie_filmweb_id(db: Session, id: int):
     return db.query(models.FilmWebMovie).filter(models.FilmWebMovie.id == id).first()
 
 
-def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie):
-    db_movie = models.FilmWebMovie(**movie.model_dump())
+def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie) -> models.FilmWebMovie:
+    existing_movie = db.query(models.FilmWebMovie).filter_by(id=movie.id).first()
+    if existing_movie:
+        return existing_movie
+
+    db_movie = models.FilmWebMovie(
+        id=movie.id,
+        title=movie.title,
+        year=movie.year,
+        poster_url=movie.poster_url,
+        community_rate=movie.community_rate,
+    )
+
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
@@ -201,7 +228,20 @@ def get_series_filmweb_id(db: Session, id: int):
 
 
 def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
-    db_series = models.FilmWebSeries(**series.model_dump())
+    # db_series = models.FilmWebSeries(**series.model_dump())
+    existing_series = db.query(models.FilmWebSeries).filter_by(id=series.id).first()
+    if existing_series:
+        return existing_series
+
+    db_series = models.FilmWebSeries(
+        id=series.id,
+        title=series.title,
+        year=series.year,
+        poster_url=series.poster_url,
+        community_rate=series.community_rate,
+        other_year=series.other_year,
+    )
+
     db.add(db_series)
     db.commit()
     db.refresh(db_series)
