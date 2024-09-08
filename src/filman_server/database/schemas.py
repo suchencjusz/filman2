@@ -31,6 +31,26 @@ class UserPreferences(BaseModel):
         orm_mode = True
 
 
+#
+# MAPPINGS
+#
+class FilmWebUserMapping(BaseModel):
+    id: int
+    user_id: int
+    filmweb_id: str
+
+    class Config:
+        orm_mode = True
+
+
+class FilmWebUserMappingCreate(BaseModel):
+    user_id: int
+    filmweb_id: str
+
+    class Config:
+        orm_mode = True
+
+
 # class UserPreferencesCreate(BaseModel):
 #     discord_color: str
 
@@ -129,7 +149,7 @@ class FilmWebMovieCreate(BaseModel):
 
 class FilmWebUserWatchedMovie(BaseModel):
     movie: FilmWebMovie
-    id_filmweb: str
+    filmweb_id: str
 
     date: datetime
     rate: int | None
@@ -142,7 +162,7 @@ class FilmWebUserWatchedMovie(BaseModel):
 
 class FilmWebUserWatchedMovieCreate(BaseModel):
     id_media: int
-    id_filmweb: str
+    filmweb_id: str
 
     date: datetime
     rate: int | None
@@ -182,7 +202,7 @@ class FilmWebSeriesCreate(BaseModel):
 
 class FilmWebUserWatchedSeries(BaseModel):
     series: FilmWebSeries
-    id_filmweb: str
+    filmweb_id: str
 
     date: datetime
     rate: int | None
@@ -195,7 +215,7 @@ class FilmWebUserWatchedSeries(BaseModel):
 
 class FilmwebUserWatchedSeries(BaseModel):
     series: FilmWebSeries
-    id_filmweb: str
+    filmweb_id: str
 
     date: datetime
     rate: int | None
@@ -208,7 +228,7 @@ class FilmwebUserWatchedSeries(BaseModel):
 
 class FilmwebUserWatchedSeriesCreate(BaseModel):
     id_media: int
-    id_filmweb: str
+    filmweb_id: str
 
     date: datetime
     rate: int | None

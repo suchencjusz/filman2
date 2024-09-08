@@ -37,12 +37,9 @@ async def get_user(
 # discord guild actions
 #
 
+
 @users_router.get("/get_all_guilds", response_model=List[schemas.DiscordDestinations])
-async def get_guilds(
-    id: Optional[int] = None,
-    discord_id: Optional[int] = None,
-    db: Session = Depends(get_db)
-):
+async def get_guilds(id: Optional[int] = None, discord_id: Optional[int] = None, db: Session = Depends(get_db)):
     user = crud.get_user(db, id, None, discord_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")

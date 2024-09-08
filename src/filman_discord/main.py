@@ -118,7 +118,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         except hikari.BadRequestError as e:
             print(f"Error sending message: {e}")
 
-    allowed_tasks = ["send_discord"] #TODO: repair tasks endpoint here
+    allowed_tasks = ["send_discord"]  # TODO: repair tasks endpoint here
 
     async with bot.d.client_session.post(
         "http://filman_server:8000/tasks/get",
@@ -143,7 +143,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     if not resp.ok:
                         return
 
-                    data = await resp.json() # you have to diverse watched from user letterbox/watched filmweb/watched etc.
+                    data = await resp.json()  # you have to diverse watched from user letterbox/watched filmweb/watched etc.
 
                     user_rate = data[0]
                     movie = data[1]

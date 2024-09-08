@@ -1,9 +1,9 @@
+import logging
 from datetime import datetime
 
 import sqlalchemy.exc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-import logging
 
 from . import models, schemas
 
@@ -31,6 +31,12 @@ def get_user(
         return db.query(models.User).filter(models.User.discord_id == discord_id).first()
     else:
         return None
+
+
+def get_users(db: Session):
+
+    # link also filmweb_id from filmweb mapping
+    return db.query(models.User).all()
 
 
 def create_user(
@@ -266,6 +272,67 @@ def update_filmweb_series(db: Session, series: schemas.FilmWebSeries):
 # FILMWEB WATCHED
 #
 
+# FILMWEB USER MAPPING
+
+
+def get_filmweb_user_mapping(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+) -> models.FilmWebUserMapping | None:
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    if user is None:
+        return None
+
+    return db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+
+
+# sets filmweb user nickname to corelate with discord user (main user in db)
+def set_filmweb_user_mapping(db: Session, mapping: schemas.FilmWebUserMappingCreate) -> models.FilmWebUserMapping | None:
+    user = get_user(db, mapping.user_id, None, None)
+
+    if user is None:
+        return None
+
+    db_mapping = db.query(models.FilmWebUserMapping).filter_by(user_id=user.id).first()
+
+    # creates
+    if db_mapping is None:
+        db_mapping = models.FilmWebUserMapping(user_id=user.id, filmweb_id=mapping.filmweb_id)
+        db.add(db_mapping)
+    # updates
+    else:
+        db_mapping.filmweb_id = mapping.filmweb_id
+
+    db.commit()
+    db.refresh(db_mapping)
+
+    return db_mapping
+
+
+def delete_filmweb_user_mapping(
+    db: Session,
+    user_id: int | None,
+    discord_id: int | None,
+    filmweb_id: str,
+) -> bool:
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    if user is None:
+        return False
+
+    db_mapping = db.query(models.FilmWebUserMapping).filter_by(user_id=user.id).first()
+
+    if db_mapping is None:
+        return False
+
+    db.delete(db_mapping)
+    db.commit()
+    return True
+
+
 # MOVIES
 
 
@@ -286,30 +353,88 @@ def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.F
     db_movie_watched = (
         db.query(models.FilmWebUserWatchedMovie)
         .filter(
-            models.FilmWebUserWatchedMovie.id_filmweb == user_watched_movie.id_filmweb,
+            models.FilmWebUserWatchedMovie.filmweb_id == user_watched_movie.filmweb_id,
             models.FilmWebUserWatchedMovie.id_media == user_watched_movie.id_media,
         )
         .first()
     )
 
     if db_movie_watched is not None:
-        return sqlalchemy.exc.IntegrityError("Movie already in user watched", None, None)
+        raise IntegrityError("Movie already in user watched", None, None)
 
-    db_movie = models.FilmWebUserWatchedMovie(**user_watched_movie.model_dump())
+    db_movie = models.FilmWebUserWatchedMovie(
+        id_media=user_watched_movie.id_media,
+        filmweb_id=user_watched_movie.filmweb_id,
+        date=user_watched_movie.date,
+        rate=user_watched_movie.rate,
+        comment=user_watched_movie.comment,
+        favorite=user_watched_movie.favorite,
+    )
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
     return db_movie
 
 
-def get_filmweb_user_watched_movies(db: Session, id_filmweb: str):
-    return db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.id_filmweb == id_filmweb).all()
+def get_filmweb_user_watched_movie(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+    id_media: int,
+):
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    logging.debug(f"{user.discord_id}")
+
+    if user is None:
+        return None
+
+    # Get the filmweb_id from the mapping if not provided
+    if filmweb_id is None:
+        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        if filmweb_mapping is None:
+            return None
+        filmweb_id = filmweb_mapping.filmweb_id
+
+    return (
+        db.query(models.FilmWebUserWatchedMovie)
+        .filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id, models.FilmWebUserWatchedMovie.id_media == id_media)
+        .first()
+    )
 
 
-def get_filmweb_user_watched_movies_ids(db: Session, id_filmweb: str):
+def get_filmweb_user_watched_movies(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+):
+    # Fetch the user based on user_id, filmweb_id, or discord_id
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    if user is None:
+        return None
+
+    # If filmweb_id is not provided, get it from the user mapping
+    if filmweb_id is None:
+        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        if filmweb_mapping is None:
+            return None
+        filmweb_id = filmweb_mapping.filmweb_id
+
+    # Query the database for all watched movies for the given filmweb_id
+    watched_movies = (
+        db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).all()
+    )
+
+    return watched_movies
+
+
+def get_filmweb_user_watched_movies_ids(db: Session, filmweb_id: str):
     result = (
         db.query(models.FilmWebUserWatchedMovie.id_media)  # select only the id field
-        .filter(models.FilmWebUserWatchedMovie.id_filmweb == id_filmweb)
+        .filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id)
         .all()
     )
     return [id_media for (id_media,) in result]  # extract ids from tuples

@@ -1,9 +1,14 @@
+# hell yes 1k line test
+
+import datetime
 import logging
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import filman_server.database.models as models
+
 import filman_server.database.crud as crud
+import filman_server.database.models as models
 
 
 @pytest.fixture(scope="module")
@@ -14,10 +19,10 @@ def test_db():
     session = Session()
 
     # Create users
-    user1 = models.User(discord_id=123456789)
-    user2 = models.User(discord_id=987654321)
-    user3 = models.User(discord_id=777777777)
-    user4 = models.User(discord_id=888888888)
+    user1 = models.User(id=1, discord_id=123456789)
+    user2 = models.User(id=2, discord_id=987654321)
+    user3 = models.User(id=3, discord_id=777777777)
+    user4 = models.User(id=4, discord_id=888888888)
     session.add(user1)
     session.add(user2)
     session.add(user3)
@@ -48,8 +53,8 @@ def test_db():
     session.commit()
 
     # Create filmweb mappings
-    filmweb_mapping1 = models.FilmWebUserMapping(user_id=user2.id, filmweb_id="filmweb123")
-    filmweb_mapping2 = models.FilmWebUserMapping(user_id=user3.id, filmweb_id="kanye_west")
+    filmweb_mapping1 = models.FilmWebUserMapping(id=1, user_id=user2.id, filmweb_id="filmweb123")
+    filmweb_mapping2 = models.FilmWebUserMapping(id=2, user_id=user3.id, filmweb_id="kanye_west")
     session.add(filmweb_mapping1)
     session.add(filmweb_mapping2)
     session.commit()
@@ -430,6 +435,7 @@ def test_update_filmweb_movie(test_db):
 # FILMWEB SERIES
 #
 
+
 def test_get_filmweb_series_by_id(test_db):
     result = crud.get_series_filmweb_id(test_db, id=430668)
     assert result.id == 430668
@@ -438,6 +444,7 @@ def test_get_filmweb_series_by_id(test_db):
     assert result.other_year == 2013
     assert result.poster_url == "https://fwcdn.pl/fpo/06/68/430668/7730445_2.10.webp"
     assert result.community_rate == 8.8
+
 
 def test_create_filmweb_series(test_db):
     series = models.FilmWebSeries(
@@ -456,6 +463,7 @@ def test_create_filmweb_series(test_db):
     assert result.poster_url == "https://example.com/image.jpg"
     assert result.community_rate == 9.9
 
+
 def test_create_filmweb_series_existing(test_db):
     series = models.FilmWebSeries(
         id=430668,
@@ -472,6 +480,7 @@ def test_create_filmweb_series_existing(test_db):
     assert result.other_year == 2013
     assert result.poster_url == "https://fwcdn.pl/fpo/06/68/430668/7730445_2.10.webp"
     assert result.community_rate == 8.8
+
 
 def test_update_filmweb_series(test_db):
     series = models.FilmWebSeries(
@@ -498,3 +507,316 @@ def test_update_filmweb_series(test_db):
     assert result.other_year == 2023
     assert result.poster_url == "https://example.com/image2.jpg"
     assert result.community_rate == 5.8
+
+
+#
+# FILMWEB MAPPINGS
+#
+
+
+def test_get_filmweb_mapping_no_parameters(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is None
+
+
+def test_set_filmweb_mapping(test_db):
+    mapping = models.FilmWebUserMapping(
+        user_id=3,
+        filmweb_id="test123",
+    )
+
+    result = crud.set_filmweb_user_mapping(test_db, mapping)
+    assert result.user_id == 3
+    assert result.filmweb_id == "test123"
+
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result.user_id == 3
+    assert result.filmweb_id == "test123"
+
+
+def test_set_filmweb_mapping2(test_db):
+    # user 1 should not have mapping anymore
+    mapping = models.FilmWebUserMapping(
+        user_id=1,
+        filmweb_id="HELLO_WORLD",
+    )
+
+    result = crud.set_filmweb_user_mapping(test_db, mapping)
+    assert result.user_id == 1
+    assert result.filmweb_id == "HELLO_WORLD"
+
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=1,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result.user_id == 1
+    assert result.filmweb_id == "HELLO_WORLD"
+
+
+def test_get_filmweb_mapping_by_user_id(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=2,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result.user_id == 2
+    assert result.filmweb_id == "filmweb123"
+
+
+def test_get_filmweb_mapping_by_filmweb_id(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=None,
+        filmweb_id="filmweb123",
+        discord_id=None,
+    )
+
+    assert result.user_id == 2
+    assert result.filmweb_id == "filmweb123"
+
+
+def test_get_filmweb_mapping_by_discord_id(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=987654321,
+    )
+
+    assert result.user_id == 2
+    assert result.filmweb_id == "filmweb123"
+
+
+# user 2 should not have mapping anymore
+def test_delete_filmweb_mapping(test_db):
+
+    result = crud.delete_filmweb_user_mapping(
+        test_db,
+        user_id=2,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is True
+
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=2,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is None
+
+
+def test_get_filmweb_mapping_by_user_id2(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result.user_id == 3
+    assert result.filmweb_id == "test123"
+
+
+def test_get_filmweb_mapping_by_filmweb_id2(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert result.user_id == 3
+    assert result.filmweb_id == "test123"
+
+
+def test_get_filmweb_mapping_by_discord_id2(test_db):
+    result = crud.get_filmweb_user_mapping(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=777777777,
+    )
+
+    assert result.user_id == 3
+    assert result.filmweb_id == "test123"
+
+
+#
+# FILMWEB WATCHED MOVIES
+#
+
+
+def test_create_filmweb_watched_movie(test_db):
+    watched_movie = models.FilmWebUserWatchedMovie(
+        id_media=628,
+        filmweb_id="test123",
+        date=datetime.datetime(2021, 1, 1, 18, 23, 43),
+        rate=5,
+        comment="Test",
+        favorite=True,
+    )
+
+    result = crud.create_filmweb_user_watched_movie(test_db, watched_movie)
+    assert result.id_media == 628
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2021, 1, 1, 18, 23, 43)
+    assert result.rate == 5
+    assert result.comment == "Test"
+    assert result.favorite == True
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert len(result) == 1
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 1
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=777777777,
+    )
+
+    assert len(result) == 1
+
+
+def test_get_filmweb_watched_movie_by_id(test_db):
+    result = crud.get_filmweb_user_watched_movie(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+        id_media=628,
+    )
+
+    assert result.id_media == 628
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2021, 1, 1, 18, 23, 43)
+    assert result.rate == 5
+    assert result.comment == "Test"
+    assert result.favorite == True
+
+
+def test_get_filmweb_watched_movie_by_id_no_existing(test_db):
+    result = crud.get_filmweb_user_watched_movie(
+        test_db,
+        id_media=999,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert result is None
+
+
+def test_create_filmweb_watched_movie_no_existing(test_db):
+    watched_movie = models.FilmWebUserWatchedMovie(
+        id_media=100001,
+        filmweb_id="test123",
+        date=datetime.datetime(2023, 4, 6, 12, 53, 12),
+        rate=8,
+        comment="Test",
+        favorite=False,
+    )
+
+    result = crud.create_filmweb_user_watched_movie(test_db, watched_movie)
+    assert result.id_media == 100001
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2023, 4, 6, 12, 53, 12)
+    assert result.rate == 8
+    assert result.comment == "Test"
+    assert result.favorite == False
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=777777777,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_movie_filmweb_id(test_db, id=100001)
+    assert result.id == 100001
+    assert result.title == None
+    assert result.year == None
+    assert result.poster_url == None
+    assert result.community_rate == None
+
+    # other movie should be still in db
+    result = crud.get_movie_filmweb_id(test_db, id=628)
+    assert result.id == 628
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.poster_url == "https://example.com/image2.jpg"
+    assert result.community_rate == 8.8
+
+def test_get_filmweb_user_watched_movies_by_user_id(test_db):
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=4,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is None

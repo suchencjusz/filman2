@@ -446,9 +446,3 @@ def test_remove_user_from_all_guilds(test_client):
     #     discord_destinations = response.json()
 
     #     assert len(discord_destinations) == 5
-
-
-
-
-
-
