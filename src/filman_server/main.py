@@ -14,14 +14,15 @@ from filman_server.routes import discord, filmweb, tasks, users
 
 models.Base.metadata.create_all(bind=engine)
 
-sentry_sdk.init(
-    dsn="https://e90f28bf688cd7f8a1f8dcbc3586d359@o4506423653105664.ingest.sentry.io/4506423687774208",
-    enable_tracing=True,
-    integrations=[
-        StarletteIntegration(transaction_style="endpoint"),
-        FastApiIntegration(transaction_style="endpoint"),
-    ],
-)
+# sentry_sdk.init(
+#     dsn="https://e90f28bf688cd7f8a1f8dcbc3586d359@o4506423653105664.ingest.sentry.io/4506423687774208",
+#     enable_tracing=False, # true
+#     integrations=[
+#         StarletteIntegration(transaction_style="endpoint"),
+#         FastApiIntegration(transaction_style="endpoint"),
+#     ],
+
+# )
 
 app = FastAPI()
 

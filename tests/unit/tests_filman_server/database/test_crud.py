@@ -196,6 +196,9 @@ def test_delete_guild(test_db):
     result = crud.get_guild(test_db, discord_guild_id=444444444)
     assert result is None
 
+def test_get_guilds(test_db):
+    result = crud.get_guilds(test_db)
+    assert len(result) == 5
 
 #
 # DISCORD DESTINATIONS

@@ -34,8 +34,6 @@ def get_user(
 
 
 def get_users(db: Session):
-
-    # link also filmweb_id from filmweb mapping
     return db.query(models.User).all()
 
 
@@ -182,6 +180,8 @@ def delete_guild(db: Session, discord_guild_id: int):
 
     return db_guild
 
+def get_guilds(db: Session):
+    return db.query(models.DiscordGuilds).all()
 
 #
 # FILMWEB MOVIES
