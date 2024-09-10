@@ -34,3 +34,14 @@ async def configure_guild(guild: schemas.DiscordGuildsCreate, db: Session = Depe
 async def get_guilds(db: Session = Depends(get_db)):
     guilds = crud.get_guilds(db)
     return guilds
+
+
+@discord_router.get(
+    "/guild/members",
+    response_model=List[schemas.User],
+    summary="Get all members of provided guild",
+    description="Simply returns all members of the provided guild",
+)
+async def get_guild_members(discord_guild_id: int, db: Session = Depends(get_db)):
+    guild_members = crud.get_guild_members(db, discord_guild_id)
+    return guild_members

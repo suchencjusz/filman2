@@ -196,9 +196,27 @@ def test_delete_guild(test_db):
     result = crud.get_guild(test_db, discord_guild_id=444444444)
     assert result is None
 
+
 def test_get_guilds(test_db):
     result = crud.get_guilds(test_db)
     assert len(result) == 5
+
+
+def test_get_guild_members(test_db):
+    result = crud.get_guild_members(test_db, discord_guild_id=123456789)
+    assert len(result) == 3
+
+    result = crud.get_guild_members(test_db, discord_guild_id=987654321)
+    assert len(result) == 3
+
+    result = crud.get_guild_members(test_db, discord_guild_id=111111111)
+    assert len(result) == 3
+
+    result = crud.get_guild_members(test_db, discord_guild_id=222222222)
+    assert len(result) == 1
+
+    assert isinstance(result[0], models.User)
+
 
 #
 # DISCORD DESTINATIONS
@@ -804,6 +822,7 @@ def test_create_filmweb_watched_movie_no_existing(test_db):
     assert result.year == 2022
     assert result.poster_url == "https://example.com/image2.jpg"
     assert result.community_rate == 8.8
+
 
 def test_get_filmweb_user_watched_movies_by_user_id(test_db):
     result = crud.get_filmweb_user_watched_movies(

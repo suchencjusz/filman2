@@ -64,13 +64,17 @@ def test_get_user(test_client):
 
     # get by id
     for user_data, id in zip(test_users_data, range(1, 6)):
-        response = test_client.get(f"/users/get", params={"id": id})
+        response = test_client.get(f"/users/get", params={"user_id": id})
         assert response.status_code == 200
 
         user = response.json()
 
         assert user["id"] == id
         assert user["discord_id"] == user_data["discord_id"]
+
+    # create user which exists
+    response = test_client.post("/users/create", json=test_users_data[0])
+    assert response.status_code == 400
 
 
 # Create 3 guilds, 15 users and add them to guild, and check if they are in guild
@@ -124,216 +128,171 @@ def test_add_user_to_guild(test_client):
     # check if guilds are really in database
     response = test_client.get("/discord/guilds")
     assert response.status_code == 200
-    
+
     guilds = response.json()
     assert len(guilds) == 3
-    
-
-# # Remove user from guild
-# # get /users/remove_from_guild
-# def test_remove_user_from_guild(test_client):
-#     test_users_data = [
-#         {"filmweb_id": "suchix", "discord_id": 321309474667253282},
-#         {"filmweb_id": "john_doe", "discord_id": 321309474167253283},
-#         {"filmweb_id": "jane_doe", "discord_id": 321309474267253284},
-#         {"filmweb_id": "arek", "discord_id": 321309474367253285},
-#         {"filmweb_id": "jane_smith", "discord_id": 321309474467253286},
-#     ]
-
-#     for user_data in test_users_data:
-#         response = test_client.post("/users/create", json=user_data)
-#         assert response.status_code == 200
-
-#         user = response.json()
-
-#         assert user["id"] > 0
-#         assert user["filmweb_id"] == user_data["filmweb_id"]
-#         assert user["discord_id"] == user_data["discord_id"]
-
-#     # get by id
-#     for user_data, id in zip(test_users_data, range(1, 6)):
-#         response = test_client.get(f"/users/get", params={"id": id})
-#         assert response.status_code == 200
-
-#         user = response.json()
-
-#         assert user["id"] == id
-#         assert user["filmweb_id"] == user_data["filmweb_id"]
-#         assert user["discord_id"] == user_data["discord_id"]
-
-#     # create guild
-#     guild_data = {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304}
-#     response = test_client.post("/discord/configure/guild", json=guild_data)
-#     assert response.status_code == 200
-
-#     # add user to guild
-#     for user_data in test_users_data:
-#         response = test_client.get(
-#             f"/users/add_to_guild",
-#             params={"discord_user_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
-#         )
-#         assert response.status_code == 200
-
-#         discord_destination = response.json()
-
-#         assert (
-#             discord_destination["user_id"] > 0
-#         )  # i do not remember why this endpoint returns user_id instead of discord_user_id
-#         assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
-
-#     # check if user is really in guild
-#     for user_data in test_users_data:
-#         response = test_client.get(
-#             f"/users/get_all_guilds",
-#             params={"discord_id": user_data["discord_id"]},
-#         )
-#         assert response.status_code == 200
-
-#         discord_destinations = response.json()
-
-#         assert len(discord_destinations) == 1
-#         assert discord_destinations[0]["discord_guild_id"] == guild_data["discord_guild_id"]
-
-#     # remove user nr 1 from guild
-#     response = test_client.get(
-#         f"/users/remove_from_guild",
-#         params={"user_id": 1, "discord_guild_id": guild_data["discord_guild_id"]},
-#     )
-#     assert response.status_code == 200
-
-#     # check if user is not in guild
-#     response = test_client.get(
-#         f"/users/get_all_guilds",
-#         params={"discord_id": test_users_data[0]["discord_id"]},
-#     )
-#     assert response.status_code == 404
-
-#     # check if other users are still in guild
-#     for user_data in test_users_data[1:]:
-#         response = test_client.get(
-#             f"/users/get_all_guilds",
-#             params={"discord_id": user_data["discord_id"]},
-#         )
-#         assert response.status_code == 200
-
-#         discord_destinations = response.json()
-
-#         assert len(discord_destinations) == 1
-#         assert discord_destinations[0]["discord_guild_id"] == guild_data["discord_guild_id"]
 
 
-# # Remove user from guild
-# # get /users/remove_from__all_guilds
-# def test_remove_user_from_all_guilds(test_client):
-#     test_users_data = [
-#         {"filmweb_id": "suchix", "discord_id": 321309474667253282},
-#         {"filmweb_id": "john_doe", "discord_id": 321309474167253283},
-#         {"filmweb_id": "jane_doe", "discord_id": 321309474267253284},
-#         {"filmweb_id": "arek", "discord_id": 321309474367253285},
-#         {"filmweb_id": "jane_smith", "discord_id": 321309474467253286},
-#     ]
+# Remove user from guild
+# get /users/remove_from_guild
+def test_remove_user_from_guild(test_client):
+    test_users_data = [
+        {"discord_id": 321309474667253282},
+        {"discord_id": 321309474167253283},
+        {"discord_id": 321309474267253284},
+        {"discord_id": 321309474367253285},
+        {"discord_id": 321309474467253286},
+    ]
 
-#     for user_data in test_users_data:
-#         response = test_client.post("/users/create", json=user_data)
-#         assert response.status_code == 200
+    test_discord_guilds_data = [
+        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
+        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
+        {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
+    ]
 
-#         user = response.json()
+    # create users
+    for user_data, id in zip(test_users_data, range(1, 6)):
+        response = test_client.post("/users/create", json=user_data)
+        assert response.status_code == 200
 
-#         assert user["id"] > 0
-#         assert user["filmweb_id"] == user_data["filmweb_id"]
-#         assert user["discord_id"] == user_data["discord_id"]
+        user = response.json()
 
-#     # get by id
-#     for user_data, id in zip(test_users_data, range(1, 6)):
-#         response = test_client.get(f"/users/get", params={"id": id})
-#         assert response.status_code == 200
+        assert user["id"] == id
+        assert user["discord_id"] == user_data["discord_id"]
 
-#         user = response.json()
+    # create guilds
+    for guild_data, id in zip(test_discord_guilds_data, range(1, 4)):
+        response = test_client.post("/discord/configure/guild", json=guild_data)
+        assert response.status_code == 200
 
-#         assert user["id"] == id
-#         assert user["filmweb_id"] == user_data["filmweb_id"]
-#         assert user["discord_id"] == user_data["discord_id"]
+        guild = response.json()
 
-#     # create guild
-#     guilds_data = [
-#         {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
-#         {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
-#         {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
-#         {"discord_guild_id": 1209989703772799059, "discord_channel_id": 132632676225122307},
-#         {"discord_guild_id": 1209989703772799060, "discord_channel_id": 132632676225122308},
-#     ]
+        assert guild["id"] == id
+        assert guild["discord_guild_id"] == guild_data["discord_guild_id"]
+        assert guild["discord_channel_id"] == guild_data["discord_channel_id"]
 
-#     for guild_data in guilds_data:
-#         response = test_client.post("/discord/configure/guild", json=guild_data)
-#         assert response.status_code == 200
+    # add all users to all guilds
+    for user_data in test_users_data:
+        for guild_data in test_discord_guilds_data:
+            response = test_client.get(
+                f"/users/add_to_guild",
+                params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+            )
+            assert response.status_code == 200
 
-#         guild = response.json()
+            discord_destination = response.json()
 
-#         assert guild["id"] > 0
-#         assert guild["discord_guild_id"] == guild_data["discord_guild_id"]
-#         assert guild["discord_channel_id"] == guild_data["discord_channel_id"]
+            assert discord_destination["user_id"] > 0
+            assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
 
-#     # add all users to all guilds
-#     for user_data in test_users_data:
-#         for guild_data in guilds_data:
-#             response = test_client.get(
-#                 f"/users/add_to_guild",
-#                 params={"discord_user_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
-#             )
-#             assert response.status_code == 200
+    # check guild members
+    response = test_client.get(
+        f"/discord/guild/members",
+        params={"discord_guild_id": test_discord_guilds_data[0]["discord_guild_id"]},
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 5
+    assert isinstance(response.json(), list)
+    assert isinstance(response.json()[0], dict)  # idk how to check if it is a "user"
 
-#             discord_destination = response.json()
+    # remove user nr 1 from guild nr 1
+    response = test_client.delete(
+        f"/users/remove_from_guild",
+        params={
+            "discord_user_id": test_users_data[0]["discord_id"],
+            "discord_guild_id": test_discord_guilds_data[0]["discord_guild_id"],
+        },
+    )
+    assert response.status_code == 200
 
-#             assert (
-#                 discord_destination["user_id"] > 0
-#             )  # i do not remember why this endpoint returns user_id instead of discord_user_id
-#             assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
+    # check if user is not in guild
+    response = test_client.get(
+        f"/discord/guild/members",
+        params={"discord_guild_id": test_discord_guilds_data[0]["discord_guild_id"]},
+    )
+    assert response.status_code == 200
 
-#     r = test_client.get(
-#         f"/users/get_all_guilds",
-#         params={"discord_id": test_users_data[0]["discord_id"]},
-#     )
+    guild_members = response.json()
+    assert len(guild_members) == 4
+    assert [test_users_data[0]["discord_id"]] not in [member["discord_id"] for member in guild_members]
 
-#     # check if users are really in guilds
-#     for user_data in test_users_data:
-#         response = test_client.get(
-#             f"/users/get_all_guilds",
-#             params={"discord_id": user_data["discord_id"]},
-#         )
-#         assert response.status_code == 200
 
-#         discord_destinations = response.json()
+# Remove user from all guilds
+# get /users/remove_from_all_guilds
+def test_remove_user_from_all_guilds(test_client):
+    test_users_data = [
+        {"discord_id": 321309474667253282},
+        {"discord_id": 321309474167253283},
+        {"discord_id": 321309474267253284},
+        {"discord_id": 321309474367253285},
+        {"discord_id": 321309474467253286},
+    ]
 
-#         assert len(discord_destinations) == 5
+    test_discord_guilds_data = [
+        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
+        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
+        {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
+    ]
 
-#     # # remove user nr 1 from all guilds
-#     # response = test_client.get(
-#     #     f"/users/remove_from_all_guilds",
-#     #     params={"user_id": 1},
-#     # )
-#     # assert response.status_code == 200
+    # create users
+    for user_data, id in zip(test_users_data, range(1, 6)):
+        response = test_client.post("/users/create", json=user_data)
+        assert response.status_code == 200
 
-#     # logging.debug(response.json())
-#     # logging.debug(response.json())
-#     # logging.debug(response.json())
-#     # logging.debug(response.json())
+        user = response.json()
 
-#     # # check if user is not in any guild
-#     # response = test_client.get(
-#     #     f"/users/get_all_guilds",
-#     #     params={"discord_id": test_users_data[0]["discord_id"]},
-#     # )
-#     # assert response.status_code == 404
-#     # assert response.json() == "User not found in any guild"
+        assert user["id"] == id
+        assert user["discord_id"] == user_data["discord_id"]
 
-#     # # check if other users are still in guilds
-#     # for user_data in test_users_data[1:]:
-#     #     response = test_client.get(
-#     #         f"/users/get_all_guilds",
-#     #         params={"discord_id": user_data["discord_id"]},
-#     #     )
-#     #     assert response.status_code == 200
+    # create guilds
+    for guild_data, id in zip(test_discord_guilds_data, range(1, 4)):
+        response = test_client.post("/discord/configure/guild", json=guild_data)
+        assert response.status_code == 200
 
-#     #     discord_destinations = response.json()
+        guild = response.json()
 
-#     #     assert len(discord_destinations) == 5
+        assert guild["id"] == id
+        assert guild["discord_guild_id"] == guild_data["discord_guild_id"]
+        assert guild["discord_channel_id"] == guild_data["discord_channel_id"]
+
+    # add all users to all guilds
+    for user_data in test_users_data:
+        for guild_data in test_discord_guilds_data:
+            response = test_client.get(
+                f"/users/add_to_guild",
+                params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+            )
+            assert response.status_code == 200
+
+            discord_destination = response.json()
+
+            assert discord_destination["user_id"] > 0
+            assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
+
+    # check guild members
+    response = test_client.get(
+        f"/discord/guild/members",
+        params={"discord_guild_id": test_discord_guilds_data[0]["discord_guild_id"]},
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 5
+
+    # remove user nr 1 from all guilds
+    response = test_client.delete(
+        f"/users/remove_from_all_guilds",
+        params={"discord_user_id": test_users_data[0]["discord_id"]},
+    )
+    assert response.status_code == 200
+
+    # check if user is not in this guild
+    response = test_client.get(
+        f"/discord/guild/members",
+        params={"discord_guild_id": test_discord_guilds_data[0]["discord_guild_id"]},
+    )
+
+    assert response.status_code == 200
+    assert [test_users_data[0]["discord_id"]] not in [member["discord_id"] for member in response.json()]
+
+    # check using other endpoint
+    response = test_client.get("/users/get_all_guilds", params={"discord_id": test_users_data[0]["discord_id"]})
+    assert response.status_code == 404

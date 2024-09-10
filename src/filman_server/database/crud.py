@@ -141,6 +141,15 @@ def get_guild(db: Session, discord_guild_id: int):
     return db.query(models.DiscordGuilds).filter(models.DiscordGuilds.discord_guild_id == discord_guild_id).first()
 
 
+def get_guild_members(db: Session, discord_guild_id: int) -> list[schemas.User]:
+    return (
+        db.query(models.User)
+        .join(models.DiscordDestinations)
+        .filter(models.DiscordDestinations.discord_guild_id == discord_guild_id)
+        .all()
+    )
+
+
 # set = create
 def set_guild(db: Session, guild: schemas.DiscordGuildsCreate):
     db_guild = get_guild(db, guild.discord_guild_id)
@@ -180,8 +189,10 @@ def delete_guild(db: Session, discord_guild_id: int):
 
     return db_guild
 
+
 def get_guilds(db: Session):
     return db.query(models.DiscordGuilds).all()
+
 
 #
 # FILMWEB MOVIES

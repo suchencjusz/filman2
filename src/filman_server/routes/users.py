@@ -11,7 +11,12 @@ from filman_server.database.db import SessionLocal, engine, get_db
 users_router = APIRouter(prefix="/users", tags=["users"])
 
 
-@users_router.post("/create", response_model=schemas.User)
+@users_router.post(
+    "/create",
+    response_model=schemas.User,
+    summary="Create a user",
+    description="Create a user using discord user id",
+)
 async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         db_user = crud.create_user(db, user)
@@ -20,14 +25,22 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="User already exists")
 
 
-@users_router.get("/get", response_model=schemas.User)
+@users_router.get(
+    "/get",
+    response_model=schemas.User,
+    summary="Get a user",
+    description="Get a user by user_id, filmweb_id or discord_id",
+)
 async def get_user(
-    id: Optional[int] = None,
-    filmweb_id: Optional[str] = None,
-    discord_id: Optional[int] = None,
+    user_id: int | None = None,
+    filmweb_id: int | None = None,
+    discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    user = crud.get_user(db, id, filmweb_id, discord_id)
+    if user_id is None and filmweb_id is None and discord_id is None:
+        raise HTTPException(status_code=400, detail="Either user_id, filmweb_id or discord_id is required")
+
+    user = crud.get_user(db, user_id, filmweb_id, discord_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -39,14 +52,16 @@ async def get_user(
 
 
 @users_router.get("/get_all_guilds", response_model=List[schemas.DiscordDestinations])
-async def get_guilds(id: Optional[int] = None, discord_id: Optional[int] = None, db: Session = Depends(get_db)):
-    user = crud.get_user(db, id, None, discord_id)
+async def get_guilds(
+    user_id: int | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    user = crud.get_user(db, user_id, None, discord_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user_id = user.id
-
-    discord_destinations = crud.get_user_destinations(db, user_id)
+    discord_destinations = crud.get_user_destinations(db, user_id, discord_id)
     if discord_destinations is None or len(discord_destinations) == 0:
         raise HTTPException(status_code=404, detail="User not found in any guild")
 
@@ -55,11 +70,11 @@ async def get_guilds(id: Optional[int] = None, discord_id: Optional[int] = None,
 
 @users_router.get("/add_to_guild", response_model=schemas.DiscordDestinations)
 async def add_to_guild(
-    discord_user_id: int,
+    discord_id: int,
     discord_guild_id: int,
     db: Session = Depends(get_db),
 ):
-    user_id = crud.get_user(db, None, None, discord_user_id)
+    user_id = crud.get_user(db, None, None, discord_id)
 
     if user_id is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -71,50 +86,56 @@ async def add_to_guild(
     if guild is None:
         raise HTTPException(status_code=404, detail="Guild not found")
 
+    discord_destination = crud.get_user_destination(db, user_id, discord_id, discord_guild_id)
+    if discord_destination is not None:
+        raise HTTPException(status_code=400, detail="User already in this guild")
+
     discord_destination = crud.set_user_destination(db, user_id=user_id, discord_guild_id=discord_guild_id)
 
     return discord_destination
 
 
-@users_router.get("/remove_from_guild", response_model=schemas.DiscordDestinations)
+@users_router.delete("/remove_from_guild", response_model=schemas.DiscordDestinations)
 async def remove_from_guild(
-    user_id: Optional[int] = None,
-    discord_user_id: Optional[int] = None,
+    user_id: int | None = None,
+    discord_user_id: int | None = None,
     discord_guild_id: int = None,
     db: Session = Depends(get_db),
 ):
-    if discord_guild_id is None:
-        raise HTTPException(status_code=400, detail="discord_guild_id is required")
+
+    if user_id is None and discord_user_id is None:
+        raise HTTPException(status_code=400, detail="Either user_id or discord_user_id is required")
 
     guild = crud.get_guild(db, discord_guild_id)
     if guild is None:
         raise HTTPException(status_code=404, detail="Guild not found")
 
-    if user_id is None and discord_user_id is None:
-        raise HTTPException(status_code=400, detail="Either user_id or discord_user_id is required")
-
-    discord_destination = crud.get_user_destinations(db, user_id)
+    discord_destination = crud.get_user_destinations(db, user_id, discord_user_id)
     if discord_destination is None:
         raise HTTPException(status_code=404, detail="User not found in any guild")
 
-    discord_destination = crud.get_user_destination(db, user_id, discord_guild_id)
+    discord_destination = crud.get_user_destination(db, user_id, discord_user_id, discord_guild_id)
     if discord_destination is None:
         raise HTTPException(status_code=404, detail="User not found in this guild")
 
-    crud.delete_user_destination(db, user_id, discord_guild_id)
+    crud.delete_user_destination(db, user_id, discord_user_id, discord_guild_id)
 
     return discord_destination
 
 
-@users_router.get("/remove_from_all_guilds", response_model=schemas.DiscordDestinations)
+@users_router.delete("/remove_from_all_guilds", response_model=List[schemas.DiscordDestinations])
 async def remove_from_all_guilds(
-    user_id: int,
+    user_id: int | None = None,
+    discord_user_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    discord_destination = crud.get_user_destinations(db, user_id)
-    if discord_destination is None:
+    if user_id is None and discord_user_id is None:
+        raise HTTPException(status_code=400, detail="Either user_id or discord_user_id is required")
+
+    discord_destinations = crud.get_user_destinations(db, user_id, discord_user_id)
+    if discord_destinations is None:
         raise HTTPException(status_code=404, detail="User not found in any guild")
 
-    crud.delete_user_destinations(db, user_id)
+    crud.delete_user_destinations(db, user_id, discord_user_id)
 
-    return discord_destination
+    return discord_destinations
