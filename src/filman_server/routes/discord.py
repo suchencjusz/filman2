@@ -1,12 +1,11 @@
-from typing import Any, Dict, List, Optional
+from typing import List
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from filman_server.database import crud, models, schemas
-from filman_server.database.db import SessionLocal, engine, get_db
+from filman_server.database import crud, schemas
+from filman_server.database.db import get_db
 
 discord_router = APIRouter(prefix="/discord", tags=["discord"])
 

@@ -1,12 +1,11 @@
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from filman_server.database import crud, models, schemas
-from filman_server.database.db import SessionLocal, engine, get_db
+from filman_server.database import crud, schemas
+from filman_server.database.db import get_db
 
 users_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -51,7 +50,12 @@ async def get_user(
 #
 
 
-@users_router.get("/get_all_guilds", response_model=List[schemas.DiscordDestinations])
+@users_router.get(
+    "/get_all_guilds",
+    response_model=List[schemas.DiscordDestinations],
+    summary="Get all user guilds",
+    description="Get all guilds user is in",
+)
 async def get_guilds(
     user_id: int | None = None,
     discord_id: int | None = None,
@@ -68,7 +72,12 @@ async def get_guilds(
     return discord_destinations
 
 
-@users_router.get("/add_to_guild", response_model=schemas.DiscordDestinations)
+@users_router.get(
+    "/add_to_guild",
+    response_model=schemas.DiscordDestinations,
+    summary="Add user to discord guild",
+    description="Add user to discord guild (guild must be in db first)",
+)
 async def add_to_guild(
     discord_id: int,
     discord_guild_id: int,
@@ -95,7 +104,12 @@ async def add_to_guild(
     return discord_destination
 
 
-@users_router.delete("/remove_from_guild", response_model=schemas.DiscordDestinations)
+@users_router.delete(
+    "/remove_from_guild",
+    response_model=schemas.DiscordDestinations,
+    summary="Remove user from discord guild",
+    description="Remove user from discord (the message destination for notifications)",
+)
 async def remove_from_guild(
     user_id: int | None = None,
     discord_user_id: int | None = None,
@@ -123,7 +137,12 @@ async def remove_from_guild(
     return discord_destination
 
 
-@users_router.delete("/remove_from_all_guilds", response_model=List[schemas.DiscordDestinations])
+@users_router.delete(
+    "/remove_from_all_guilds",
+    response_model=List[schemas.DiscordDestinations],
+    summary="Remove user from all guilds",
+    description="Remove user from all guilds (the message destinations for notifications)",
+)
 async def remove_from_all_guilds(
     user_id: int | None = None,
     discord_user_id: int | None = None,

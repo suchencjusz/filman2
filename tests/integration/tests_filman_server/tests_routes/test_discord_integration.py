@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from filman_server.database import models, schemas
+from filman_server.database import models
 from filman_server.database.db import Base, get_db
 from filman_server.main import app
 
