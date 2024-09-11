@@ -327,7 +327,7 @@ def delete_filmweb_user_mapping(
     db: Session,
     user_id: int | None,
     discord_id: int | None,
-    filmweb_id: str,
+    filmweb_id: str | None,
 ) -> bool:
     user = get_user(db, user_id, filmweb_id, discord_id)
 
@@ -440,15 +440,6 @@ def get_filmweb_user_watched_movies(
     )
 
     return watched_movies
-
-
-def get_filmweb_user_watched_movies_ids(db: Session, filmweb_id: str):
-    result = (
-        db.query(models.FilmWebUserWatchedMovie.id_media)  # select only the id field
-        .filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id)
-        .all()
-    )
-    return [id_media for (id_media,) in result]  # extract ids from tuples
 
 
 #
