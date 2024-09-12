@@ -127,10 +127,10 @@ class FilmWebUserMapping(BaseModel):
 
 class FilmWebMovie(BaseModel):
     id: int
-    title: str
-    year: int
-    poster_url: str
-    community_rate: float
+    title: str | None
+    year: int | None
+    poster_url: str | None
+    community_rate: float | None
 
     class Config:
         orm_mode = True

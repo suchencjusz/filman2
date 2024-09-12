@@ -257,7 +257,7 @@ def test_add_watched_movie(test_client):
     assert response.json()["rate"] == 5
     assert response.json()["comment"] == None
     assert response.json()["favorite"] == False
-    
+
     response = test_client.post(
         "/filmweb/user/watched/movies/add",
         json={
@@ -275,7 +275,7 @@ def test_add_watched_movie(test_client):
     assert response.json()["rate"] == 2
     assert response.json()["comment"] == "awesome"
     assert response.json()["favorite"] == True
-    
+
     # check if the movies were added to the watched movies
     response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 3})
     assert response.status_code == 200
@@ -283,7 +283,7 @@ def test_add_watched_movie(test_client):
     assert response.json()[0]["rate"] == 7
     assert response.json()[0]["comment"] == "good movie"
     assert response.json()[0]["favorite"] == False
-    
+
     assert response.json()[1]["movie"]["id"] == 1
     assert response.json()[1]["rate"] == 5
     assert response.json()[1]["comment"] == None
@@ -293,7 +293,27 @@ def test_add_watched_movie(test_client):
     assert response.json()[2]["rate"] == 2
     assert response.json()[2]["comment"] == "awesome"
     assert response.json()[2]["favorite"] == True
-    
+
+    # let user 1 watch 1 of the movies which does not exist
+    response = test_client.post(
+        "/filmweb/user/watched/movies/add",
+        json={
+            "id_media": 3,
+            "filmweb_id": "maciek",
+            "date": "2024-09-11T20:21:58.072Z",
+            "rate": 7,
+            "comment": "good movie",
+            "favorite": False,
+        },
+    )
+    assert response.status_code == 200
+
+    # check if the movie was added to the watched movies
+    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
 def test_user_mapping_delete(test_client):
     test_users_data = [
         {"discord_id": 321309474667253282},
@@ -363,4 +383,3 @@ def test_user_mapping_delete(test_client):
     # check user 1 watched movies
     response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
     assert response.status_code == 404
-    

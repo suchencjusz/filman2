@@ -61,7 +61,12 @@ async def update_movie(
 #
 
 
-@filmweb_router.post("/user/mapping/set", response_model=schemas.FilmWebUserMapping)
+@filmweb_router.post(
+    "/user/mapping/set",
+    response_model=schemas.FilmWebUserMapping,
+    summary="Set user mapping",
+    description="Set user mapping between discord user and filmweb username",
+)
 async def set_user_mapping(
     user_mapping: schemas.FilmWebUserMappingCreate,
     db: Session = Depends(get_db),
@@ -73,7 +78,12 @@ async def set_user_mapping(
         raise HTTPException(status_code=400, detail="User mapping already exists")
 
 
-@filmweb_router.get("/user/mapping/get", response_model=schemas.FilmWebUserMapping)
+@filmweb_router.get(
+    "/user/mapping/get",
+    response_model=schemas.FilmWebUserMapping,
+    summary="Get user mapping",
+    description="Get user mapping between discord user and filmweb username",
+)
 async def get_user_mapping(
     user_id: int | None = None,
     filmweb_id: str | None = None,
@@ -89,7 +99,12 @@ async def get_user_mapping(
     return user_mapping
 
 
-@filmweb_router.delete("/user/mapping/delete", response_model=bool)
+@filmweb_router.delete(
+    "/user/mapping/delete",
+    response_model=bool,
+    summary="Delete user mapping",
+    description="Delete user mapping between discord user and filmweb username, and watched movies of this user",
+)
 async def delete_user_mapping(
     user_id: int | None = None,
     filmweb_id: str | None = None,
@@ -111,7 +126,12 @@ async def delete_user_mapping(
 #
 
 
-@filmweb_router.post("/user/watched/movies/add", response_model=schemas.FilmWebUserWatchedMovieCreate)
+@filmweb_router.post(
+    "/user/watched/movies/add",
+    response_model=schemas.FilmWebUserWatchedMovieCreate,
+    summary="Add watched movie by user",
+    description="Add watched movie by user, if movie does not exist in database it will be added with default values",
+)
 async def add_watched_movie(
     user_watched_movie: schemas.FilmWebUserWatchedMovieCreate,
     db: Session = Depends(get_db),
@@ -131,7 +151,12 @@ async def add_watched_movie(
         raise HTTPException(status_code=400, detail="Movie is already in user watched")
 
 
-@filmweb_router.get("/user/watched/movies/get", response_model=List[schemas.FilmWebUserWatchedMovie])
+@filmweb_router.get(
+    "/user/watched/movies/get",
+    response_model=List[schemas.FilmWebUserWatchedMovie],
+    summary="Get watched movies by user",
+    description="Get watched movies by user, with movie details",
+)
 async def get_watched_movies(
     user_id: int | None = None,
     filmweb_id: int | None = None,
