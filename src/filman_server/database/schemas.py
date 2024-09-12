@@ -245,7 +245,7 @@ class FilmwebUserWatchedSeriesCreate(BaseModel):
 
 
 class TaskTypes(str, Enum):
-    SCRAP_USER = "scrap_user"
+    SCRAP_FILMWEB_USER = "scrap_filmweb_user"
     SCRAP_FILMWEB_MOVIE = "scrap_filmweb_movie"
     SCRAP_FILMWEB_SERIES = "scrap_filmweb_series"
     SCRAP_FILMWEB_USER_WATCHED_MOVIES = "scrap_filmweb_user_watched_movies"

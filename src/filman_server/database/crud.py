@@ -501,3 +501,19 @@ def get_task_to_do(db: Session, task_types: schemas.TaskTypes, head: bool = Fals
 def remove_completed_tasks(db: Session):
     db.query(models.Task).filter(models.Task.task_status == schemas.TaskStatus.COMPLETED).delete()
     db.commit()
+
+
+def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
+    filmweb_users = db.query(models.FilmWebUserMapping).all()
+
+    for user in filmweb_users:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES,
+                task_job=user.filmweb_id,
+            ),
+        )
+
+    return True

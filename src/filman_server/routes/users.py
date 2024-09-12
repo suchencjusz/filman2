@@ -45,6 +45,21 @@ async def get_user(
     return user
 
 
+@users_router.get(
+    "/get_all",
+    response_model=List[schemas.User],
+    summary="Get all users",
+    description="Get all users",
+)
+async def get_all_users(
+    db: Session = Depends(get_db),
+):
+    users = crud.get_users(db)
+    if users is None:
+        raise HTTPException(status_code=404, detail="No users found")
+    return users
+
+
 #
 # discord guild actions
 #
