@@ -53,7 +53,7 @@ async def update_movie(
         db_movie = crud.update_filmweb_movie(db, movie)
         return db_movie
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="Movie already exists")
+        raise HTTPException(status_code=400, detail="Integrity error")
 
 
 #
@@ -89,7 +89,7 @@ async def get_user_mapping(
     return user_mapping
 
 
-@filmweb_router.delete("/user/mapping/delete", response_model=schemas.FilmWebUserMapping)
+@filmweb_router.delete("/user/mapping/delete", response_model=bool)
 async def delete_user_mapping(
     user_id: int | None = None,
     filmweb_id: str | None = None,
@@ -102,6 +102,7 @@ async def delete_user_mapping(
     user_mapping = crud.delete_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
     if user_mapping is None:
         raise HTTPException(status_code=404, detail="User mapping not found")
+
     return user_mapping
 
 
@@ -132,17 +133,15 @@ async def add_watched_movie(
 
 @filmweb_router.get("/user/watched/movies/get", response_model=List[schemas.FilmWebUserWatchedMovie])
 async def get_watched_movies(
-    user_id: Optional[int] = None,
-    filmweb_id: Optional[str] = None,
-    discord_id: Optional[int] = None,
+    user_id: int | None = None,
+    filmweb_id: int | None = None,
+    discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):
     watched_movies = crud.get_filmweb_user_watched_movies(db, user_id, filmweb_id, discord_id)
 
     if watched_movies is None:
         raise HTTPException(status_code=404, detail="User has no watched movies")
-
-    print(watched_movies)
 
     return watched_movies
 
