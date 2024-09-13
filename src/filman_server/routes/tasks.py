@@ -66,9 +66,39 @@ def update_task_status(task_id: int, task_status: schemas.TaskStatus, db: Sessio
         raise HTTPException(status_code=404, detail="Task not found")
     return db_task
 
+
+@tasks_router.get(
+    "/update/stuck/{minutes}",
+    response_model=bool,
+    summary="Update stuck tasks",
+    description="Update stuck tasks to 'queued' status from 'running'",
+)
+def update_stuck_tasks(minutes: int, db: Session = Depends(get_db)):
+    db_tasks = crud.update_stuck_tasks(db, minutes)
+
+    if db_tasks is None:
+        raise HTTPException(status_code=400, detail="Tasks not updated! Something went wrong")
+    return True
+
+
+@tasks_router.get(
+    "/update/old/{minutes}",
+    response_model=bool,
+    summary="Update old tasks",
+    description="Update old tasks, remove tasks older than X minutes",
+)
+def update_old_tasks(minutes: int, db: Session = Depends(get_db)):
+    db_tasks = crud.update_old_tasks(db, minutes)
+
+    if db_tasks is None:
+        raise HTTPException(status_code=400, detail="Tasks not updated! Something went wrong")
+    return True
+
+
 #
 # MULTIPLE TASKS CREATION
 #
+
 
 @tasks_router.get(
     "/new/scrap/filmweb/users/movies",
@@ -78,6 +108,19 @@ def update_task_status(task_id: int, task_status: schemas.TaskStatus, db: Sessio
 )
 def create_scrap_users_movies_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_users_movies_task(db)
+
+    if db_task is None:
+        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+    return True
+
+@tasks_router.get(
+    "/new/scrap/filmweb/movies",
+    response_model=bool,
+    summary="Add scrap movies task",
+    description="Add task to scrap movies",
+)
+def create_scrap_movies_task(db: Session = Depends(get_db)):
+    db_task = crud.create_scrap_filmweb_movies_task(db)
 
     if db_task is None:
         raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")

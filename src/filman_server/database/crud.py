@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import sqlalchemy.exc
 from sqlalchemy.exc import IntegrityError
@@ -449,6 +449,9 @@ def get_filmweb_user_watched_movies(
 
 def create_task(db: Session, task: schemas.TaskCreate):
     db_task = models.Task(**task.model_dump())
+
+    db_task.task_created = datetime.now()
+
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
@@ -469,6 +472,13 @@ def __change_task_status(db: Session, task_id: int, task_status: schemas.TaskSta
     task_finished = datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
     if task_finished is not None:
         db_task.task_finished = task_finished
+
+    # logging.debug(f"t: {db_task.task_job}")
+    # logging.debug(f"t: {db_task.task_type}")
+    # logging.debug(f"t: {db_task.task_status}")
+    # logging.debug(f"t: {db_task.task_created}")
+    # logging.debug(f"t: {db_task.task_started}")
+    # logging.debug(f"t: {db_task.task_finished}")
 
     db.commit()
     db.refresh(db_task)
@@ -503,6 +513,11 @@ def remove_completed_tasks(db: Session):
     db.commit()
 
 
+#
+# MULTIPLE TASKS GENERATION
+#
+
+
 def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
     filmweb_users = db.query(models.FilmWebUserMapping).all()
 
@@ -512,8 +527,52 @@ def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
             schemas.TaskCreate(
                 task_status=schemas.TaskStatus.QUEUED,
                 task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES,
-                task_job=user.filmweb_id,
+                task_job=str(user.filmweb_id),
             ),
         )
+
+    return True
+
+
+def create_scrap_filmweb_movies_task(db: Session) -> bool:
+    filmweb_movies = db.query(models.FilmWebMovie).all()
+
+    for movie in filmweb_movies:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_MOVIE,
+                task_job=str(movie.id),
+            ),
+        )
+
+    return True
+
+
+#
+# TASKS UPDATES/MGMT
+#
+
+
+def update_stuck_tasks(db: Session, minutes: int = 10):  # dodaj minuty
+    stuck_tasks = (
+        db.query(models.Task)
+        .filter(models.Task.task_status == schemas.TaskStatus.RUNNING)
+        .filter(models.Task.task_started < datetime.now() - timedelta(minutes=minutes))
+        .all()
+    )
+
+    for task in stuck_tasks:
+        task.task_status = schemas.TaskStatus.QUEUED
+        task.task_started = None
+        db.commit()
+
+    return True
+
+
+def update_old_tasks(db: Session, minutes: int = 30):
+    db.query(models.Task).filter(models.Task.task_created < datetime.now() - timedelta(minutes=minutes)).delete()
+    db.commit()
 
     return True

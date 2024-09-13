@@ -1,7 +1,9 @@
 import logging
+import time
 
 import pytest
 from fastapi.testclient import TestClient
+from freezegun import freeze_time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -43,7 +45,7 @@ def clear_database():
 
 # Nomral task creation process
 # /tasks/create
-def test_create_task(test_client):
+def test_create_task(test_client: TestClient):
     task_data = {
         "task_status": "queued",
         "task_type": "scrap_filmweb_user",
@@ -68,7 +70,7 @@ def test_create_task(test_client):
 
 # Test task creation and retrieval if there is any task to do (without doing the task)
 # head /tasks/get/to_do
-def test_tasks_to_do_head(test_client):
+def test_tasks_to_do_head(test_client: TestClient):
     task_data_list = [
         {
             "task_status": "queued",
@@ -120,7 +122,7 @@ def test_tasks_to_do_head(test_client):
 
 
 # get /tasks/get/to_do
-def test_tasks_to_do_get(test_client):
+def test_tasks_to_do_get(test_client: TestClient):
     task_data_list = [
         {
             "task_status": "queued",
@@ -166,7 +168,7 @@ def test_tasks_to_do_get(test_client):
 
 
 # get /tasks/create
-def test_task_update_task_status(test_client):
+def test_task_update_task_status(test_client: TestClient):
     task_data = {
         "task_status": "queued",
         "task_type": "scrap_filmweb_user",
@@ -205,7 +207,7 @@ def test_task_update_task_status(test_client):
 
 
 # get /tasks/new/scrap/filmweb/users/movies
-def test_tasks_new_scrap_filmweb_users_movies(test_client):
+def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
     response = test_client.get("/tasks/new/scrap/filmweb/users/movies")
     assert response.status_code == 200
 
@@ -246,3 +248,113 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client):
 
     response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
     assert response.status_code == 200
+
+    with freeze_time("2023-01-01 12:00:00") as frozen_time:
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 1
+        assert response.json()["task_status"] == "running"
+        assert response.json()["task_type"] == "scrap_filmweb_user_watched_movies"
+        assert response.json()["task_job"] == "arek"
+        assert response.json()["task_created"] is not None
+        assert response.json()["task_started"] is not None
+
+        frozen_time.tick(delta=61)
+
+        response = test_client.get("/tasks/update/stuck/1")
+        assert response.status_code == 200
+        assert response.json() is True
+
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 1
+
+        frozen_time.tick(delta=61)
+
+        response = test_client.get("/tasks/update/old/1")
+        assert response.status_code == 200
+        assert response.json() is True
+
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 2
+
+# get /tasks/new/scrap/filmweb/movies
+def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
+
+    # add some movies to fimweb database
+    test_movies_data = [
+        {
+            "id": 628,
+            "title": "Matrix",
+            "year": 1999,
+            "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
+            "community_rate": 7.6,
+        },
+        {
+            "id": 1,
+            "title": "Paragraf 187",
+            "year": 1997,
+            "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
+            "community_rate": 7.3,
+        },
+        {
+            "id": 2,
+            "title": "Adwokat diabła",
+            "year": 1997,
+            "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
+            "community_rate": 7.9,
+        },
+    ]
+
+    for movie in test_movies_data:
+        response = test_client.post("/filmweb/movie/update", json=movie)
+        assert response.status_code == 200 # cos tutaj chodzi o to ze taski sie tworza automaycznie potem na to zerken TODO
+        assert response.json() == movie
+    
+
+    response = test_client.get("/tasks/new/scrap/filmweb/movies")
+    assert response.status_code == 200
+
+    assert response.json() is True
+
+    # check if there are any tasks in the database
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+    assert response.status_code == 404
+
+    response = test_client.get("/tasks/new/scrap/filmweb/movies")
+    assert response.status_code == 200
+    assert response.json() is True
+
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+    assert response.status_code == 200
+
+    with freeze_time("2023-01-01 12:00:00") as frozen_time:
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 1
+        assert response.json()["task_status"] == "running"
+        assert response.json()["task_type"] == "scrap_filmweb_movie"
+        assert response.json()["task_job"] == "1"
+        assert response.json()["task_created"] is not None
+        assert response.json()["task_started"] is not None
+
+        frozen_time.tick(delta=61)
+
+        response = test_client.get("/tasks/update/stuck/1")
+        assert response.status_code == 200
+        assert response.json() is True
+
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 1
+
+        frozen_time.tick(delta=61)
+
+        response = test_client.get("/tasks/update/old/1")
+        assert response.status_code == 200
+        assert response.json() is True
+
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+        assert response.status_code == 200
+        assert response.json()["task_id"] == 2
