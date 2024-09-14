@@ -34,7 +34,10 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     summary="Check if is any task to do",
     description="Check if is any task to do for given task types (only check)",
 )
-def get_task_to_do_head(task_types: List[schemas.TaskTypes] = Query(...), db: Session = Depends(get_db)):
+def get_task_to_do_head(
+    task_types: List[schemas.TaskTypes] = Query(...),
+    db: Session = Depends(get_db),
+):
     db_task = crud.get_task_to_do(db, task_types, head=True)
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -47,7 +50,10 @@ def get_task_to_do_head(task_types: List[schemas.TaskTypes] = Query(...), db: Se
     summary="Get task to do",
     description="Get task to do for given task types",
 )
-def get_task_to_do(task_types: List[schemas.TaskTypes] = Query(...), db: Session = Depends(get_db)):
+def get_task_to_do(
+    task_types: List[schemas.TaskTypes] = Query(...),
+    db: Session = Depends(get_db),
+):
     db_task = crud.get_task_to_do(db, task_types, head=False)
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -112,6 +118,7 @@ def create_scrap_users_movies_task(db: Session = Depends(get_db)):
     if db_task is None:
         raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
     return True
+
 
 @tasks_router.get(
     "/new/scrap/filmweb/movies",

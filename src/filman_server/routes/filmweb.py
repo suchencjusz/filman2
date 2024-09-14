@@ -159,7 +159,7 @@ async def add_watched_movie(
 )
 async def get_watched_movies(
     user_id: int | None = None,
-    filmweb_id: int | None = None,
+    filmweb_id: str | None = None,
     discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):

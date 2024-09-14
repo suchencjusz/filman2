@@ -279,8 +279,18 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
         assert response.status_code == 200
         assert response.json()["task_id"] == 2
 
+
 # get /tasks/new/scrap/filmweb/movies
 def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
+
+    response = test_client.get("/tasks/new/scrap/filmweb/movies")
+    assert response.status_code == 200
+
+    assert response.json() is True
+
+    # check if there are any tasks in the database
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+    assert response.status_code == 404
 
     # add some movies to fimweb database
     test_movies_data = [
@@ -309,18 +319,8 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
 
     for movie in test_movies_data:
         response = test_client.post("/filmweb/movie/update", json=movie)
-        assert response.status_code == 200 # cos tutaj chodzi o to ze taski sie tworza automaycznie potem na to zerken TODO
+        assert response.status_code == 200
         assert response.json() == movie
-    
-
-    response = test_client.get("/tasks/new/scrap/filmweb/movies")
-    assert response.status_code == 200
-
-    assert response.json() is True
-
-    # check if there are any tasks in the database
-    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
-    assert response.status_code == 404
 
     response = test_client.get("/tasks/new/scrap/filmweb/movies")
     assert response.status_code == 200

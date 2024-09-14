@@ -1,37 +1,55 @@
 import logging
-from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional
-
 import requests
 import ujson
-from pydantic import BaseModel
+
+from datetime import datetime
+
+from filman_server.database.schemas import (
+    FilmWebMovie,
+    FilmWebSeries,
+    FilmWebUserWatchedMovie,
+    Task,
+    TaskStatus,
+    TaskTypes,
+)
+
+import requests
 
 
-class TaskTypes(str, Enum):
-    SCRAP_USER = "scrap_user"
-    SCRAP_FILMWEB_MOVIE = "scrap_filmweb_movie"
-    SCRAP_FILMWEB_SERIES = "scrap_filmweb_series"
-    SCRAP_FILMWEB_USER_WATCHED_MOVIES = "scrap_filmweb_user_watched_movies"
-    SCRAP_FILMWEB_USER_WATCHED_SERIES = "scrap_filmweb_user_watched_series"
-    SEND_DISCORD_NOTIFICATION = "send_discord_notification"
+def fetch(url, method="GET", **kwargs):
+    """
+    Fetch data from a URL using the specified HTTP method.
 
+    :param url: The URL to fetch data from.
+    :param method: The HTTP method to use ('GET', 'POST', 'DELETE', 'PUT').
+    :param kwargs: Additional arguments to pass to the requests method.
+    :return: The response text or None if an error occurred.
+    """
+    method = method.upper()
+    try:
+        if method == "GET":
+            response = requests.get(url, **kwargs)
+        elif method == "POST":
+            response = requests.post(url, **kwargs)
+        elif method == "DELETE":
+            response = requests.delete(url, **kwargs)
+        elif method == "PUT":
+            response = requests.put(url, **kwargs)
+        else:
+            logging.error(f"Unsupported HTTP method: {method}")
+            return None
 
-class TaskStatus(str, Enum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    ERROR = "error"
+        if response.status_code != 200:
+            logging.error(f"Error fetching {url}: HTTP {response.status_code}")
+            return None
 
-
-class Task(BaseModel):
-    task_id: int
-    task_status: TaskStatus
-    task_type: TaskTypes
-    task_job: str
-    task_created: datetime
-    task_started: Optional[datetime] = None
-    task_finished: Optional[datetime] = None
+        try:
+            return response.json()
+        except ValueError:
+            return response.text
+    except Exception as e:
+        logging.error(f"Exception during fetch: {e}")
+        return None
 
 
 class Updaters:
@@ -43,7 +61,7 @@ class Updaters:
 class Tasks(Updaters):
     def update_task_status(self, task_id: int, task_status: TaskStatus):
         r = requests.get(
-            f"{self.endpoint_url}/tasks/update/task/status/{task_id}/{task_status.value}",
+            f"{self.endpoint_url}/tasks/update/status/{task_id}/{task_status.value}",
             headers=self.headers,
         )
 
@@ -78,37 +96,16 @@ class DiscordNotifications(Updaters):
 
 
 class FilmWeb(Updaters):
-    class FilmWebMovie(BaseModel):
-        id: int
-        title: str
-        year: int
-        poster_url: str
-        community_rate: float
-
-    class FilmWebSeries(BaseModel):
-        id: int
-        title: str
-        year: int
-        other_year: int
-        poster_url: str
-        community_rate: float
-
-    class FilmWebUserWatchedMovie(BaseModel):
-        id_media: int
-        id_filmweb: str
-        date: datetime
-        rate: int
-        comment: Optional[str]
-        favorite: bool
 
     def update_movie(self, movie: FilmWebMovie):
         r = requests.post(
-            f"{self.endpoint_url}/filmweb/update/movie",
+            f"{self.endpoint_url}/filmweb/movie/update",
             headers=self.headers,
             json={
                 "id": int(movie.id),
                 "title": str(movie.title),
                 "year": int(movie.year),
+                "other_year": int(movie.other_year),
                 "poster_url": str(movie.poster_url),
                 "community_rate": float(movie.community_rate),
             },
@@ -121,33 +118,32 @@ class FilmWeb(Updaters):
 
         return True
 
-    def update_series(self, series: FilmWebSeries):
-        r = requests.post(
-            f"{self.endpoint_url}/filmweb/update/series",
-            headers=self.headers,
-            json={
-                "id": int(series.id),
-                "title": str(series.title),
-                "year": int(series.year),
-                "other_year": int(series.other_year),
-                "poster_url": str(series.poster_url),
-                "community_rate": float(series.community_rate),
-            },
-        )
+    # def update_series(self, series: FilmWebSeries):
+    #     r = requests.post(
+    #         f"{self.endpoint_url}/filmweb/update/series", # also endpoint  to change
+    #         headers=self.headers,
+    #         json={
+    #             "id": int(series.id),
+    #             "title": str(series.title),
+    #             "year": int(series.year),
+    #             "other_year": int(series.other_year),
+    #             "poster_url": str(series.poster_url),
+    #             "community_rate": float(series.community_rate),
+    #         },
+    #     )
 
-        if r.status_code != 200:
-            logging.error(f"Error updating series data: HTTP {r.status_code}")
-            logging.error(r.text)
-            return False
+    #     if r.status_code != 200:
+    #         logging.error(f"Error updating series data: HTTP {r.status_code}")
+    #         logging.error(r.text)
+    #         return False
 
-        return True
+    #     return True
 
     def add_watched_movie(self, info: FilmWebUserWatchedMovie):
         r = requests.post(
-            f"{self.endpoint_url}/filmweb/watched/movies/add",
+            f"{self.endpoint_url}/filmweb/user/watched/movies/add",
             headers=self.headers,
             json={
-                "id_media": int(info.id_media),
                 "id_filmweb": str(info.id_filmweb),
                 "date": info.date.isoformat(),
                 "rate": int(info.rate),

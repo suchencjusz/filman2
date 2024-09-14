@@ -11,6 +11,8 @@ import ujson
 from fake_useragent import UserAgent
 from pydantic import BaseModel
 
+from filman_server.database.schemas import Task, TaskTypes, TaskStatus
+
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
 from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
 from filman_crawler.tasks.scrap_user_watched_movies import (
@@ -70,33 +72,6 @@ HEADERS = {
     "TE": "trailers",
 }
 
-
-class TaskTypes(str, Enum):
-    SCRAP_USER = "scrap_user"
-    SCRAP_FILMWEB_MOVIE = "scrap_filmweb_movie"
-    SCRAP_FILMWEB_SERIES = "scrap_filmweb_series"
-    SCRAP_FILMWEB_USER_WATCHED_MOVIES = "scrap_filmweb_user_watched_movies"
-    SCRAP_FILMWEB_USER_WATCHED_SERIES = "scrap_filmweb_user_watched_series"
-    SEND_DISCORD_NOTIFICATION = "send_discord_notification"
-
-
-class TaskStatus(str, Enum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    ERROR = "error"
-
-
-class Task(BaseModel):
-    task_id: int
-    task_status: TaskStatus
-    task_type: TaskTypes
-    task_job: str
-    task_created: datetime
-    task_started: Optional[datetime] = None
-    task_finished: Optional[datetime] = None
-
-
 ALLOWED_TASKS = [
     TaskTypes.SCRAP_FILMWEB_MOVIE,
     TaskTypes.SCRAP_FILMWEB_SERIES,
@@ -110,7 +85,7 @@ TASK_TYPES = [task for task in ALLOWED_TASKS]
 def check_there_are_any_tasks():
     try:
         r = requests.head(
-            f"{CORE_ENDPOINT}/tasks/get/task/to_do",
+            f"{CORE_ENDPOINT}/tasks/get/to_do",
             params={"task_types": TASK_TYPES},
             headers=HEADERS,
         )
@@ -128,7 +103,7 @@ def check_there_are_any_tasks():
 def get_task_to_do() -> Task:
     try:
         r = requests.get(
-            f"{CORE_ENDPOINT}/tasks/get/task/to_do",
+            f"{CORE_ENDPOINT}/tasks/get/to_do",
             params={"task_types": TASK_TYPES},
             headers=HEADERS,
         )
@@ -165,6 +140,16 @@ def do_task(task: Task):
     else:
         logging.error(f"Unknown task type: {task.task_type}")
 
+def check_connection() -> bool:
+    try:
+        r = requests.get(CORE_ENDPOINT, headers=HEADERS)
+        if r.status_code == 200:
+            return True
+        return False
+    except Exception as e:
+        logging.error(f"Error checking connection: {e}")
+        return False
+
 
 def main():
     logging.info("Program started")
@@ -191,4 +176,7 @@ def main():
 
 
 if __name__ == "__main__":
+    while not check_connection():
+        logging.error("Connection not established, retrying in 3 seconds")
+        time.sleep(3)
     main()
