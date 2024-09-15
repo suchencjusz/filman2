@@ -14,7 +14,7 @@ from .utils import (
     Tasks,
     TaskStatus,
     TaskTypes,
-    fetch,
+    Updaters,
 )
 
 
@@ -22,6 +22,7 @@ class Scraper:
     def __init__(self, headers=None, endpoint_url=None):
         self.headers = headers
         self.endpoint_url = endpoint_url
+        self.fetch = Updaters(headers, endpoint_url).fetch
 
     def scrap(self, task: Task):
         logging.info(f"Scraping user watched movies for user: {task.task_job}")
@@ -34,7 +35,7 @@ class Scraper:
 
         try:
             logging.debug(f"Fetching user already watched movies from: {user_already_watched}")
-            user_already_watched_data = fetch(user_already_watched, params={"filmweb_id": task.task_job})
+            user_already_watched_data = self.fetch(user_already_watched, params={"filmweb_id": task.task_job})
             user_already_watched_data = ujson.loads(user_already_watched_data)
 
             if user_already_watched is not None or user_already_watched_data != []:
@@ -48,7 +49,7 @@ class Scraper:
 
         try:
             logging.debug(f"Fetching last 100 watched movies from (filmweb): {last_100_watched}")
-            last_100_watched_data = fetch(last_100_watched)
+            last_100_watched_data = self.fetch(last_100_watched)
             last_100_watched_data = ujson.loads(last_100_watched_data)
 
             if last_100_watched_data is None:
@@ -70,7 +71,7 @@ class Scraper:
         for movie in new_movies_watched:
             try:
                 logging.debug(f"Fetching user movie rate for movie from filmweb: {movie[0]}")
-                movie_rate_data = fetch(f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}")
+                movie_rate_data = self.fetch(f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}")
 
                 if movie_rate_data is None:
                     logging.error(f"Error fetching movie rate for movie: {movie[0]}")
@@ -95,18 +96,23 @@ class Scraper:
         logging.info(f"Found {len(new_movies_watched_parsed)} new movies watched")
 
         if len(new_movies_watched_parsed) == 0:
-            tasks.update_task_status(task.task_id, TaskStatus.DONE)
+            tasks.update_task_status(task.task_id, TaskStatus.COMPLETED)
             return "No new movies watched"
 
         logging.debug("Preparing to update data")
 
         try:
-            self.update_data(
+            update = self.update_data(
                 filmweb_id=task.task_job,
                 movies_watched=new_movies_watched_parsed,
                 first_time_scrap=first_time_scrap,
                 task_id=task.task_id,
             )
+
+            if update is False:
+                logging.error(f"Error updating data for {task.task_job}")
+                return "Error updating data"
+
             logging.info(f"Data updated for {task.task_job}")
             return "Data updated"
         except Exception as e:
@@ -147,7 +153,6 @@ class Scraper:
                         task_created=datetime.now(),
                     )
                 )
-                
 
             except Exception as e:
                 logging.error(f"Exception while updating movie data: {e}")

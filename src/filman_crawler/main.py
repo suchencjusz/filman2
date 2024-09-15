@@ -2,9 +2,6 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional
 
 import requests
 import ujson
@@ -158,7 +155,7 @@ def main():
     max_wait = 60  # Maximum wait time in seconds
     wait_time = min_wait
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         while True:
             logging.info("Fetching tasks from endpoint")
 

@@ -15,43 +15,45 @@ from filman_server.database.schemas import (
 )
 
 
-def fetch(url, method="GET", **kwargs) -> str | None:
-    """
-    Fetch data from a URL using the specified HTTP method.
-
-    :param url: The URL to fetch data from.
-    :param method: The HTTP method to use ('GET', 'POST', 'DELETE', 'PUT').
-    :param kwargs: Additional arguments to pass to the requests method.
-    :return: The response text or None if an error occurred.
-    """
-    method = method.upper()
-    try:
-        if method == "GET":
-            response = requests.get(url, **kwargs)
-        elif method == "POST":
-            response = requests.post(url, **kwargs)
-        elif method == "DELETE":
-            response = requests.delete(url, **kwargs)
-        elif method == "PUT":
-            response = requests.put(url, **kwargs)
-        else:
-            logging.error(f"Unsupported HTTP method: {method}")
-            return None
-
-        if response.status_code != 200:
-            logging.error(f"Error fetching {url}: HTTP {response.status_code}")
-            return None
-
-        return response.text
-    except Exception as e:
-        logging.error(f"Exception during fetch: {e}")
-        return None
-
-
 class Updaters:
     def __init__(self, headers, endpoint_url):
         self.headers = headers
         self.endpoint_url = endpoint_url
+
+    def fetch(self, url, method="GET", **kwargs) -> str | None:
+        """
+        Fetch data from a URL using the specified HTTP method.
+
+        :param url: The URL to fetch data from.
+        :param method: The HTTP method to use ('GET', 'POST', 'DELETE', 'PUT').
+        :param kwargs: Additional arguments to pass to the requests method.
+        :return: The response text or None if an error occurred.
+        """
+        method = method.upper()
+
+        kwargs["headers"] = self.headers
+
+        try:
+            if method == "GET":
+                response = requests.get(url, **kwargs)
+            elif method == "POST":
+                response = requests.post(url, **kwargs)
+            elif method == "DELETE":
+                response = requests.delete(url, **kwargs)
+            elif method == "PUT":
+                response = requests.put(url, **kwargs)
+            else:
+                logging.error(f"Unsupported HTTP method: {method}")
+                return None
+
+            if response.status_code != 200:
+                logging.error(f"Error fetching {url}: HTTP {response.status_code}")
+                return None
+
+            return response.text
+        except Exception as e:
+            logging.error(f"Exception during fetch: {e}")
+            return None
 
 
 class Tasks(Updaters):
@@ -120,7 +122,6 @@ class FilmWeb(Updaters):
                 "id": int(movie.id),
                 "title": str(movie.title),
                 "year": int(movie.year),
-                "other_year": int(movie.other_year),
                 "poster_url": str(movie.poster_url),
                 "community_rate": float(movie.community_rate),
             },

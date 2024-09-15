@@ -1,29 +1,29 @@
+import datetime
 import logging
 
-import requests
 import ujson
 
-from .utils import FilmWeb, Task, Tasks, TaskStatus, TaskTypes
+from filman_server.database.schemas import FilmWebUserWatchedMovieCreate
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)-8s %(message)s",
-    level=logging.INFO,
-    datefmt="%Y-%m-%d %H:%M:%S",
+from .utils import (
+    FilmWeb,
+    FilmWebMovie,
+    Task,
+    Tasks,
+    TaskStatus,
+    TaskTypes,
+    Updaters,
 )
 
+# TODO make it more robust and add
+# https://www.filmweb.pl/api/v1/film/628/critics/rating
 
 class Scraper:
     def __init__(self, headers=None, movie_id=None, endpoint_url=None):
         self.headers = headers
         self.movie_id = movie_id
         self.endpoint_url = endpoint_url
-
-    def fetch(self, url):
-        response = requests.get(url, headers=self.headers)
-        if response.status_code != 200:
-            logging.error(f"Error fetching {url}: HTTP {response.status_code}")
-            return None
-        return response.text
+        self.fetch = Updaters(headers, endpoint_url).fetch
 
     def scrap(self, task: Task):
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
@@ -46,7 +46,14 @@ class Scraper:
         if title is None or year is None or poster_url is None:
             return False
 
-        update = self.update_data(self.movie_id, title, year, poster_url, community_rate, task.task_id)
+        update = self.update_data(
+            self.movie_id,
+            title,
+            year,
+            poster_url,
+            community_rate,
+            task.task_id,
+        )
 
         if update is True:
             logging.info(f"Updated movie {title} ({year})")
@@ -57,7 +64,7 @@ class Scraper:
         try:
             filmweb = FilmWeb(self.headers, self.endpoint_url)
             filmweb.update_movie(
-                FilmWeb.FilmWebMovie(
+                FilmWebMovie(
                     id=movie_id,
                     title=title,
                     year=year,
