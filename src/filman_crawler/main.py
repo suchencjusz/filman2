@@ -11,8 +11,6 @@ import ujson
 from fake_useragent import UserAgent
 from pydantic import BaseModel
 
-from filman_server.database.schemas import Task, TaskTypes, TaskStatus
-
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
 from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
 from filman_crawler.tasks.scrap_user_watched_movies import (
@@ -21,6 +19,7 @@ from filman_crawler.tasks.scrap_user_watched_movies import (
 from filman_crawler.tasks.scrap_user_watched_series import (
     Scraper as user_watched_series_scrapper,
 )
+from filman_server.database.schemas import Task, TaskStatus, TaskTypes
 
 logging.basicConfig(
     filename="app.log",
@@ -139,6 +138,7 @@ def do_task(task: Task):
 
     else:
         logging.error(f"Unknown task type: {task.task_type}")
+
 
 def check_connection() -> bool:
     try:

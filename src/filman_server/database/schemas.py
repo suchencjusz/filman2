@@ -8,6 +8,9 @@ from pydantic import BaseModel
 # USER
 #
 
+#
+# lesson nr 1 - crud.py should not exist, queries should be in schemas.py....
+
 
 class User(BaseModel):
     id: int
