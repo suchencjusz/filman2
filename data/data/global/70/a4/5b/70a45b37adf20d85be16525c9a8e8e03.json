@@ -1,1 +1,0 @@
-{"type":"list_page","items":[{"id":"maingrp","title":"Primary Group","regexp":"^(main)$","master":1},{"id":"allgrp","title":"All Servers","regexp":".+","master":0}]}

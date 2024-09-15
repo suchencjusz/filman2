@@ -30,6 +30,7 @@ pip-delete-this-directory.txt
 .cache
 nosetests.xml
 coverage.xml
+.pytest_cache
 
 # Translations
 *.mo
@@ -51,7 +52,10 @@ docs/_build/
 
 # Virtual environments
 venv/
-venv2/
-venv3/
-env/
-ENV/
+
+# Secrets
+data/
+temp.txt
+dev-docker-compose.yml
+database.db
+test.db
