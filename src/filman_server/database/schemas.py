@@ -134,6 +134,7 @@ class FilmWebMovie(BaseModel):
     year: int | None
     poster_url: str | None
     community_rate: float | None
+    critics_rate: float | None
 
     class Config:
         orm_mode = True
@@ -145,6 +146,7 @@ class FilmWebMovieCreate(BaseModel):
     year: int | None
     poster_url: str | None
     community_rate: float | None
+    critics_rate: float | None
 
     class Config:
         orm_mode = True
@@ -186,6 +188,7 @@ class FilmWebSeries(BaseModel):
     other_year: int
     poster_url: str
     community_rate: float
+    critics_rate: float
 
     class Config:
         orm_mode = True
@@ -198,6 +201,7 @@ class FilmWebSeriesCreate(BaseModel):
     other_year: int | None
     poster_url: str | None
     community_rate: float | None
+    critics_rate: float | None
 
     class Config:
         orm_mode = True

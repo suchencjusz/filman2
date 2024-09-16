@@ -51,6 +51,7 @@ def test_update_movie(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -58,6 +59,7 @@ def test_update_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -65,6 +67,7 @@ def test_update_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 
@@ -95,6 +98,7 @@ def test_add_watched_movie(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -102,6 +106,7 @@ def test_add_watched_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -109,6 +114,7 @@ def test_add_watched_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 
@@ -334,6 +340,7 @@ def test_user_mapping_delete(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -341,6 +348,7 @@ def test_user_mapping_delete(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -348,6 +356,7 @@ def test_user_mapping_delete(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 

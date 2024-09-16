@@ -214,11 +214,13 @@ def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie) -> models.Fil
         year=movie.year,
         poster_url=movie.poster_url,
         community_rate=movie.community_rate,
+        critics_rate=movie.critics_rate,
     )
 
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
+
     return db_movie
 
 
@@ -226,12 +228,16 @@ def update_filmweb_movie(db: Session, movie: schemas.FilmWebMovie):
     db_movie = get_movie_filmweb_id(db, movie.id)
     if db_movie is None:
         return create_filmweb_movie(db, movie)
+
     db_movie.title = movie.title
     db_movie.year = movie.year
     db_movie.poster_url = movie.poster_url
     db_movie.community_rate = movie.community_rate
+    db_movie.critics_rate = movie.critics_rate
+
     db.commit()
     db.refresh(db_movie)
+
     return db_movie
 
 
@@ -357,6 +363,7 @@ def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.F
             year=None,
             poster_url=None,
             community_rate=None,
+            critics_rate=None,
         )
 
         create_filmweb_movie(db, watched_movie)

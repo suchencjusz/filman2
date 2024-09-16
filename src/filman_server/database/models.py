@@ -72,6 +72,7 @@ class __FilmwebMedia(Base):
     year = Column(SmallInteger)
     poster_url = Column(String(128))
     community_rate = Column(Float)
+    critics_rate = Column(Float)
 
 
 class FilmWebMovie(__FilmwebMedia):
