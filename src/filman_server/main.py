@@ -1,3 +1,4 @@
+import logging
 import sentry_sdk
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
@@ -9,6 +10,9 @@ from sqlalchemy.orm import Session
 from filman_server.database import crud, models, schemas
 from filman_server.database.db import SessionLocal, engine
 from filman_server.routes import discord, filmweb, tasks, users
+
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -28,6 +32,8 @@ app.include_router(users.users_router)
 app.include_router(discord.discord_router)
 app.include_router(filmweb.filmweb_router)
 app.include_router(tasks.tasks_router)
+
+logging.debug("Application has started")
 
 
 @app.get("/")

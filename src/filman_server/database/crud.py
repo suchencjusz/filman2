@@ -11,6 +11,8 @@ from . import models, schemas
 # USERS
 #
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 
 def get_user(
     db: Session,
@@ -226,14 +228,30 @@ def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie) -> models.Fil
 
 def update_filmweb_movie(db: Session, movie: schemas.FilmWebMovie):
     db_movie = get_movie_filmweb_id(db, movie.id)
+
     if db_movie is None:
         return create_filmweb_movie(db, movie)
+
+    logging.debug(f"Updating movie: {movie.title}")
+    logging.debug(f"movie data before")
+    logging.debug(f"{db_movie.title}")
+    logging.debug(f"{db_movie.year}")
+    logging.debug(f"{db_movie.poster_url}")
+    logging.debug(f"{db_movie.community_rate}")
+    logging.debug(f"{db_movie.critics_rate}")
+    logging.debug(f"movie data after")
 
     db_movie.title = movie.title
     db_movie.year = movie.year
     db_movie.poster_url = movie.poster_url
     db_movie.community_rate = movie.community_rate
     db_movie.critics_rate = movie.critics_rate
+
+    logging.debug(f"{db_movie.title}")
+    logging.debug(f"{db_movie.year}")
+    logging.debug(f"{db_movie.poster_url}")
+    logging.debug(f"{db_movie.community_rate}")
+    logging.debug(f"{db_movie.critics_rate}")
 
     db.commit()
     db.refresh(db_movie)
