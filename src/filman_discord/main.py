@@ -6,12 +6,6 @@ import hikari
 import lightbulb
 from lightbulb.ext import tasks
 
-# bot = lightbulb.BotApp(
-#     "MTE4NDUzMTQxMjY2MjEwNDA5NQ.GDmZof.QH06crcIcS3vdiFeH5JhLkkCv-pz2GcccB8360",
-#     intents=hikari.Intents.ALL,
-#     banner=None,
-# )
-
 bot = lightbulb.BotApp(
     os.environ.get("DISCORD_TOKEN"),
     intents=hikari.Intents.ALL,

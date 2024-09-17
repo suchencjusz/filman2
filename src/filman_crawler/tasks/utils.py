@@ -124,6 +124,7 @@ class FilmWeb(Updaters):
                 "year": int(movie.year),
                 "poster_url": str(movie.poster_url),
                 "community_rate": float(movie.community_rate),
+                "critics_rate": float(movie.critics_rate),
             },
         )
 

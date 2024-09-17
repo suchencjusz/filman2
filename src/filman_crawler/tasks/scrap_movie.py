@@ -18,6 +18,7 @@ from .utils import (
 # TODO make it more robust and add
 # https://www.filmweb.pl/api/v1/film/628/critics/rating
 
+
 class Scraper:
     def __init__(self, headers=None, movie_id=None, endpoint_url=None):
         self.headers = headers
@@ -28,20 +29,32 @@ class Scraper:
     def scrap(self, task: Task):
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
         rating_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/rating"
+        crictics_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"
 
         info_data = self.fetch(info_url)
         rating_data = self.fetch(rating_url)
+        crictics_data = self.fetch(crictics_url)
 
-        if info_data is None or rating_data is None:
+        crictics_rate = None
+
+        if info_data is not None and rating_data is not None:
+            info_data = ujson.loads(info_data)
+            rating_data = ujson.loads(rating_data)
+        else:
             return False
 
-        info_data = ujson.loads(info_data)
-        rating_data = ujson.loads(rating_data)
+        if crictics_data is not None:
+            crictics_data = ujson.loads(crictics_data)
+        else:
+            crictics_rate = None
+
+        # TODO critics_rate typo fix
 
         title = info_data.get("title", None)
         year = int(info_data.get("year", None))
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None)
+        critics_rate = critics_rate.get("rate", None)
 
         if title is None or year is None or poster_url is None:
             return False
@@ -52,6 +65,7 @@ class Scraper:
             year,
             poster_url,
             community_rate,
+            critics_rate,
             task.task_id,
         )
 
@@ -60,7 +74,7 @@ class Scraper:
 
         return update
 
-    def update_data(self, movie_id, title, year, poster_url, community_rate, task_id):
+    def update_data(self, movie_id, title, year, poster_url, community_rate, critics_rate, task_id):
         try:
             filmweb = FilmWeb(self.headers, self.endpoint_url)
             filmweb.update_movie(
@@ -70,6 +84,7 @@ class Scraper:
                     year=year,
                     poster_url=poster_url,
                     community_rate=community_rate,
+                    critics_rate=critics_rate,
                 )
             )
 
