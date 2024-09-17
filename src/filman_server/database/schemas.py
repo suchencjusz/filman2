@@ -130,11 +130,11 @@ class FilmWebUserMapping(BaseModel):
 
 class FilmWebMovie(BaseModel):
     id: int
-    title: str | None
-    year: int | None
-    poster_url: str | None
-    community_rate: float | None
-    critics_rate: float | None
+    title: str | None = None
+    year: int | None = None
+    poster_url: str | None = None
+    community_rate: float | None = None
+    critics_rate: float | None = None
 
     class Config:
         orm_mode = True
@@ -142,11 +142,11 @@ class FilmWebMovie(BaseModel):
 
 class FilmWebMovieCreate(BaseModel):
     id: int
-    title: str | None
-    year: int | None
-    poster_url: str | None
-    community_rate: float | None
-    critics_rate: float | None
+    title: str | None = None
+    year: int | None = None
+    poster_url: str | None = None
+    community_rate: float | None = None
+    critics_rate: float | None = None
 
     class Config:
         orm_mode = True

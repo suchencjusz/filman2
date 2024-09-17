@@ -377,11 +377,6 @@ def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.F
     if watched_movie is None:
         watched_movie = schemas.FilmWebMovieCreate(
             id=user_watched_movie.id_media,
-            title=None,
-            year=None,
-            poster_url=None,
-            community_rate=None,
-            critics_rate=None,
         )
 
         create_filmweb_movie(db, watched_movie)
