@@ -21,7 +21,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db_user = crud.create_user(db, user)
         return db_user
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=202, detail="User already exists")
 
 
 @users_router.get(

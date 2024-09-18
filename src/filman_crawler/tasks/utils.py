@@ -148,3 +148,16 @@ class FilmWeb(Updaters):
             return False
 
         return True
+
+    def check_if_user_exist_on_filmweb(self, filmweb_id: str):
+
+        upd = Updaters(HEADERS, self.endpoint_url)
+
+        # https://www.filmweb.pl/api/v1/user/sucheta348/preview
+
+        r = upd.fetch(f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/preview")
+
+        if r is None:
+            return False
+
+        return True

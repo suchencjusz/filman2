@@ -151,9 +151,7 @@ def check_connection() -> bool:
 def main():
     logging.info("Program started")
 
-    min_wait = 2  # Minimum wait time in seconds
-    max_wait = 60  # Maximum wait time in seconds
-    wait_time = min_wait
+    wait_time = 2  
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         while True:
@@ -164,16 +162,14 @@ def main():
 
                 if task is not None:
                     executor.submit(do_task, task)
-                    wait_time = min_wait
                 else:
                     logging.info("No tasks found")
-                    wait_time = min_wait
 
             time.sleep(wait_time)
 
 
 if __name__ == "__main__":
     while not check_connection():
-        logging.error("Connection not established, retrying in 3 seconds")
-        time.sleep(3)
+        logging.error("Connection not established, retrying in 5 seconds")
+        time.sleep(5)
     main()

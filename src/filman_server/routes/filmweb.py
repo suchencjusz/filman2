@@ -1,12 +1,14 @@
-from typing import Any, Dict, List, Optional
+import requests
+import logging
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from filman_server.database import crud, models, schemas
-from filman_server.database.db import SessionLocal, engine, get_db
+from filman_server.database import crud, schemas
+from filman_server.database.db import get_db
 
 filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 
@@ -71,11 +73,16 @@ async def set_user_mapping(
     user_mapping: schemas.FilmWebUserMappingCreate,
     db: Session = Depends(get_db),
 ):
+    r = requests.get(f"https://www.filmweb.pl/api/v1/user/{user_mapping.filmweb_id}/preview")
+
+    if r.status_code != 200:
+        raise HTTPException(status_code=404, detail="Filmweb user not found")
+
     try:
         db_user_mapping = crud.set_filmweb_user_mapping(db, user_mapping)
         return db_user_mapping
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="User mapping already exists")
+        raise HTTPException(status_code=409, detail="User mapping already exists")
 
 
 @filmweb_router.get(
@@ -114,9 +121,13 @@ async def delete_user_mapping(
     if user_id is None and filmweb_id is None and discord_id is None:
         raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
 
-    user_mapping = crud.delete_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
+    user_mapping = crud.delete_filmweb_user_mapping(db, user_id, discord_id, filmweb_id)
+
     if user_mapping is None:
         raise HTTPException(status_code=404, detail="User mapping not found")
+
+    if user_mapping is False:
+        raise HTTPException(status_code=400, detail="User mapping not deleted")
 
     return user_mapping
 

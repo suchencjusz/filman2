@@ -1,7 +1,6 @@
-import datetime
 import logging
 import ujson
-from filman_server.database.schemas import FilmWebUserWatchedMovieCreate
+
 from .utils import (
     FilmWeb,
     FilmWebMovie,

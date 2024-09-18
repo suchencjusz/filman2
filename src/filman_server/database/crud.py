@@ -352,19 +352,22 @@ def delete_filmweb_user_mapping(
     user_id: int | None,
     discord_id: int | None,
     filmweb_id: str | None,
-) -> bool:
+) -> bool | None:
     user = get_user(db, user_id, filmweb_id, discord_id)
 
     if user is None:
+        logging.debug(f"User not found for user_id {user_id} and filmweb_id {filmweb_id}")
         return False
 
-    db_mapping = db.query(models.FilmWebUserMapping).filter_by(user_id=user.id).first()
+    db_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
 
     if db_mapping is None:
-        return False
+        logging.debug(f"Mapping not found for user {user.id} and filmweb_id {filmweb_id}")
+        return None
 
     db.delete(db_mapping)
     db.commit()
+
     return True
 
 
@@ -460,6 +463,25 @@ def get_filmweb_user_watched_movies(
     )
 
     return watched_movies
+
+
+def delete_filmweb_user_watched_movies(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+) -> bool:
+    user_mapping = get_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
+
+    if user_mapping is None:
+        return False
+
+    filmweb_id = user_mapping.filmweb_id
+
+    db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).delete()
+    db.commit()
+
+    return True
 
 
 #
