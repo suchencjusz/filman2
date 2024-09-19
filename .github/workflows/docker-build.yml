@@ -11,12 +11,12 @@ jobs:
     strategy:
       matrix:
         include:
-        - image: suchencjusz/filman-crawler
-          dockerfile: filman_crawler/Dockerfile
-        - image: suchencjusz/filman-discord
-          dockerfile: filman_discord/Dockerfile
-        - image: suchencjusz/filman-server
-          dockerfile: filman_server/Dockerfile
+        - image: suchencjusz/filman_crawler
+          dockerfile: src/filman_crawler/Dockerfile
+        - image: suchencjusz/filman_discord
+          dockerfile: src/filman_discord/Dockerfile
+        - image: suchencjusz/filman_server
+          dockerfile: src/filman_server/Dockerfile
     steps:
       -
           name: Checkout
