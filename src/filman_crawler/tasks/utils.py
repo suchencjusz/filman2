@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+import datetime
 
 import requests
 import ujson
@@ -92,17 +92,17 @@ class Tasks(Updaters):
 
 
 class DiscordNotifications(Updaters):
-    def send_notification(self, filmweb_id: str):
+    def send_notification(self, filmweb_id: str, media_type: str, media_id: int):
         r = requests.post(
             f"{self.endpoint_url}/tasks/create",
             headers=self.headers,
-            json=Task(
-                task_id=0,
-                task_status=TaskStatus.QUEUED,
-                task_type=TaskTypes.SEND_DISCORD_NOTIFICATION,
-                task_job=filmweb_id,
-                task_created=datetime.now(),
-            ),
+            json={
+                "task_id": 0,
+                "task_status": TaskStatus.QUEUED.value,
+                "task_type": TaskTypes.SEND_DISCORD_NOTIFICATION.value,
+                "task_job": f"{filmweb_id},{media_type},{media_id}",
+                "task_created": datetime.datetime.now().isoformat(),
+            },
         )
 
         if r.status_code != 200:
@@ -145,19 +145,6 @@ class FilmWeb(Updaters):
         if r.status_code != 200:
             logging.error(f"Error adding watched movie: HTTP {r.status_code}")
             logging.error(r.text)
-            return False
-
-        return True
-
-    def check_if_user_exist_on_filmweb(self, filmweb_id: str):
-
-        upd = Updaters(HEADERS, self.endpoint_url)
-
-        # https://www.filmweb.pl/api/v1/user/sucheta348/preview
-
-        r = upd.fetch(f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/preview")
-
-        if r is None:
             return False
 
         return True

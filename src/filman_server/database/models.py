@@ -36,8 +36,13 @@ class FilmWebUserMapping(Base):
     filmweb_id = Column(String(128), index=True, unique=True)
 
     user = relationship("User", back_populates="filmweb_user_mapping")
-    watched_movies = relationship("FilmWebUserWatchedMovie", back_populates="filmweb_user_mapping", cascade="all, delete-orphan")
-    watched_series = relationship("FilmWebUserWatchedSeries", back_populates="filmweb_user_mapping", cascade="all, delete-orphan")
+    watched_movies = relationship(
+        "FilmWebUserWatchedMovie", back_populates="filmweb_user_mapping", cascade="all, delete-orphan"
+    )
+    watched_series = relationship(
+        "FilmWebUserWatchedSeries", back_populates="filmweb_user_mapping", cascade="all, delete-orphan"
+    )
+
 
 #
 # DISCORD
@@ -99,7 +104,9 @@ class FilmWebUserWatchedMovie(__FilmwebWatched):
     __tablename__ = "filmweb_user_watched_movies"
 
     id_media = Column(Integer, ForeignKey("filmweb_movies.id"), primary_key=True, index=True)
-    filmweb_id = Column(String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True)
+    filmweb_id = Column(
+        String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True
+    )
 
     movie = relationship("FilmWebMovie", backref="filmweb_user_watched_movies")
     filmweb_user_mapping = relationship("FilmWebUserMapping", back_populates="watched_movies")
@@ -109,7 +116,9 @@ class FilmWebUserWatchedSeries(__FilmwebWatched):
     __tablename__ = "filmweb_user_watched_series"
 
     id_media = Column(Integer, ForeignKey("filmweb_series.id"), primary_key=True, index=True)
-    filmweb_id = Column(String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True)
+    filmweb_id = Column(
+        String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True
+    )
 
     series = relationship("FilmWebSeries", backref="filmweb_user_watched_series")
     filmweb_user_mapping = relationship("FilmWebUserMapping", back_populates="watched_series")

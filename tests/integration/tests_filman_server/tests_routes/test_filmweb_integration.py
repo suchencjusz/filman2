@@ -123,6 +123,11 @@ def test_add_watched_movie(test_client):
         assert response.status_code == 200
         assert response.json() == movie
 
+    # get movie with id 628
+    response = test_client.get("/filmweb/movie/get", params={"id": 628})
+    assert response.status_code == 200
+    assert response.json()["id"] == 628
+
     # create users
     for user_data in test_users_data:
         response = test_client.post("/users/create", json=user_data)
@@ -170,7 +175,7 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -215,7 +220,7 @@ def test_add_watched_movie(test_client):
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 2})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 2})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 1
     assert response.json()[0]["rate"] == 5
@@ -283,7 +288,7 @@ def test_add_watched_movie(test_client):
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 3})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 3})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -315,7 +320,7 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -390,5 +395,5 @@ def test_user_mapping_delete(test_client):
     assert response.status_code == 200
 
     # check user 1 watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 404

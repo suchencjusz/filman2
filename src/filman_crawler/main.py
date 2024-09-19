@@ -151,7 +151,7 @@ def check_connection() -> bool:
 def main():
     logging.info("Program started")
 
-    wait_time = 2  
+    wait_time = 2
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         while True:

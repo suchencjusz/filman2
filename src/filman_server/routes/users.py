@@ -64,6 +64,9 @@ async def get_all_users(
 # discord guild actions
 #
 
+@users_router.get(
+    "/get_all_channels",
+    response_model=List[schemas.DiscordGuildChannels],
 
 @users_router.get(
     "/get_all_guilds",
@@ -108,11 +111,11 @@ async def add_to_guild(
     guild = crud.get_guild(db, discord_guild_id)
 
     if guild is None:
-        raise HTTPException(status_code=404, detail="Guild not found")
+        raise HTTPException(status_code=405, detail="Guild not found")
 
     discord_destination = crud.get_user_destination(db, user_id, discord_id, discord_guild_id)
     if discord_destination is not None:
-        raise HTTPException(status_code=400, detail="User already in this guild")
+        raise HTTPException(status_code=409, detail="User already in this guild")
 
     discord_destination = crud.set_user_destination(db, user_id=user_id, discord_guild_id=discord_guild_id)
 

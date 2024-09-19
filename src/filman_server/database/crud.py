@@ -63,6 +63,17 @@ def get_user_destinations(
     return db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
 
 
+def get_user_destinations_channels(db: Session, user_id: int | None, discord_user_id: int | None) -> list[int]:
+    query = db.query(models.DiscordGuilds.discord_channel_id).join(
+        models.DiscordDestinations, models.DiscordDestinations.guild_id == models.DiscordGuilds.id
+    )
+    if user_id:
+        query = query.filter(models.DiscordDestinations.user_id == user_id)
+    if discord_user_id:
+        query = query.filter(models.DiscordDestinations.discord_user_id == discord_user_id)
+    return [channel_id for (channel_id,) in query.all()]
+
+
 # It is used to check if user is in discord guild only for that!
 def get_user_destination(
     db: Session,
@@ -201,7 +212,7 @@ def get_guilds(db: Session):
 #
 
 
-def get_movie_filmweb_id(db: Session, id: int):
+def get_movie_filmweb_id(db: Session, id: int) -> models.FilmWebMovie | None:
     return db.query(models.FilmWebMovie).filter(models.FilmWebMovie.id == id).first()
 
 
@@ -418,8 +429,6 @@ def get_filmweb_user_watched_movie(
     id_media: int,
 ):
     user = get_user(db, user_id, filmweb_id, discord_id)
-
-    logging.debug(f"{user.discord_id}")
 
     if user is None:
         return None

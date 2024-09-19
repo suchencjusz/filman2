@@ -1,4 +1,5 @@
 import logging
+
 import sentry_sdk
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException

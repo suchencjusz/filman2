@@ -14,7 +14,7 @@ async def help_group(_: lightbulb.SlashContext) -> None:
 
 
 @help_group.child
-@lightbulb.command("configure", "konfiguracja serwera i konta filmweb")
+@lightbulb.command("configure", "konfiguracja serwera")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
     embed = hikari.Embed(title="`/configure`", colour=0xFFC200, timestamp=datetime.now().astimezone())
@@ -30,22 +30,28 @@ async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
 
 
 @help_group.child
-@lightbulb.command("tracker", "monitoruje konto filmweb")
+@lightbulb.command("filmweb", "akcje związane z kontem filmweb")
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def tracker_subcommand(ctx: lightbulb.SlashContext) -> None:
-    embed = hikari.Embed(title="`/tracker`", colour=0xFFC200, timestamp=datetime.now().astimezone())
-
-    embed.add_field(name="`/tracker me`", value="Monitoruje konto filmweb")
+async def filmweb_subcommand(ctx: lightbulb.SlashContext) -> None:
+    embed = hikari.Embed(title="`/filmweb`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
-        name="`/tracker cancel`",
+        name="`/filmweb me`",
+        value="Monitoruje konto filmweb",
+    )
+
+    embed.add_field(
+        name="`/filmweb cancel`",
         value="Anuluje monitorowanie konta filmweb i usuwa dane z bazy danych",
     )
 
-    embed.add_field(name="`/tracker stop`", value="Anuluje wysyłanie powiadomień na danym serwerze")
+    embed.add_field(
+        name="`/filmweb stop`",
+        value="Anuluje wysyłanie powiadomień na danym serwerze",
+    )
 
     embed.add_field(
-        name="`/tracker here`",
+        name="`/filmweb here`",
         value="Dopisuje użytkownika do listy powiadomień na danym serwerze",
     )
 

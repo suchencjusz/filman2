@@ -1,8 +1,7 @@
-import requests
 import logging
-
 from typing import List
 
+import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -17,28 +16,21 @@ filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 # MOVIES
 #
 
-# not even used
-# @filmweb_router.get("/get/movie", response_model=schemas.FilmWebMovie)
-# async def get_movie(
-#     id: Optional[int] = None,
-#     db: Session = Depends(get_db),
-# ):
-#     movie = crud.get_movie_filmweb_id(db, id)
-#     if movie is None:
-#         raise HTTPException(status_code=404, detail="Movie not found")
-#     return movie
 
-# not even used
-# @filmweb_router.post("/add/movie", response_model=schemas.FilmWebMovie)
-# async def add_movie(
-#     movie: schemas.FilmWebMovieCreate,
-#     db: Session = Depends(get_db),
-# ):
-#     try:
-#         db_movie = crud.create_filmweb_movie(db, movie)
-#         return db_movie
-#     except IntegrityError:
-#         raise HTTPException(status_code=400, detail="Movie already exists")
+@filmweb_router.get(
+    "/movie/get",
+    response_model=schemas.FilmWebMovie,
+    summary="Get movie",
+    description="Get movie by id",
+)
+async def get_movie(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    movie = crud.get_movie_filmweb_id(db, id)
+    if movie is None:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    return movie
 
 
 @filmweb_router.post(
@@ -163,7 +155,7 @@ async def add_watched_movie(
 
 
 @filmweb_router.get(
-    "/user/watched/movies/get",
+    "/user/watched/movies/get_all",
     response_model=List[schemas.FilmWebUserWatchedMovie],
     summary="Get watched movies by user",
     description="Get watched movies by user, with movie details",
@@ -180,6 +172,30 @@ async def get_watched_movies(
         raise HTTPException(status_code=404, detail="User has no watched movies")
 
     return watched_movies
+
+
+@filmweb_router.get(
+    "/user/watched/movies/get",
+    response_model=schemas.FilmWebUserWatchedMovie,
+    summary="Get watched movie by user",
+    description="Get watched movie by user, with movie details",
+)
+async def get_watched_movie(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    movie_id: int = None,
+    db: Session = Depends(get_db),
+):
+    if user_id is None and filmweb_id is None and discord_id is None:
+        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+
+    watched_movie = crud.get_filmweb_user_watched_movie(db, user_id, filmweb_id, discord_id, movie_id)
+
+    if watched_movie is None:
+        raise HTTPException(status_code=404, detail="User has no watched movies")
+
+    return watched_movie
 
 
 #
