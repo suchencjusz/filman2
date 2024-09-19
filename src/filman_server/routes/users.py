@@ -32,7 +32,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 )
 async def get_user(
     user_id: int | None = None,
-    filmweb_id: int | None = None,
+    filmweb_id: str | None = None,
     discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):

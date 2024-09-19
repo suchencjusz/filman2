@@ -1,7 +1,7 @@
-import os
-from datetime import datetime
-
+import datetime
 import logging
+import os
+import textwrap
 
 import aiohttp
 import hikari
@@ -40,13 +40,13 @@ async def presence(app: lightbulb.BotApp) -> None:
     )
 
 
-@tasks.task(s=10, auto_start=True, pass_app=True)
+@tasks.task(s=2, auto_start=True, pass_app=True)
 async def notifications_task(app: lightbulb.BotApp) -> None:
     def filmweb_movie_url_generator(movie_title: str, movie_year: int, movie_id: int) -> str:
         movie_title = movie_title.replace(" ", "+")
         return f"https://www.filmweb.pl/film/{movie_title}-{movie_year}-{movie_id}"
 
-    def start_emoji_counter(stars: float) -> str:
+    def star_emoji_counter(stars: float) -> str:
         """
         Convert float rating to emoji string.
 
@@ -87,6 +87,16 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
         return return_string
 
+    def parse_rate(rate: int) -> str:
+        if rate == 0 or rate is None:
+            return "_brak oceny_"
+        return star_emoji_counter(rate)
+
+    def parse_movie_rate(rate: int, rate_type: str) -> str:
+        if rate is not None:
+            return star_emoji_counter(rate)
+        return f"_brak ocen {rate_type}_"
+
     async def send_discord_message(
         app: lightbulb.BotApp,
         channel_id: int,
@@ -98,12 +108,8 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
         try:
             # Send the embed to the specified channel in the specified guild
-            await rest.create_message(channel_id, embed=embed, content=f"<@{discord_id}>")
+            await rest.create_message(channel_id, embed=embed, user_mentions=discord_id)
             # await rest.create_message(channel=channel_id, content=f"<@{discord_id}>")
-
-            # async with bot.d.client_session.get(f"http://filman_server:8000/tasks/update/status/{id_task}/done") as resp:
-            #     if not resp.ok:
-            #         print(f"Error updating task status: {resp.status} {resp.reason}")
 
         except hikari.NotFoundError:
             print("Guild or channel not found.")
@@ -116,119 +122,168 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         if not resp.ok:
             return
 
-        tasks = await resp.json()
+        task = await resp.json()
 
-        logging.info(f"Found {len(tasks)} tasks to do") #  found 7 len 
-        logging.debug(f"Tasks: {tasks}")
+        logging.info(task)
+        logging.info(task)
+        logging.info(task)
+        logging.info(task)
 
-        for task in tasks:
-            if task["type"] == "send_discord_notification": # TODO fix task type
-                filmweb_id = task["task_job"].split(",")[0]
-                media_type = task["task_job"].split(",")[1]
-                movie_id = task["task_job"].split(",")[2]
+        if task["task_type"] == "send_discord_notification":
+            task_id = task["task_id"]
 
-                if media_type == "movie":
-                    async with bot.d.client_session.get(
-                        f"http://filman_server:8000/filmweb/user/watched/movies/get?filmweb_id={filmweb_id}&movie_id={movie_id}"
-                    ) as resp:
+            filmweb_id = task["task_job"].split(",")[0]
+            media_type = task["task_job"].split(",")[1]
+            movie_id = task["task_job"].split(",")[2]
+
+            if media_type == "movie":
+                async with bot.d.client_session.get(
+                    f"http://filman_server:8000/filmweb/user/watched/movies/get?filmweb_id={filmweb_id}&movie_id={movie_id}"
+                ) as resp2:
+                    if not resp2.ok:
+                        return
+
+                    user_id = 0
+                    message_destinations = []
+
+                    async with bot.d.client_session.get(f"http://filman_server:8000/users/get?filmweb_id={filmweb_id}") as resp:
                         if not resp.ok:
                             return
 
-                        user_id = 0
-                        message_destinations = []
+                        user = await resp.json()
+                        user_id = user["id"]
+                        discord_id = user["discord_id"]
 
-                        async with bot.d.client_session.get(
-                            f"http://filman_server:8000/users/get?filmweb_id={filmweb_id}"
-                        ) as resp:
-                            if not resp.ok:
-                                return
+                    async with bot.d.client_session.get(
+                        f"http://filman_server:8000/users/get_all_channels?user_id={user_id}"
+                    ) as resp3:
+                        if not resp3.ok:
+                            return
 
-                            user = await resp.json()
-                            user_id = user["id"]
+                        message_destinations = await resp3.json()
 
-                        async with bot.d.client_session.get(
-                            f"http://filman_server:8000/users/get_all_channels?user_id={user_id}"
-                        ) as resp:
-                            if not resp.ok:
-                                return
+                    data = await resp2.json()
 
-                            message_destinations = await resp.json()
+                    movie = data["movie"]
 
-                        data = await resp.json()
+                    filmweb_id = data["filmweb_id"]
+                    date_watched = data["date"]
+                    rate = data["rate"]
+                    comment = data["comment"]
+                    favorite = data["favorite"]
 
-                        movie = data["movie"]
+                    # parase data to none-safe
+                    date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(tz=datetime.timezone.utc)
+                    comment = "\n".join(textwrap.wrap(comment, width=62)) if comment is not None else None
+                    movie_url = filmweb_movie_url_generator(movie["title"], movie["year"], movie["id"])
+                    movie["poster_url"] = (
+                        "https://fwcdn.pl/fpo" + movie["poster_url"]
+                        if movie["poster_url"] is not None
+                        else "https://vectorified.com/images/no-data-icon-23.png"
+                    )
 
-                        filmweb_id = data["filmweb_id"]
-                        date_watched = data["date"]
-                        rate = data["rate"]
-                        comment = data["comment"]
-                        favorite = data["favorite"]
+                    rate_parsed = ""
 
-                        movie_url = filmweb_movie_url_generator(movie["title"], movie["year"], movie["id"])
+                    rate_parsed = parse_rate(rate)
+                    social_rate_parsed = parse_movie_rate(movie["community_rate"], "społeczności")
+                    critcis_rate_parsed = parse_movie_rate(movie["critics_rate"], "krytyków")
 
-                        movie["poster_uri"] = "https://fwcdn.pl/fpo" + movie["poster_uri"]
+                    embed1 = hikari.Embed(
+                        title=f"{movie['title']} ({movie['year']})",
+                        description=f"<@{discord_id}>",
+                        url=movie_url,
+                        colour=0xFFC200,
+                        timestamp=date_watched,
+                    )
+                    embed1.set_thumbnail(movie["poster_url"])
 
-                        embed = hikari.Embed(
-                            title=f"{movie['title']}",
-                            colour=0xFFC200,
-                            url=movie_url,
-                            timestamp=datetime.now().astimezone(),
+                    embed1.add_field(
+                        name=f"Ocena `{filmweb_id}`",
+                        value=rate_parsed,
+                        inline=True,
+                    )
+
+                    if rate != 0:
+                        embed1.add_field(
+                            name="Ocena",
+                            value=f"**{rate}/10**",
+                            inline=True,
                         )
-
-                        embed.set_thumbnail(movie["poster_uri"])
-
-                        embed.add_field(
-                            name="Tytuł",
-                            value=f"{movie['title']}",
+                    else:
+                        embed1.add_field(
+                            name="\u200B",
+                            value="\u200B",
                             inline=True,
                         )
 
-                        embed.add_field(
-                            name="Rok",
-                            value=f"{movie['year']}",
+                    if favorite:
+                        embed1.add_field(
+                            name="Ulubiony",
+                            value="Tak :heart:",
+                            inline=True,
+                        )
+                    else:
+                        embed1.add_field(
+                            name="\u200B",
+                            value="\u200B",
                             inline=True,
                         )
 
-                        if favorite:
-                            embed.add_field(
-                                name="Ulubiony",
-                                value=f"❤️ Tak",
-                                inline=True,
-                            )
-
-                        if comment:
-                            embed.add_field(
-                                name="Komentarz",
-                                value=f"{comment}",
-                                inline=True,
-                            )
-
-                        if rate:
-                            embed.add_field(
-                                name=f"Ocena `{filmweb_id}`",
-                                value=f"{start_emoji_counter(rate)}",
-                                inline=False,
-                            )
-                        else:
-                            embed.add_field(
-                                name=f"Ocena `{filmweb_id}`",
-                                value=f"_brak oceny_",
-                                inline=False,
-                            )
-
-                        embed.add_field(
-                            name="Ocena społeczności",
-                            value=f"{start_emoji_counter(movie['community_rate'])}",
+                    if comment:
+                        embed1.add_field(
+                            name="Komentarz",
+                            value=comment,
                             inline=False,
                         )
 
-                        for message_destination in message_destinations:
-                            await send_discord_message(
-                                app,
-                                message_destination,
-                                embed,
-                                user_id,
-                            )
+                    embed1.add_field(
+                        name="Ocena społeczności",
+                        value=social_rate_parsed,
+                        inline=True,
+                    )
+
+                    embed1.add_field(
+                        name="\u200B",
+                        value=f"**{round(movie['community_rate'], 2):.2f}/10**",
+                        inline=True,
+                    )
+
+                    embed1.add_field(
+                        name="\u200B",
+                        value="\u200B",
+                        inline=True,
+                    )
+
+                    embed1.add_field(
+                        name="Ocena krytyków",
+                        value=critcis_rate_parsed,
+                        inline=True,
+                    )
+
+                    embed1.add_field(
+                        name="\u200B",
+                        value=f"**{round(movie['critics_rate'], 2):.2f}/10**",
+                        inline=True,
+                    )
+
+                    embed1.add_field(
+                        name="\u200B",
+                        value="\u200B",
+                        inline=True,
+                    )
+
+                    for message_destination in message_destinations:
+                        await send_discord_message(
+                            app,
+                            message_destination,
+                            embed1,
+                            discord_id,
+                            task_id,
+                        )
+
+            async with bot.d.client_session.get(f"http://filman_server:8000/tasks/update/status/{task_id}/completed") as resp:
+                if not resp.ok:
+                    print(f"Error updating task status: {resp.status} {resp.reason}")
 
 
 bot.load_extensions_from("./endpoints/")
