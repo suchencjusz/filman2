@@ -11,6 +11,8 @@ from . import models, schemas
 # USERS
 #
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 
 def get_user(
     db: Session,
@@ -59,6 +61,21 @@ def get_user_destinations(
         return None
 
     return db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
+
+
+def get_user_destinations_channels(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+) -> list[int]:
+    query = db.query(models.DiscordGuilds.discord_channel_id).join(
+        models.DiscordDestinations, models.DiscordDestinations.discord_guild_id == models.DiscordGuilds.discord_guild_id
+    )
+    if user_id:
+        query = query.filter(models.DiscordDestinations.user_id == user_id)
+    if discord_user_id:
+        query = query.filter(models.DiscordDestinations.discord_user_id == discord_user_id)
+    return [channel_id for (channel_id,) in query.all()]
 
 
 # It is used to check if user is in discord guild only for that!
@@ -199,7 +216,7 @@ def get_guilds(db: Session):
 #
 
 
-def get_movie_filmweb_id(db: Session, id: int):
+def get_movie_filmweb_id(db: Session, id: int) -> models.FilmWebMovie | None:
     return db.query(models.FilmWebMovie).filter(models.FilmWebMovie.id == id).first()
 
 
@@ -214,24 +231,46 @@ def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie) -> models.Fil
         year=movie.year,
         poster_url=movie.poster_url,
         community_rate=movie.community_rate,
+        critics_rate=movie.critics_rate,
     )
 
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
+
     return db_movie
 
 
 def update_filmweb_movie(db: Session, movie: schemas.FilmWebMovie):
     db_movie = get_movie_filmweb_id(db, movie.id)
+
     if db_movie is None:
         return create_filmweb_movie(db, movie)
+
+    logging.debug(f"Updating movie: {movie.title}")
+    logging.debug(f"movie data before")
+    logging.debug(f"{db_movie.title}")
+    logging.debug(f"{db_movie.year}")
+    logging.debug(f"{db_movie.poster_url}")
+    logging.debug(f"{db_movie.community_rate}")
+    logging.debug(f"{db_movie.critics_rate}")
+    logging.debug(f"movie data after")
+
     db_movie.title = movie.title
     db_movie.year = movie.year
     db_movie.poster_url = movie.poster_url
     db_movie.community_rate = movie.community_rate
+    db_movie.critics_rate = movie.critics_rate
+
+    logging.debug(f"{db_movie.title}")
+    logging.debug(f"{db_movie.year}")
+    logging.debug(f"{db_movie.poster_url}")
+    logging.debug(f"{db_movie.community_rate}")
+    logging.debug(f"{db_movie.critics_rate}")
+
     db.commit()
     db.refresh(db_movie)
+
     return db_movie
 
 
@@ -328,19 +367,22 @@ def delete_filmweb_user_mapping(
     user_id: int | None,
     discord_id: int | None,
     filmweb_id: str | None,
-) -> bool:
+) -> bool | None:
     user = get_user(db, user_id, filmweb_id, discord_id)
 
     if user is None:
+        logging.debug(f"User not found for user_id {user_id} and filmweb_id {filmweb_id}")
         return False
 
-    db_mapping = db.query(models.FilmWebUserMapping).filter_by(user_id=user.id).first()
+    db_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
 
     if db_mapping is None:
-        return False
+        logging.debug(f"Mapping not found for user {user.id} and filmweb_id {filmweb_id}")
+        return None
 
     db.delete(db_mapping)
     db.commit()
+
     return True
 
 
@@ -353,10 +395,6 @@ def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.F
     if watched_movie is None:
         watched_movie = schemas.FilmWebMovieCreate(
             id=user_watched_movie.id_media,
-            title=None,
-            year=None,
-            poster_url=None,
-            community_rate=None,
         )
 
         create_filmweb_movie(db, watched_movie)
@@ -395,8 +433,6 @@ def get_filmweb_user_watched_movie(
     id_media: int,
 ):
     user = get_user(db, user_id, filmweb_id, discord_id)
-
-    logging.debug(f"{user.discord_id}")
 
     if user is None:
         return None
@@ -440,6 +476,25 @@ def get_filmweb_user_watched_movies(
     )
 
     return watched_movies
+
+
+def delete_filmweb_user_watched_movies(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+) -> bool:
+    user_mapping = get_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
+
+    if user_mapping is None:
+        return False
+
+    filmweb_id = user_mapping.filmweb_id
+
+    db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).delete()
+    db.commit()
+
+    return True
 
 
 #

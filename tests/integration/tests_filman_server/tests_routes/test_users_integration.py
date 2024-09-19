@@ -74,7 +74,7 @@ def test_get_user(test_client):
 
     # create user which exists
     response = test_client.post("/users/create", json=test_users_data[0])
-    assert response.status_code == 400
+    assert response.status_code == 202
 
     # check using other endpoint /get_all
     response = test_client.get("/users/get_all")

@@ -27,11 +27,10 @@ class Scraper:
     def scrap(self, task: Task):
         logging.info(f"Scraping user watched movies for user: {task.task_job}")
 
-        filmweb = FilmWeb(self.headers, self.endpoint_url)
         tasks = Tasks(self.headers, self.endpoint_url)
 
         last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
-        user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get"
+        user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get_all?filmweb_id={task.task_job}"
 
         try:
             logging.debug(f"Fetching user already watched movies from: {user_already_watched}")
@@ -137,8 +136,15 @@ class Scraper:
             try:
                 if filmweb.add_watched_movie(movie):
                     if first_time_scrap is False:
-                        if dc_notifications.send_notification(filmweb_id=filmweb_id) is False:
-                            logging.error(f"Error sending discord notification for {filmweb_id}")
+                        if (
+                            dc_notifications.send_notification(
+                                filmweb_id=filmweb_id, media_type="movie", media_id=movie.id_media
+                            )
+                            is True
+                        ):
+                            logging.info(f"Notification sent for {filmweb_id}")
+                        else:
+                            logging.error(f"Error sending notification for {filmweb_id}")
                             continue
                 else:
                     logging.error(f"Error updating movie data: {e}")
@@ -149,8 +155,8 @@ class Scraper:
                         task_id=0,
                         task_status=TaskStatus.QUEUED,
                         task_type=TaskTypes.SCRAP_FILMWEB_MOVIE,
-                        task_job=movie.id_media,
-                        task_created=datetime.now(),
+                        task_job=str(movie.id_media),
+                        task_created=datetime.datetime.now(),
                     )
                 )
 

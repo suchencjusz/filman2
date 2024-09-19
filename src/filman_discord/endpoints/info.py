@@ -14,12 +14,17 @@ async def info_command(ctx: lightbulb.SlashContext) -> None:
 
     embed.add_field(
         name="Wersja i ostatnia aktualizacja",
-        value="`1.1.0` - `2024-09-07`",
+        value="`1.1.1` - `2024-09-19`",
     )
 
     embed.add_field(
         name="Autor",
         value="`@suchencjusz`",
+    )
+
+    embed.add_field(
+        name="Repozytorium",
+        value="https://github.com/suchencjusz/filman2",
     )
 
     embed.set_footer(

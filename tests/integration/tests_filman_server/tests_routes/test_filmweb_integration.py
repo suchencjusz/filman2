@@ -51,6 +51,7 @@ def test_update_movie(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -58,6 +59,7 @@ def test_update_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -65,6 +67,7 @@ def test_update_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 
@@ -84,8 +87,8 @@ def test_add_watched_movie(test_client):
 
     test_users_filmweb_ids = [
         "maciek",
-        "steafan",
-        "albert",
+        "stefan",
+        "sucheta348",
     ]
 
     test_movies_data = [
@@ -95,6 +98,7 @@ def test_add_watched_movie(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -102,6 +106,7 @@ def test_add_watched_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -109,6 +114,7 @@ def test_add_watched_movie(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 
@@ -116,6 +122,11 @@ def test_add_watched_movie(test_client):
         response = test_client.post("/filmweb/movie/update", json=movie)
         assert response.status_code == 200
         assert response.json() == movie
+
+    # get movie with id 628
+    response = test_client.get("/filmweb/movie/get", params={"id": 628})
+    assert response.status_code == 200
+    assert response.json()["id"] == 628
 
     # create users
     for user_data in test_users_data:
@@ -164,7 +175,7 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -176,7 +187,7 @@ def test_add_watched_movie(test_client):
         "/filmweb/user/watched/movies/add",
         json={
             "id_media": 1,
-            "filmweb_id": "steafan",
+            "filmweb_id": "stefan",
             "date": "2024-09-11T20:21:58.072Z",
             "rate": 5,
             "comment": None,
@@ -185,7 +196,7 @@ def test_add_watched_movie(test_client):
     )
     assert response.status_code == 200
     assert response.json()["id_media"] == 1
-    assert response.json()["filmweb_id"] == "steafan"
+    assert response.json()["filmweb_id"] == "stefan"
     assert response.json()["rate"] == 5
     assert response.json()["comment"] == None
     assert response.json()["favorite"] == False
@@ -194,7 +205,7 @@ def test_add_watched_movie(test_client):
         "/filmweb/user/watched/movies/add",
         json={
             "id_media": 2,
-            "filmweb_id": "steafan",
+            "filmweb_id": "stefan",
             "date": "2024-09-11T20:21:58.072Z",
             "rate": 2,
             "comment": "awesome",
@@ -203,13 +214,13 @@ def test_add_watched_movie(test_client):
     )
     assert response.status_code == 200
     assert response.json()["id_media"] == 2
-    assert response.json()["filmweb_id"] == "steafan"
+    assert response.json()["filmweb_id"] == "stefan"
     assert response.json()["rate"] == 2
     assert response.json()["comment"] == "awesome"
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 2})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 2})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 1
     assert response.json()[0]["rate"] == 5
@@ -226,7 +237,7 @@ def test_add_watched_movie(test_client):
         "/filmweb/user/watched/movies/add",
         json={
             "id_media": 628,
-            "filmweb_id": "albert",
+            "filmweb_id": "sucheta348",
             "date": "2024-09-11T20:21:58.072Z",
             "rate": 7,
             "comment": "good movie",
@@ -235,7 +246,7 @@ def test_add_watched_movie(test_client):
     )
     assert response.status_code == 200
     assert response.json()["id_media"] == 628
-    assert response.json()["filmweb_id"] == "albert"
+    assert response.json()["filmweb_id"] == "sucheta348"
     assert response.json()["rate"] == 7
     assert response.json()["comment"] == "good movie"
     assert response.json()["favorite"] == False
@@ -244,7 +255,7 @@ def test_add_watched_movie(test_client):
         "/filmweb/user/watched/movies/add",
         json={
             "id_media": 1,
-            "filmweb_id": "albert",
+            "filmweb_id": "sucheta348",
             "date": "2024-09-11T20:21:58.072Z",
             "rate": 5,
             "comment": None,
@@ -253,7 +264,7 @@ def test_add_watched_movie(test_client):
     )
     assert response.status_code == 200
     assert response.json()["id_media"] == 1
-    assert response.json()["filmweb_id"] == "albert"
+    assert response.json()["filmweb_id"] == "sucheta348"
     assert response.json()["rate"] == 5
     assert response.json()["comment"] == None
     assert response.json()["favorite"] == False
@@ -262,7 +273,7 @@ def test_add_watched_movie(test_client):
         "/filmweb/user/watched/movies/add",
         json={
             "id_media": 2,
-            "filmweb_id": "albert",
+            "filmweb_id": "sucheta348",
             "date": "2024-09-11T20:21:58.072Z",
             "rate": 2,
             "comment": "awesome",
@@ -271,13 +282,13 @@ def test_add_watched_movie(test_client):
     )
     assert response.status_code == 200
     assert response.json()["id_media"] == 2
-    assert response.json()["filmweb_id"] == "albert"
+    assert response.json()["filmweb_id"] == "sucheta348"
     assert response.json()["rate"] == 2
     assert response.json()["comment"] == "awesome"
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 3})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 3})
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -309,7 +320,7 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -323,8 +334,8 @@ def test_user_mapping_delete(test_client):
 
     test_users_filmweb_ids = [
         "maciek",
-        "steafan",
-        "albert",
+        "stefan",
+        "sucheta348",
     ]
 
     test_movies_data = [
@@ -334,6 +345,7 @@ def test_user_mapping_delete(test_client):
             "year": 1999,
             "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
             "community_rate": 7.6,
+            "critics_rate": 8.0,
         },
         {
             "id": 1,
@@ -341,6 +353,7 @@ def test_user_mapping_delete(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
             "community_rate": 7.3,
+            "critics_rate": 7.0,
         },
         {
             "id": 2,
@@ -348,6 +361,7 @@ def test_user_mapping_delete(test_client):
             "year": 1997,
             "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
             "community_rate": 7.9,
+            "critics_rate": 8.0,
         },
     ]
 
@@ -366,8 +380,8 @@ def test_user_mapping_delete(test_client):
         assert user["discord_id"] == user_data["discord_id"]
 
     # map users to filmweb ids
-    for filweb_id, user_id in zip(test_users_filmweb_ids, [1, 2, 3]):
-        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filweb_id})
+    for filmweb_id, user_id in zip(test_users_filmweb_ids, [1, 2, 3]):
+        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filmweb_id})
         assert response.status_code == 200
 
     # check user mappings via ids
@@ -381,5 +395,5 @@ def test_user_mapping_delete(test_client):
     assert response.status_code == 200
 
     # check user 1 watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": 1})
+    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 404

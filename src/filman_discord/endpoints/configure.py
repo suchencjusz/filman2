@@ -7,7 +7,7 @@ configure_plugin = lightbulb.Plugin("Configure")
 
 
 @configure_plugin.command
-@lightbulb.command("configure", "Skonfiguruj bota")
+@lightbulb.command("configure", "Konfiguracja bota")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
 async def configure_group(_: lightbulb.SlashContext) -> None:
     pass
@@ -67,7 +67,7 @@ async def channel_subcommand(ctx: lightbulb.SlashContext, text_channel: hikari.T
     ) as resp:
         if not resp.ok:
             await ctx.respond(
-                f"API returned a {resp.status} status :c",
+                f"Coś poszło nie tak! {resp.status} {resp.reason}",
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
             return

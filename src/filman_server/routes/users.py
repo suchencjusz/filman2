@@ -21,7 +21,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db_user = crud.create_user(db, user)
         return db_user
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=202, detail="User already exists")
 
 
 @users_router.get(
@@ -32,7 +32,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 )
 async def get_user(
     user_id: int | None = None,
-    filmweb_id: int | None = None,
+    filmweb_id: str | None = None,
     discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):
@@ -63,6 +63,32 @@ async def get_all_users(
 #
 # discord guild actions
 #
+
+
+@users_router.get(
+    "/get_all_channels",
+    response_model=List[int],
+    summary="Get all guild text channels",
+    description="Get all discord guild text channels, where notifications can be sent",
+)
+async def get_channels(
+    user_id: int | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    user = crud.get_user(db, user_id, None, discord_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    discord_destinations = crud.get_user_destinations(db, user_id, discord_id)
+    if discord_destinations is None or len(discord_destinations) == 0:
+        raise HTTPException(status_code=404, detail="User not found in any guild")
+
+    discord_channels = crud.get_user_destinations_channels(db, user_id, discord_id)
+    if discord_channels is None or len(discord_channels) == 0:
+        raise HTTPException(status_code=404, detail="User not found in any guild")
+
+    return discord_channels
 
 
 @users_router.get(
@@ -108,11 +134,11 @@ async def add_to_guild(
     guild = crud.get_guild(db, discord_guild_id)
 
     if guild is None:
-        raise HTTPException(status_code=404, detail="Guild not found")
+        raise HTTPException(status_code=405, detail="Guild not found")
 
     discord_destination = crud.get_user_destination(db, user_id, discord_id, discord_guild_id)
     if discord_destination is not None:
-        raise HTTPException(status_code=400, detail="User already in this guild")
+        raise HTTPException(status_code=409, detail="User already in this guild")
 
     discord_destination = crud.set_user_destination(db, user_id=user_id, discord_guild_id=discord_guild_id)
 
