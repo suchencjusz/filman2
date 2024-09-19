@@ -32,7 +32,4 @@ jobs:
       - name: Test with pytest  
         run: |  
           pip install pytest pytest-cov coverage
-          coverage run -m pytest -v -s  
-      - name: Generate Coverage Report  
-        run: |  
-          coverage report -m
+          pytest --cov --cov-report=xml
