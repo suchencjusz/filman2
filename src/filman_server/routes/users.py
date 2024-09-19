@@ -64,9 +64,32 @@ async def get_all_users(
 # discord guild actions
 #
 
+
 @users_router.get(
     "/get_all_channels",
-    response_model=List[schemas.DiscordGuildChannels],
+    response_model=List[int],
+    summary="Get all guild text channels",
+    description="Get all discord guild text channels, where notifications can be sent",
+)
+async def get_channels(
+    user_id: int | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    user = crud.get_user(db, user_id, None, discord_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    discord_destinations = crud.get_user_destinations(db, user_id, discord_id)
+    if discord_destinations is None or len(discord_destinations) == 0:
+        raise HTTPException(status_code=404, detail="User not found in any guild")
+
+    discord_channels = crud.get_user_destinations_channels(db, user_id, discord_id)
+    if discord_channels is None or len(discord_channels) == 0:
+        raise HTTPException(status_code=404, detail="User not found in any guild")
+
+    return discord_channels
+
 
 @users_router.get(
     "/get_all_guilds",

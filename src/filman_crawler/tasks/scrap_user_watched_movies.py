@@ -27,11 +27,10 @@ class Scraper:
     def scrap(self, task: Task):
         logging.info(f"Scraping user watched movies for user: {task.task_job}")
 
-        filmweb = FilmWeb(self.headers, self.endpoint_url)
         tasks = Tasks(self.headers, self.endpoint_url)
 
         last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
-        user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get"
+        user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get_all?filmweb_id={task.task_job}"
 
         try:
             logging.debug(f"Fetching user already watched movies from: {user_already_watched}")

@@ -63,9 +63,13 @@ def get_user_destinations(
     return db.query(models.DiscordDestinations).filter_by(user_id=user.id).all()
 
 
-def get_user_destinations_channels(db: Session, user_id: int | None, discord_user_id: int | None) -> list[int]:
+def get_user_destinations_channels(
+    db: Session,
+    user_id: int | None,
+    discord_user_id: int | None,
+) -> list[int]:
     query = db.query(models.DiscordGuilds.discord_channel_id).join(
-        models.DiscordDestinations, models.DiscordDestinations.guild_id == models.DiscordGuilds.id
+        models.DiscordDestinations, models.DiscordDestinations.discord_guild_id == models.DiscordGuilds.discord_guild_id
     )
     if user_id:
         query = query.filter(models.DiscordDestinations.user_id == user_id)
