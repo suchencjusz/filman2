@@ -7,18 +7,18 @@
 
 🚀 Planowane funkcje:
 - Statyski (coś na zasadzie last.fm dla spotify),
-- Losowanie filmu do obejrzenia,
+- Losowanie filmu do obejrzenia (z puli znajomych),
+- Sugerowanie filmu do obejrzenia (z puli znajomych, na podstawie ocen),
 - Ocena gustu przez AI,
 
 ❓ Lista dostępnych komend i opcji jest dostępna pod komendą /help:
-- /help tracker
+- /help filmweb
 - /help configure
 
 🤖 Przykładowa konfiguracja
 - /configure channel text_channel:#ogólny
 Konfiguracja kanału z powiadomieniami
-
-- /tracker me filmweb_username:
+- /filmweb me filmweb_username:
 Uruchomienie śledzenie użytkownika
 
 # Dev
