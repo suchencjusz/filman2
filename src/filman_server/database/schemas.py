@@ -112,19 +112,6 @@ class LetterboxdUserMapping(BaseModel):
         orm_mode = True
 
 
-#
-# FILMWEB
-#
-
-
-class FilmWebUserMapping(BaseModel):
-    filmweb_id: str
-    user_id: int
-
-    class Config:
-        orm_mode = True
-
-
 # MOVIES
 
 

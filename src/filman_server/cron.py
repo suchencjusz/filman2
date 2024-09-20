@@ -15,25 +15,25 @@ class Cron:
     # scrap user watched movies task
     @staticmethod
     def tasks_new_scrap_filmweb_users_movies():
-        response = requests.get("http://localhost:8000/tasks/new/scrap/filmweb/users/movies")
+        response = requests.get("http://localhost:8000/tasks/new/scrap/filmweb/users/movies", timeout=5)
         logging.info(f"Executed tasks_new_scrap_filmweb_users_movies: {response.status_code}")
 
     # scrap movies task
     @staticmethod
     def tasks_new_scrap_filmweb_movies():
-        response = requests.get("http://localhost:8000/tasks/new/scrap/filmweb/movies")
+        response = requests.get("http://localhost:8000/tasks/new/scrap/filmweb/movies", timeout=5)
         logging.info(f"Executed tasks_new_scrap_filmweb_movies: {response.status_code}")
 
     # update stuck tasks
     @staticmethod
     def tasks_update_stuck_tasks():
-        response = requests.get("http://localhost:8000/tasks/update/stuck/5")
+        response = requests.get("http://localhost:8000/tasks/update/stuck/5", timeout=5)
         logging.info(f"Executed tasks_update_stuck_tasks: {response.status_code}")
 
     # update old tasks
     @staticmethod
     def tasks_update_old_tasks():
-        response = requests.get("http://localhost:8000/tasks/update/old/20")
+        response = requests.get("http://localhost:8000/tasks/update/old/20", timeout=5)
         logging.info(f"Executed tasks_update_old_tasks: {response.status_code}")
 
     def schedule_tasks(self):
