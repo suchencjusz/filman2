@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -106,19 +106,6 @@ class DiscordDestinationsCreate(BaseModel):
 
 class LetterboxdUserMapping(BaseModel):
     letterboxd_id: str
-    user_id: int
-
-    class Config:
-        orm_mode = True
-
-
-#
-# FILMWEB
-#
-
-
-class FilmWebUserMapping(BaseModel):
-    filmweb_id: str
     user_id: int
 
     class Config:

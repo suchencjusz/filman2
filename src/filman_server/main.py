@@ -1,31 +1,32 @@
 import logging
+import os
 
 import sentry_sdk
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from filman_server.database import crud, models, schemas
-from filman_server.database.db import SessionLocal, engine
+from filman_server.cron import Cron
+from filman_server.database import models
+from filman_server.database.db import engine
 from filman_server.routes import discord, filmweb, tasks, users
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-
 models.Base.metadata.create_all(bind=engine)
 
-# sentry_sdk.init(
-#     dsn="https://e90f28bf688cd7f8a1f8dcbc3586d359@o4506423653105664.ingest.sentry.io/4506423687774208",
-#     enable_tracing=False, # true
-#     integrations=[
-#         StarletteIntegration(transaction_style="endpoint"),
-#         FastApiIntegration(transaction_style="endpoint"),
-#     ],
+if os.environ.get("SENTRY_ENABLED", "false") == "true":
+    sentry_sdk.init(
+        dsn=os.environ.get("SENTRY_DSN"),
+        enable_tracing=True,
+        integrations=[
+            StarletteIntegration(transaction_style="endpoint"),
+            FastApiIntegration(transaction_style="endpoint"),
+        ],
+    )
 
-# )
+cron = Cron()
+cron.start()
 
 app = FastAPI()
 
@@ -49,4 +50,3 @@ async def trigger_error():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-    # uvicorn.run(app, host="localhost", port=8000)

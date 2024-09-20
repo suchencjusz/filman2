@@ -147,7 +147,7 @@ class Scraper:
                             logging.error(f"Error sending notification for {filmweb_id}")
                             continue
                 else:
-                    logging.error(f"Error updating movie data: {e}")
+                    logging.error(f"Error updating movie data for {filmweb_id}")
                     continue
 
                 tasks.create_task(

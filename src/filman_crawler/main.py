@@ -4,9 +4,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
-import ujson
+import sentry_sdk
 from fake_useragent import UserAgent
-from pydantic import BaseModel
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
 from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
@@ -16,34 +16,10 @@ from filman_crawler.tasks.scrap_user_watched_movies import (
 from filman_crawler.tasks.scrap_user_watched_series import (
     Scraper as user_watched_series_scrapper,
 )
-from filman_server.database.schemas import Task, TaskStatus, TaskTypes
+from filman_server.database.schemas import Task, TaskTypes
 
-logging.basicConfig(
-    filename="app.log",
-    filemode="w",
-    format="%(name)s - %(levelname)s - %(message)s",
-    level=logging.DEBUG,
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-# # Create handlers
-# c_handler = logging.StreamHandler()
-# f_handler = logging.FileHandler("app.log")
-# c_handler.setLevel(logging.INFO)
-# f_handler.setLevel(logging.INFO)
-
-# # Create formatters and add it to handlers
-# c_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-# f_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-# c_handler.setFormatter(c_format)
-# f_handler.setFormatter(f_format)
-
-# # Add handlers to the logger
-# logger.addHandler(c_handler)
-# logger.addHandler(f_handler)
 
 CORE_ENDPOINT = os.environ.get("CORE_ENDPOINT", "http://localhost:8001")
 
@@ -76,6 +52,14 @@ ALLOWED_TASKS = [
 ]
 
 TASK_TYPES = [task for task in ALLOWED_TASKS]
+
+sentry_logging = LoggingIntegration(
+    level=logging.INFO, event_level=logging.ERROR  # Capture info and above as breadcrumbs  # Send errors as events
+)
+
+
+if os.environ.get("SENTRY_ENABLED", "false") == "true":
+    sentry_sdk.init(dsn=os.environ.get("SENTRY_DSN"), integrations=[sentry_logging])
 
 
 def check_there_are_any_tasks():
@@ -121,17 +105,17 @@ def do_task(task: Task):
         scraper = movie_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job)
         scraper.scrap(task)
 
-    elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
-        scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
-        scraper.scrap(task)
+    # elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
+    #     scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
+    #     scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES:
         scraper = user_watched_movies_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT)
         scraper.scrap(task)
 
-    elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
-        scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job)
-        scraper.scrap(task)
+    # elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
+    #     scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job) # TODO fix constructor
+    #     scraper.scrap(task)
 
     else:
         logging.error(f"Unknown task type: {task.task_type}")
