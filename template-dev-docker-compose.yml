@@ -23,6 +23,8 @@ services:
 
     environment:
       - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_dev
+      - SENTRY_ENABLED=false
+      - SENTRY_DSN=
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -40,7 +42,7 @@ services:
       dockerfile: src/filman_discord/Dockerfile
 
     environment:
-      - DISCORD_TOKEN={your discord bot token goes here}
+      - DISCORD_TOKEN=
     
     networks:
       - db
@@ -57,6 +59,9 @@ services:
 
     environment:
       - CORE_ENDPOINT=http://filman_server:8000
+      - SENTRY_ENABLED=false
+      - SENTRY_DSN=
+
     
     networks:
       - db

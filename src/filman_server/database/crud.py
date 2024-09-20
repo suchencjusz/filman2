@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-import sqlalchemy.exc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 

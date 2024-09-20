@@ -1,0 +1,60 @@
+version: "3.6"
+
+volumes:
+  filman_server:
+    driver: local
+
+networks:
+  db:
+    driver: bridge
+
+services:
+  filman_server:
+    container_name: filman_server
+    image: suchencjusz/filman_server:main
+    ports:
+      - "8000:8000"
+
+    environment:
+      - SENTRY_ENABLED=false
+      - SENTRY_DSN=
+    # if you wish to use real sql db instead of sqlite uncomment this line (it is better way ofc)
+    # - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_db
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - db
+
+    restart: unless-stopped
+
+  filman_discord:
+    container_name: filman_discord
+    image: suchencjusz/filman_discord:main
+    depends_on:
+      - filman_server
+
+    environment:
+      - DISCORD_TOKEN= your discord bot token goes here
+    
+    networks:
+      - db
+
+    restart: unless-stopped
+
+  filman_crawler:
+    container_name: filman_crawler
+    image: suchencjusz/filman_crawler:main
+    depends_on:
+      - filman_server
+
+    environment:
+      - CORE_ENDPOINT=http://filman_server:8000
+      - SENTRY_ENABLED=false
+      - SENTRY_DSN=
+    
+    networks:
+      - db
+
+    restart: unless-stopped
+    
