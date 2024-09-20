@@ -68,7 +68,7 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
                 embed.add_field(
                     name="Zmiana konta filmweb",
                     value="""Jeśli chcesz zmienić monitorowane konto filmweb, musisz najpierw usunąć obecne!
-                    W tym celu użyj komendy `/tracker cancel`""",
+                    W tym celu użyj komendy `/filmweb cancel`""",
                     inline=True,
                 )
                 embed.set_footer(

@@ -1,7 +1,6 @@
-![GitHub License](https://img.shields.io/github/license/suchencjusz/filman2) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/suchencjusz/filman2) ![GitHub Action Docker](https://img.shields.io/github/actions/workflow/status/suchencjusz/filman2/docker-build.yml)
+![GitHub License](https://img.shields.io/github/license/suchencjusz/filman2) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/suchencjusz/filman2) ![GitHub Action Docker](https://img.shields.io/github/actions/workflow/status/suchencjusz/filman2/docker-build.yml) ![Black format](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-[Link z zaproszeniem bota na serwer](https://discord.com/oauth2/authorize?client_id=1182371658347065394&scope=bot&permissions=2147929152)
-
+[Link z zaproszeniem bota na serwer discord](https://discord.com/oauth2/authorize?client_id=1182371658347065394&scope=bot&permissions=2147929152)
 
 # Funkcje
 
@@ -26,44 +25,11 @@ Konfiguracja kanału z powiadomieniami
 - /filmweb me filmweb_username:
 Uruchomienie śledzenie użytkownika
 
-# Dev
+# Użycie
 
-```
-version: "3.6"
+## 1. Zaproś bota
+Poprostu użyj publicznego bota [link z zaproszeniem bota na serwer discord](https://discord.com/oauth2/authorize?client_id=1182371658347065394&scope=bot&permissions=2147929152)
 
-services:
-  filman-server:
-    container_name: filman-server
-    image: suchencjusz/filman-server:main
-    ports:
-      - "8000:8000"
+## 2. Hostuj u siebie (docker)
 
-    environment:
-      - MYSQL_HOST=domain
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=db
-    restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-  filman-discord:
-    depends_on:
-      - filman-server
-    container_name: filman-discord
-    image: suchencjusz/filman-discord:main
-
-    environment:
-      - DISCORD_TOKEN=******
-    restart: unless-stopped
-
-  filman-crawler:
-    depends_on:
-      - filman-server
-    container_name: filman-crawler
-    image: suchencjusz/filman-crawler:main
-
-    environment:
-      - CORE_ENDPOINT=http://filman-server:8000
-    restart: unless-stopped
-```
+Docker compose [docker-compose.yml](https://github.com/suchencjusz/filman2/blob/main/docker-compose.yml)
