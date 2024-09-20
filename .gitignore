@@ -59,3 +59,6 @@ temp.txt
 dev-docker-compose.yml
 database.db
 test.db
+
+# VS Code
+.vscode/
