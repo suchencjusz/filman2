@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from filman_server.cron import Cron
 
 @pytest.fixture
