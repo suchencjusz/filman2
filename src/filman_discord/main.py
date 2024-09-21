@@ -125,9 +125,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         task = await resp.json()
 
         logging.info(task)
-        logging.info(task)
-        logging.info(task)
-        logging.info(task)
 
         if task["task_type"] == "send_discord_notification":
             task_id = task["task_id"]
@@ -142,6 +139,8 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 ) as resp2:
                     if not resp2.ok:
                         return
+
+                    logging.info(f"sending notification for {filmweb_id} {movie_id}")
 
                     user_id = 0
                     message_destinations = []
@@ -197,37 +196,18 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     )
                     embed1.set_thumbnail(movie["poster_url"])
 
+                    user_rate_field = ""
+
+                    if rate == 0 or rate is None:
+                        user_rate_field = f"_brak oceny_ :heart: `{filmweb_id}`" if favorite else f"_brak oceny_ `{filmweb_id}`"
+                    else:
+                        user_rate_field = f"{rate}/10 :heart: `{filmweb_id}`" if favorite else f"{rate}/10 `{filmweb_id}`"
+
                     embed1.add_field(
-                        name=f"Ocena `{filmweb_id}`",
+                        name=user_rate_field,
                         value=rate_parsed,
-                        inline=True,
+                        inline=False,
                     )
-
-                    if rate != 0:
-                        embed1.add_field(
-                            name="Ocena",
-                            value=f"**{rate}/10**",
-                            inline=True,
-                        )
-                    else:
-                        embed1.add_field(
-                            name="\u200B",
-                            value="\u200B",
-                            inline=True,
-                        )
-
-                    if favorite:
-                        embed1.add_field(
-                            name="Ulubiony",
-                            value="Tak :heart:",
-                            inline=True,
-                        )
-                    else:
-                        embed1.add_field(
-                            name="\u200B",
-                            value="\u200B",
-                            inline=True,
-                        )
 
                     if comment:
                         embed1.add_field(
@@ -236,40 +216,30 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                             inline=False,
                         )
 
+                    society_rate_field = ""
+
+                    if movie["community_rate"] == 0 or movie["community_rate"] is None:
+                        society_rate_field = "_brak ocen społeczności_"
+                    else:
+                        society_rate_field = f"{round(movie['community_rate'], 1)}/10 społeczność"
+
                     embed1.add_field(
-                        name="Ocena społeczności",
+                        name=society_rate_field,
                         value=social_rate_parsed,
-                        inline=True,
+                        inline=False,
                     )
 
-                    embed1.add_field(
-                        name="\u200B",
-                        value=f"**{round(movie['community_rate'], 2):.2f}/10**",
-                        inline=True,
-                    )
+                    critcis_rate_parsed = ""
+
+                    if movie["critics_rate"] == 0 or movie["critics_rate"] is None:
+                        critcis_rate_parsed = "_brak ocen krytyków_"
+                    else:
+                        critcis_rate_parsed = f"{round(movie['critics_rate'], 1)}/10 krytycy"
 
                     embed1.add_field(
-                        name="\u200B",
-                        value="\u200B",
-                        inline=True,
-                    )
-
-                    embed1.add_field(
-                        name="Ocena krytyków",
+                        name=critcis_rate_parsed,
                         value=critcis_rate_parsed,
-                        inline=True,
-                    )
-
-                    embed1.add_field(
-                        name="\u200B",
-                        value=f"**{round(movie['critics_rate'], 2):.2f}/10**",
-                        inline=True,
-                    )
-
-                    embed1.add_field(
-                        name="\u200B",
-                        value="\u200B",
-                        inline=True,
+                        inline=False,
                     )
 
                     for message_destination in message_destinations:

@@ -2,7 +2,7 @@ import logging
 
 import ujson
 
-from .utils import FilmWeb, FilmWebMovie, Task, Tasks, TaskStatus, TaskTypes, Updaters
+from .utils import FilmWeb, FilmWebMovie, Task, Tasks, TaskStatus, Updaters
 
 
 class Scraper:

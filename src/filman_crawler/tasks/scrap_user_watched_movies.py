@@ -8,8 +8,6 @@ from filman_server.database.schemas import FilmWebUserWatchedMovieCreate
 from .utils import (
     DiscordNotifications,
     FilmWeb,
-    FilmWebMovie,
-    FilmWebMovieCreate,
     Task,
     Tasks,
     TaskStatus,
