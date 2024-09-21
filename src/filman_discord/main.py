@@ -181,11 +181,11 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                         else "https://vectorified.com/images/no-data-icon-23.png"
                     )
 
-                    rate_parsed = ""
+                    rate_parsed_star = ""
 
-                    rate_parsed = parse_rate(rate)
-                    social_rate_parsed = parse_movie_rate(movie["community_rate"], "społeczności")
-                    critcis_rate_parsed = parse_movie_rate(movie["critics_rate"], "krytyków")
+                    rate_parsed_star = parse_rate(rate)
+                    social_rate_parsed_star = parse_movie_rate(movie["community_rate"], "społeczności")
+                    critcis_rate_parsed_star = parse_movie_rate(movie["critics_rate"], "krytyków")
 
                     embed1 = hikari.Embed(
                         title=f"{movie['title']} ({movie['year']})",
@@ -205,7 +205,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
                     embed1.add_field(
                         name=user_rate_field,
-                        value=rate_parsed,
+                        value=rate_parsed_star,
                         inline=False,
                     )
 
@@ -225,7 +225,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
                     embed1.add_field(
                         name=society_rate_field,
-                        value=social_rate_parsed,
+                        value=social_rate_parsed_star,
                         inline=False,
                     )
 
@@ -238,7 +238,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
                     embed1.add_field(
                         name=critcis_rate_parsed,
-                        value=critcis_rate_parsed,
+                        value=critcis_rate_parsed_star,
                         inline=False,
                     )
 
