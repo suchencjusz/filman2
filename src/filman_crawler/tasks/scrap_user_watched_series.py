@@ -3,7 +3,6 @@ import logging
 import requests
 import ujson
 
-
 # class Task:
 #     def __init__(self, id_task, status, type, job, unix_timestamp, unix_timestamp_last_update):
 #         self.id_task = id_task
