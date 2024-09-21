@@ -190,6 +190,11 @@ def test_remove_user_from_guild(test_client):
             assert discord_destination["user_id"] > 0
             assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
 
+    # check channels of user nr 1
+    response = test_client.get("/users/get_all_channels", params={"user_id": 1})
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+
     # check guild members
     response = test_client.get(
         f"/discord/guild/members",

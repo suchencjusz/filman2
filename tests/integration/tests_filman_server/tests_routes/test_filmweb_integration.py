@@ -182,6 +182,16 @@ def test_add_watched_movie(test_client):
     assert response.json()[0]["comment"] == "good movie"
     assert response.json()[0]["favorite"] == False
 
+    # check with other endpoint (one movie)
+    response = test_client.get("/filmweb/user/watched/movies/get", params={"filmweb_id": "maciek", "movie_id": 628})
+    assert response.status_code == 200
+    assert response.json()["movie"]["id"] == 628
+    assert response.json()["movie"]["title"] == "Matrix"
+    assert response.json()["movie"]["year"] == 1999
+    assert response.json()["rate"] == 7
+    assert response.json()["comment"] == "good movie"
+    assert response.json()["favorite"] == False
+
     # let user 2 watch 2 of the movies
     response = test_client.post(
         "/filmweb/user/watched/movies/add",
