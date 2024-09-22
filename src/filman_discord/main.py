@@ -88,13 +88,13 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         return return_string
 
     def parse_rate(rate: int) -> str:
-        if rate == 0 or rate is None:
-            return "_brak oceny_"
-        return star_emoji_counter(rate)
+        if rate is not None and rate != 0:
+            return star_emoji_counter(rate) + f" **{rate}/10**"
+        return "_brak oceny_"
 
     def parse_movie_rate(rate: int, rate_type: str) -> str:
         if rate is not None:
-            return star_emoji_counter(rate)
+            return star_emoji_counter(rate) + f" **{round(rate, 1)}/10**"
         return f"_brak ocen {rate_type}_"
 
     async def send_discord_message(
@@ -102,7 +102,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         channel_id: int,
         embed: hikari.Embed,
         discord_id: int,
-        id_task: int,
     ) -> None:
         rest = app.rest
 
@@ -196,15 +195,11 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                     )
                     embed1.set_thumbnail(movie["poster_url"])
 
-                    user_rate_field = ""
-
-                    if rate == 0 or rate is None:
-                        user_rate_field = f"_brak oceny_ :heart: `{filmweb_id}`" if favorite else f"_brak oceny_ `{filmweb_id}`"
-                    else:
-                        user_rate_field = f"{rate}/10 :heart: `{filmweb_id}`" if favorite else f"{rate}/10 `{filmweb_id}`"
+                    if favorite:
+                        rate_parsed_star += " :heart:"
 
                     embed1.add_field(
-                        name=user_rate_field,
+                        name=f"Ocena `{filmweb_id}`",
                         value=rate_parsed_star,
                         inline=False,
                     )
@@ -216,28 +211,14 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                             inline=False,
                         )
 
-                    society_rate_field = ""
-
-                    if movie["community_rate"] == 0 or movie["community_rate"] is None:
-                        society_rate_field = "_brak ocen społeczności_"
-                    else:
-                        society_rate_field = f"{round(movie['community_rate'], 1)}/10 społeczność"
-
                     embed1.add_field(
-                        name=society_rate_field,
+                        name="Ocena społeczności",
                         value=social_rate_parsed_star,
                         inline=False,
                     )
 
-                    critcis_rate_parsed = ""
-
-                    if movie["critics_rate"] == 0 or movie["critics_rate"] is None:
-                        critcis_rate_parsed = "_brak ocen krytyków_"
-                    else:
-                        critcis_rate_parsed = f"{round(movie['critics_rate'], 1)}/10 krytycy"
-
                     embed1.add_field(
-                        name=critcis_rate_parsed,
+                        name="Ocena krytyków",
                         value=critcis_rate_parsed_star,
                         inline=False,
                     )
@@ -248,7 +229,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                             message_destination,
                             embed1,
                             discord_id,
-                            task_id,
                         )
 
             async with bot.d.client_session.get(f"http://filman_server:8000/tasks/update/status/{task_id}/completed") as resp:

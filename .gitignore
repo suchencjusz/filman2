@@ -59,6 +59,7 @@ temp.txt
 dev-docker-compose.yml
 database.db
 test.db
+filman.db
 
 # VS Code
 .vscode/
