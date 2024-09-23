@@ -60,6 +60,8 @@ dev-docker-compose.yml
 database.db
 test.db
 filman.db
+debug.txt
+todo.txt
 
 # VS Code
 .vscode/
