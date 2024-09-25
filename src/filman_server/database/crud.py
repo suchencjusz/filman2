@@ -285,7 +285,6 @@ def get_series_filmweb_id(db: Session, id: int):
 
 
 def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
-    # db_series = models.FilmWebSeries(**series.model_dump())
     existing_series = db.query(models.FilmWebSeries).filter_by(id=series.id).first()
     if existing_series:
         return existing_series
@@ -294,14 +293,16 @@ def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
         id=series.id,
         title=series.title,
         year=series.year,
+        other_year=series.other_year,
         poster_url=series.poster_url,
         community_rate=series.community_rate,
-        other_year=series.other_year,
+        critics_rate=series.critics_rate,
     )
 
     db.add(db_series)
     db.commit()
     db.refresh(db_series)
+
     return db_series
 
 

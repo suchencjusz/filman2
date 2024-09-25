@@ -6,9 +6,9 @@ import ujson
 
 from filman_server.database.schemas import (
     FilmWebMovie,
-    FilmWebMovieCreate,
     FilmWebSeries,
     FilmWebUserWatchedMovieCreate,
+    FilmwebUserWatchedSeriesCreate,
     Task,
     TaskStatus,
     TaskTypes,
@@ -148,3 +148,38 @@ class FilmWeb(Updaters):
             return False
 
         return True
+
+    # def update_series(self, series: FilmWebSeries):
+    #     r = requests.post(
+    #         f"{self.endpoint_url}/filmweb/series/update",
+    #         headers=self.headers,
+    #         json=series.model_dump(),
+    #     )
+
+    #     if r.status_code != 200:
+    #         logging.error(f"Error updating series data: HTTP {r.status_code}")
+    #         logging.error(r.text)
+    #         return False
+
+    #     return True
+
+    # def add_watched_series(self, info: FilmwebUserWatchedSeriesCreate):
+    #     r = requests.post(
+    #         f"{self.endpoint_url}/filmweb/user/watched/series/add",
+    #         headers=self.headers,
+    #         json={
+    #             "id_media": int(info.id_media),
+    #             "filmweb_id": str(info.filmweb_id),
+    #             "date": info.date.isoformat(),
+    #             "rate": int(info.rate),
+    #             "comment": info.comment,
+    #             "favorite": bool(info.favorite),
+    #         },
+    #     )
+
+    #     if r.status_code != 200:
+    #         logging.error(f"Error adding watched series: HTTP {r.status_code}")
+    #         logging.error(r.text)
+    #         return False
+
+    #     return True

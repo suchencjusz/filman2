@@ -142,12 +142,12 @@ class FilmWebUserWatchedMovieCreate(BaseModel):
 
 class FilmWebSeries(BaseModel):
     id: int
-    title: str
-    year: int
-    other_year: int
-    poster_url: str
-    community_rate: float
-    critics_rate: float
+    title: str | None = None
+    year: int | None = None
+    other_year: int | None = None
+    poster_url: str | None = None
+    community_rate: float | None = None
+    critics_rate: float | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -163,17 +163,6 @@ class FilmWebSeriesCreate(BaseModel):
 
 
 class FilmWebUserWatchedSeries(BaseModel):
-    series: FilmWebSeries
-    filmweb_id: str
-
-    date: datetime
-    rate: int | None = None
-    comment: str | None = None
-    favorite: bool
-    model_config = ConfigDict(from_attributes=True)
-
-
-class FilmwebUserWatchedSeries(BaseModel):
     series: FilmWebSeries
     filmweb_id: str
 

@@ -41,6 +41,45 @@ def clear_database():
     Base.metadata.create_all(bind=engine)
 
 
+# create 3 series
+# post /filmweb/update/series
+def test_update_series(test_client):
+    test_series_data = [
+        {
+            "id": 430668,
+            "title": "Breaking Bad",
+            "year": 2008,
+            "other_year": 2013,
+            "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
+            "community_rate": 9.0,
+            "critics_rate": 9.0,
+        },
+        {
+            "id": 1,
+            "title": "The Sopranos",
+            "year": 1999,
+            "other_year": 2007,
+            "poster_url": "https://fwcdn.pl/fpo/00/01/1/7418875_1.10.webp",
+            "community_rate": 8.0,
+            "critics_rate": 8.0,
+        },
+        {
+            "id": 2,
+            "title": "The Bear",
+            "year": 2023,
+            "other_year": None,
+            "poster_url": "https://fwcdn.pl/fpo/00/02/2/6956729_1.10.webp",
+            "community_rate": 7.0,
+            "critics_rate": 7.0,
+        },
+    ]
+
+    for series in test_series_data:
+        response = test_client.post("/filmweb/series/update", json=series)
+        assert response.status_code == 200
+        assert response.json() == series
+
+
 # create 3 movies
 # post /filmweb/update/movie
 def test_update_movie(test_client):
