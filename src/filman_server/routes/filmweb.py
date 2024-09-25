@@ -1,3 +1,5 @@
+import logging
+import os
 from typing import List
 
 import requests
@@ -7,6 +9,9 @@ from sqlalchemy.orm import Session
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 

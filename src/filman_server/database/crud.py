@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timedelta
 
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +11,8 @@ from . import models, schemas
 # USERS
 #
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 def get_user(

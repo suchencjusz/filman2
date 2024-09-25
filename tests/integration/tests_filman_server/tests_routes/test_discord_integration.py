@@ -24,9 +24,7 @@ def override_get_db():
 
 
 app.dependency_overrides[get_db] = override_get_db
-
 models.Base.metadata.create_all(bind=engine)
-
 client = TestClient(app)
 
 
@@ -44,6 +42,7 @@ def clear_database():
 # Guild configuration process
 # /discord/configure/guild
 def test_configure_guild(test_client):
+    logging.debug("Starting test_configure_guild")
     test_guilds_data = [
         {"discord_guild_id": 1209989703772799055, "discord_channel_id": 132632676225122304},
         {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122305},
@@ -51,24 +50,31 @@ def test_configure_guild(test_client):
     ]
 
     for guild_data in test_guilds_data:
-        response = test_client.post("/discord/configure/guild", json=guild_data)
+        logging.debug(f"Posting guild data: {guild_data}")
+        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
+        logging.debug(f"Response status code: {response.status_code}")
         assert response.status_code == 200
 
         guild = response.json()
+        logging.debug(f"Received guild response: {guild}")
 
         assert guild["id"] > 0
         assert guild["discord_guild_id"] == guild_data["discord_guild_id"]
         assert guild["discord_channel_id"] == guild_data["discord_channel_id"]
 
-    # check if guilds are in the database
-    response = test_client.get("/discord/guilds")
+    logging.debug("Checking if guilds are in the database")
+    response = test_client.get("/discord/guilds", timeout=3)
+    logging.debug(f"Response status code: {response.status_code}")
     guilds = response.json()
+    logging.debug(f"Received guilds: {guilds}")
 
     assert len(guilds) == len(test_guilds_data)
 
     for guild, guild_data in zip(guilds, test_guilds_data):
         assert guild["discord_guild_id"] == guild_data["discord_guild_id"]
         assert guild["discord_channel_id"] == guild_data["discord_channel_id"]
+
+    logging.debug("Finished test_configure_guild")
 
 
 # Get all guilds (very similar like above)
@@ -81,11 +87,11 @@ def test_get_guilds(test_client):
     ]
 
     for guild_data in test_guilds_data:
-        response = test_client.post("/discord/configure/guild", json=guild_data)
+        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
         assert response.status_code == 200
 
     # check if guilds are in the database
-    response = test_client.get("/discord/guilds")
+    response = test_client.get("/discord/guilds", timeout=3)
     guilds = response.json()
 
     assert len(guilds) == len(test_guilds_data)
@@ -111,15 +117,15 @@ def test_get_guild_members(test_client):
     ]
 
     for guild_data in test_guilds_data:
-        response = test_client.post("/discord/configure/guild", json=guild_data)
+        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
         assert response.status_code == 200
 
     for user_data in test_users_data:
-        response = test_client.post("/users/create", json=user_data)
+        response = test_client.post("/users/create", json=user_data, timeout=3)
         assert response.status_code == 200
 
     # check if guilds are in db
-    response = test_client.get("/discord/guilds")
+    response = test_client.get("/discord/guilds", timeout=3)
     assert response.status_code == 200
     assert len(response.json()) == len(test_guilds_data)
 
@@ -129,10 +135,13 @@ def test_get_guild_members(test_client):
             response = test_client.get(
                 "/users/add_to_guild",
                 params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+                timeout=3,
             )
             assert response.status_code == 200
 
     # get all members of the first guild
-    response = test_client.get("/discord/guild/members", params={"discord_guild_id": test_guilds_data[0]["discord_guild_id"]})
+    response = test_client.get(
+        "/discord/guild/members", params={"discord_guild_id": test_guilds_data[0]["discord_guild_id"]}, timeout=3
+    )
     assert response.status_code == 200
     assert [user["discord_id"] for user in response.json()] == [user["discord_id"] for user in test_users_data]

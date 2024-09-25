@@ -27,8 +27,15 @@ class Scraper:
         logging.debug(f"Fetched rating data: {rating_data}")
         logging.debug(f"Fetched critics data: {critics_data}")
 
-        if info_data is None or rating_data is None:
+        if info_data is None:
+            logging.error(f"Error fetching info data for movie: {task.task_job}")
             return False
+
+        if rating_data is None:
+            logging.warning(f"Error fetching social rating data for movie: {task.task_job}")
+
+        if critics_data is None:
+            logging.warning(f"Error fetching critics rating data for movie: {task.task_job}")
 
         info_data = ujson.loads(info_data)
         rating_data = ujson.loads(rating_data)
@@ -40,7 +47,7 @@ class Scraper:
         title = info_data.get("title", None)
         year = info_data.get("year", None)
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
-        community_rate = rating_data.get("rate", None)
+        community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
         if title is None or year is None or poster_url is None:

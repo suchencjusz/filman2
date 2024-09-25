@@ -93,21 +93,21 @@ class Tasks(Updaters):
 
 class DiscordNotifications(Updaters):
     def send_notification(self, filmweb_id: str, media_type: str, media_id: int):
-        r = requests.post(
-            f"{self.endpoint_url}/tasks/create",
-            headers=self.headers,
-            json={
-                "task_id": 0,
-                "task_status": TaskStatus.QUEUED.value,
-                "task_type": TaskTypes.SEND_DISCORD_NOTIFICATION.value,
-                "task_job": f"{filmweb_id},{media_type},{media_id}",
-                "task_created": datetime.datetime.now().isoformat(),
-            },
+
+        task = Tasks(self.headers, self.endpoint_url)
+
+        task = task.create_task(
+            Task(
+                task_id=0,
+                task_status=TaskStatus.QUEUED,
+                task_type=TaskTypes.SEND_DISCORD_NOTIFICATION,
+                task_job=f"{filmweb_id},{media_type},{media_id}",
+                task_created=datetime.datetime.now(),
+            )
         )
 
-        if r.status_code != 200:
-            logging.error(f"Error sending discord notification: HTTP {r.status_code}")
-            logging.error(r.text)
+        if not task:
+            logging.error("Error creating task: SEND_DISCORD_NOTIFICATION")
             return False
 
         return True
