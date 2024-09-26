@@ -58,6 +58,7 @@ class Scraper:
             return "Error fetching last 100 watched movies from filmweb"
 
         first_time_scrap = True if user_already_watched_ids == [] else False
+
         user_already_watched_ids = set(user_already_watched_ids or [])
 
         new_movies_watched = [movie for movie in last_100_watched_data if movie[0] not in user_already_watched_ids]

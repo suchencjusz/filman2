@@ -1,6 +1,8 @@
 # for what purpose rabbitmq exists
 # if you can build your task broker and learn something :~~~~D
 
+import logging
+import os
 from datetime import datetime
 from typing import List
 
@@ -10,6 +12,9 @@ from sqlalchemy.orm import Session
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 

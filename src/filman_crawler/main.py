@@ -20,8 +20,8 @@ from filman_crawler.tasks.scrap_user_watched_movies import (
 # )
 from filman_server.database.schemas import Task, TaskTypes
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 CORE_ENDPOINT = os.environ.get("CORE_ENDPOINT", "http://localhost:8001")
 
@@ -130,7 +130,7 @@ def check_connection() -> bool:
             return True
         return False
     except Exception as e:
-        logging.error(f"Error checking connection: {e}")
+        logging.warning(f"Error checking connection: {e}")
         return False
 
 
@@ -141,7 +141,7 @@ def main():
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         while True:
-            logging.info("Fetching tasks from endpoint")
+            logging.debug("Fetching tasks from endpoint")
 
             if check_there_are_any_tasks():
                 task = get_task_to_do()
@@ -149,13 +149,18 @@ def main():
                 if task is not None:
                     executor.submit(do_task, task)
                 else:
-                    logging.info("No tasks found")
+                    logging.info("No tasks to do")
+            else:
+                logging.info("No tasks to do")
 
             time.sleep(wait_time)
 
 
 if __name__ == "__main__":
     while not check_connection():
-        logging.error("Connection not established, retrying in 5 seconds")
+        logging.warning("Connection not established, retrying in 5 seconds")
         time.sleep(5)
+
+    logging.info("Connection established")
+
     main()
