@@ -842,3 +842,161 @@ def test_get_filmweb_user_watched_movies_by_user_id(test_db):
     )
 
     assert result is None
+
+
+#
+# FILMWEB WATCHED SERIES
+#
+
+
+def test_create_filmweb_watched_series(test_db):
+    watched_series = models.FilmWebUserWatchedSeries(
+        id_media=430668,
+        filmweb_id="test123",
+        date=datetime.datetime(2021, 1, 1, 18, 23, 43),
+        rate=5,
+        comment="Test",
+        favorite=True,
+    )
+
+    result = crud.create_filmweb_user_watched_series(test_db, watched_series)
+    assert result.id_media == 430668
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2021, 1, 1, 18, 23, 43)
+    assert result.rate == 5
+    assert result.comment == "Test"
+    assert result.favorite == True
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert len(result) == 1
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 1
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=777777777,
+    )
+
+    assert len(result) == 1
+
+
+def test_get_filmweb_watched_series_by_id(test_db):
+    result = crud.get_filmweb_user_watched_series(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+        id_media=430668,
+    )
+
+    assert result.id_media == 430668
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2021, 1, 1, 18, 23, 43)
+    assert result.rate == 5
+    assert result.comment == "Test"
+    assert result.favorite == True
+
+def test_get_filmweb_watched_series_by_id_no_existing(test_db):
+    result = crud.get_filmweb_user_watched_series(
+        test_db,
+        id_media=999,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert result is None
+
+def test_create_filmweb_watched_series_no_existing(test_db):
+    watched_series = models.FilmWebUserWatchedSeries(
+        id_media=100001,
+        filmweb_id="test123",
+        date=datetime.datetime(2023, 4, 6, 12, 53, 12),
+        rate=8,
+        comment="Test",
+        favorite=False,
+    )
+
+    result = crud.create_filmweb_user_watched_series(test_db, watched_series)
+    assert result.id_media == 100001
+    assert result.filmweb_id == "test123"
+    assert result.date == datetime.datetime(2023, 4, 6, 12, 53, 12)
+    assert result.rate == 8
+    assert result.comment == "Test"
+    assert result.favorite == False
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=None,
+        filmweb_id="test123",
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=None,
+        filmweb_id=None,
+        discord_id=777777777,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_series_filmweb_id(test_db, id=100001)
+    assert result.id == 100001
+    assert result.title == None
+    assert result.year == None
+    assert result.other_year == None
+    assert result.poster_url == None
+
+    # other series should be still in db
+    result = crud.get_series_filmweb_id(test_db, id=430668)
+    assert result.id == 430668
+    assert result.title == "Test number 2"
+    assert result.year == 2022
+    assert result.other_year == 2023
+    assert result.poster_url == "https://example.com/image2.jpg"
+
+def test_get_filmweb_user_watched_series_all_by_user_id(test_db):
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    result = crud.get_filmweb_user_watched_series_all(
+        test_db,
+        user_id=4,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is None

@@ -173,7 +173,7 @@ class FilmWebUserWatchedSeries(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class FilmwebUserWatchedSeriesCreate(BaseModel):
+class FilmWebUserWatchedSeriesCreate(BaseModel):
     id_media: int
     filmweb_id: str
 

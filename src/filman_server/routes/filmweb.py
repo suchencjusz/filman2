@@ -184,10 +184,6 @@ async def add_watched_movie(
     try:
         db_movie = crud.create_filmweb_user_watched_movie(db, user_watched_movie)
 
-        # tu sie powinien tworzyc task do crawlera
-        # ze sie musi pobrac film z filmweba i dodac do bazy
-        # ~2 nie koniecznie
-
         if db_movie is None or db_movie is IntegrityError:
             raise HTTPException(status_code=404, detail="Movie not found")
 
@@ -238,3 +234,27 @@ async def get_watched_movie(
         raise HTTPException(status_code=404, detail="User has no watched movies")
 
     return watched_movie
+
+#
+# SERIES WATCHED
+#
+
+@filmweb_router.post(
+    "/user/watched/series/add",
+    response_model=schemas.FilmwebUserWatchedSeriesCreate,
+    summary="Add watched series by user",
+    description="Add watched series by user, if series does not exist in database it will be added with default values",
+)
+async def add_watched_series(
+    user_watched_series: schemas.FilmwebUserWatchedSeriesCreate,
+    db: Session = Depends(get_db),
+):
+    try:
+        db_series = crud.create_filmweb_user_watched_series(db, user_watched_series)
+
+        if db_series is None or db_series is IntegrityError:
+            raise HTTPException(status_code=404, detail="Series not found")
+
+        return db_series
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Series is already in user watched")
