@@ -38,8 +38,11 @@ class Scraper:
             logging.warning(f"Error fetching critics rating data for movie: {task.task_job}")
 
         info_data = ujson.loads(info_data)
-        rating_data = ujson.loads(rating_data)
+        rating_data = None
         critics_rate = None
+
+        if rating_data is not None:
+            rating_data = ujson.loads(rating_data)
 
         if critics_data is not None:
             critics_data = ujson.loads(critics_data)
@@ -50,7 +53,7 @@ class Scraper:
         community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
-        if title is None or year is None or poster_url is None:
+        if title is None or year is None:
             return False
 
         update = self.update_data(
@@ -84,6 +87,7 @@ class Scraper:
     ):
         try:
             logging.debug(f"Preparing to update movie data for movie_id: {movie_id}")
+
             filmweb = FilmWeb(self.headers, self.endpoint_url)
             filmweb.update_movie(
                 FilmWebMovie(
@@ -103,5 +107,6 @@ class Scraper:
 
             return True
         except Exception as e:
-            logging.error(f"Exception occurred while updating data: {e}")
+            logging.error(f"Error updating movie data for movie_id: {movie_id}")
+            logging.error(e)
             return False
