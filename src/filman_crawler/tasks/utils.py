@@ -8,7 +8,7 @@ from filman_server.database.schemas import (
     FilmWebMovie,
     FilmWebSeries,
     FilmWebUserWatchedMovieCreate,
-    FilmwebUserWatchedSeriesCreate,
+    FilmWebUserWatchedSeriesCreate,
     Task,
     TaskStatus,
     TaskTypes,
@@ -163,7 +163,7 @@ class FilmWeb(Updaters):
 
     #     return True
 
-    # def add_watched_series(self, info: FilmwebUserWatchedSeriesCreate):
+    # def add_watched_series(self, info: FilmWebUserWatchedSeriesCreate):
     #     r = requests.post(
     #         f"{self.endpoint_url}/filmweb/user/watched/series/add",
     #         headers=self.headers,

@@ -911,6 +911,7 @@ def test_get_filmweb_watched_series_by_id(test_db):
     assert result.comment == "Test"
     assert result.favorite == True
 
+
 def test_get_filmweb_watched_series_by_id_no_existing(test_db):
     result = crud.get_filmweb_user_watched_series(
         test_db,
@@ -921,6 +922,7 @@ def test_get_filmweb_watched_series_by_id_no_existing(test_db):
     )
 
     assert result is None
+
 
 def test_create_filmweb_watched_series_no_existing(test_db):
     watched_series = models.FilmWebUserWatchedSeries(
@@ -981,6 +983,7 @@ def test_create_filmweb_watched_series_no_existing(test_db):
     assert result.year == 2022
     assert result.other_year == 2023
     assert result.poster_url == "https://example.com/image2.jpg"
+
 
 def test_get_filmweb_user_watched_series_all_by_user_id(test_db):
     result = crud.get_filmweb_user_watched_series_all(

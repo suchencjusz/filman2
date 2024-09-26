@@ -311,7 +311,7 @@ def update_filmweb_series(db: Session, series: schemas.FilmWebSeries):
 
     if db_series is None:
         return create_filmweb_series(db, series)
-    
+
     db_series.title = series.title
     db_series.year = series.year
     db_series.poster_url = series.poster_url
@@ -502,6 +502,7 @@ def delete_filmweb_user_watched_movies(
 
     return True
 
+
 # SERIES WATCHED
 def create_filmweb_user_watched_series(db: Session, user_watched_series: schemas.FilmWebUserWatchedSeriesCreate):
     watched_series = get_series_filmweb_id(db, user_watched_series.id_media)
@@ -538,6 +539,7 @@ def create_filmweb_user_watched_series(db: Session, user_watched_series: schemas
     db.refresh(db_series)
     return db_series
 
+
 def get_filmweb_user_watched_series_all(
     db: Session,
     user_id: int | None,
@@ -556,12 +558,8 @@ def get_filmweb_user_watched_series_all(
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
-    return (
-        db.query(models.FilmWebUserWatchedSeries)
-        .filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id)
-        .all()
-    )
-    
+    return db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).all()
+
 
 def get_filmweb_user_watched_series(
     db: Session,
@@ -588,6 +586,7 @@ def get_filmweb_user_watched_series(
         .first()
     )
 
+
 def delete_filmweb_user_watched_series(
     db: Session,
     user_id: int | None,
@@ -605,6 +604,7 @@ def delete_filmweb_user_watched_series(
     db.commit()
 
     return True
+
 
 #
 # TASKS

@@ -235,18 +235,20 @@ async def get_watched_movie(
 
     return watched_movie
 
+
 #
 # SERIES WATCHED
 #
 
+
 @filmweb_router.post(
     "/user/watched/series/add",
-    response_model=schemas.FilmwebUserWatchedSeriesCreate,
+    response_model=schemas.FilmWebUserWatchedSeriesCreate,
     summary="Add watched series by user",
     description="Add watched series by user, if series does not exist in database it will be added with default values",
 )
 async def add_watched_series(
-    user_watched_series: schemas.FilmwebUserWatchedSeriesCreate,
+    user_watched_series: schemas.FilmWebUserWatchedSeriesCreate,
     db: Session = Depends(get_db),
 ):
     try:
@@ -258,3 +260,47 @@ async def add_watched_series(
         return db_series
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Series is already in user watched")
+
+
+@filmweb_router.get(
+    "/user/watched/series/get_all",
+    response_model=List[schemas.FilmWebUserWatchedSeries],
+    summary="Get watched series by user",
+    description="Get watched series by user, with series details",
+)
+async def get_watched_series(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    watched_series = crud.get_filmweb_user_watched_series_all(db, user_id, filmweb_id, discord_id)
+
+    if watched_series is None:
+        raise HTTPException(status_code=404, detail="User has no watched series")
+
+    return watched_series
+
+
+@filmweb_router.get(
+    "/user/watched/series/get",
+    response_model=schemas.FilmWebUserWatchedSeries,
+    summary="Get watched series by user",
+    description="Get watched series by user, with series details",
+)
+async def get_watched_series(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    series_id: int = None,
+    db: Session = Depends(get_db),
+):
+    if user_id is None and filmweb_id is None and discord_id is None:
+        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+
+    watched_series = crud.get_filmweb_user_watched_series(db, user_id, filmweb_id, discord_id, series_id)
+
+    if watched_series is None:
+        raise HTTPException(status_code=404, detail="User has no watched series")
+
+    return watched_series
