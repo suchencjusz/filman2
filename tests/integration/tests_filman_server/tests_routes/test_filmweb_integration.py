@@ -79,6 +79,11 @@ def test_update_series(test_client):
         assert response.status_code == 200
         assert response.json() == series
 
+    for series in test_series_data:
+        response = test_client.get("/filmweb/series/get", params={"id": series["id"]})
+        assert response.status_code == 200
+        assert response.json() == series
+
 
 # create 3 movies
 # post /filmweb/update/movie
@@ -156,6 +161,16 @@ def test_add_watched_movie(test_client):
             "critics_rate": 8.0,
         },
     ]
+
+    # users should not have watched movies
+    for user_id in [1, 2, 3]:
+        response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": user_id, "movie_id": 628})
+        assert response.json()["detail"] == "User has no watched movies"
+        assert response.status_code == 404
+
+    # try to check watched movie without user_id
+    response = test_client.get("/filmweb/user/watched/movies/get", params={"movie_id": 628})
+    assert response.status_code == 400
 
     for movie in test_movies_data:
         response = test_client.post("/filmweb/movie/update", json=movie)
