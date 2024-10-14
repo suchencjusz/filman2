@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.12.7-slim-bullseye
 
 RUN apt update
 RUN apt install -y pkg-config default-libmysqlclient-dev build-essential
