@@ -681,6 +681,8 @@ def remove_completed_tasks(db: Session):
 # MULTIPLE TASKS GENERATION
 #
 
+# MOVIES
+
 
 def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
     filmweb_users = db.query(models.FilmWebUserMapping).all()
@@ -708,6 +710,41 @@ def create_scrap_filmweb_movies_task(db: Session) -> bool:
                 task_status=schemas.TaskStatus.QUEUED,
                 task_type=schemas.TaskTypes.SCRAP_FILMWEB_MOVIE,
                 task_job=str(movie.id),
+            ),
+        )
+
+    return True
+
+
+# SERIES
+
+
+def create_scrap_filmweb_users_series_task(db: Session) -> bool:
+    filmweb_users = db.query(models.FilmWebUserMapping).all()
+
+    for user in filmweb_users:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES,
+                task_job=str(user.filmweb_id),
+            ),
+        )
+
+    return True
+
+
+def create_scrap_filmweb_series_task(db: Session) -> bool:
+    filmweb_series = db.query(models.FilmWebSeries).all()
+
+    for series in filmweb_series:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_SERIES,
+                task_job=str(series.id),
             ),
         )
 

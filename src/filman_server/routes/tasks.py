@@ -137,3 +137,31 @@ def create_scrap_movies_task(db: Session = Depends(get_db)):
     if db_task is None:
         raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
     return True
+
+
+@tasks_router.get(
+    "/new/scrap/filmweb/series",
+    response_model=bool,
+    summary="Add scrap series task",
+    description="Add task to scrap series",
+)
+def create_scrap_series_task(db: Session = Depends(get_db)):
+    db_task = crud.create_scrap_filmweb_series_task(db)
+
+    if db_task is None:
+        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+    return True
+
+
+@tasks_router.get(
+    "/new/scrap/filmweb/users/series",
+    response_model=bool,
+    summary="Add scrap users series task",
+    description="Add task to scrap users series (watched series)",
+)
+def create_scrap_users_series_task(db: Session = Depends(get_db)):
+    db_task = crud.create_scrap_filmweb_users_series_task(db)
+
+    if db_task is None:
+        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+    return True

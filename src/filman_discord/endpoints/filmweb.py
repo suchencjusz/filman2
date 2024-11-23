@@ -19,15 +19,12 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 @lightbulb.command("me", "monitoruj swoje konto filmweb", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> None:
-
-    # Step 1: Create a user in the database using the discord_id
     async with ctx.bot.d.client_session.post(
         "http://filman_server:8000/users/create",
         json={"discord_id": ctx.author.id},
     ) as resp1:
         pass
 
-    # Step 2: Retrieve the user information using the discord_id
     async with ctx.bot.d.client_session.get(
         "http://filman_server:8000/users/get",
         params={"discord_id": ctx.author.id},
@@ -42,7 +39,6 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
             resp2_json = await resp2.json()
             user_id = resp2_json.get("id")
 
-    # Step 3: Set the filmweb_id for the user in the database
     async with ctx.bot.d.client_session.post(
         "http://filman_server:8000/filmweb/user/mapping/set",
         json={"user_id": user_id, "filmweb_id": filmweb_username},
@@ -83,7 +79,6 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
                 )
             return
 
-    # Step 4: Provide feedback to the user
     embed = hikari.Embed(
         title=f"Konto {filmweb_username} zostało dodane!",
         colour=0xFFC200,
@@ -107,6 +102,9 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
 
     # scrap user watched data
     async with ctx.bot.d.client_session.get(f"http://filman_server:8000/tasks/new/scrap/filmweb/users/movies") as resp:
+        pass
+
+    async with ctx.bot.d.client_session.get(f"http://filman_server:8000/tasks/new/scrap/filmweb/users/series") as resp:
         pass
 
     return
