@@ -27,22 +27,12 @@ class Scraper:
         logging.debug(f"Fetched rating data: {rating_data}")
         logging.debug(f"Fetched critics data: {critics_data}")
 
-        if info_data is None:
-            logging.error(f"Error fetching info data for movie: {task.task_job}")
+        if info_data is None or rating_data is None:
             return False
 
-        if rating_data is None:
-            logging.warning(f"Error fetching social rating data for movie: {task.task_job}")
-
-        if critics_data is None:
-            logging.warning(f"Error fetching critics rating data for movie: {task.task_job}")
-
         info_data = ujson.loads(info_data)
-        rating_data = None
+        rating_data = ujson.loads(rating_data)
         critics_rate = None
-
-        if rating_data is not None:
-            rating_data = ujson.loads(rating_data)
 
         if critics_data is not None:
             critics_data = ujson.loads(critics_data)
@@ -50,10 +40,10 @@ class Scraper:
         title = info_data.get("title", None)
         year = info_data.get("year", None)
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
-        community_rate = rating_data.get("rate", None) if rating_data else None
+        community_rate = rating_data.get("rate", None)
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
-        if title is None or year is None:
+        if title is None or year is None or poster_url is None:
             return False
 
         update = self.update_data(
@@ -87,7 +77,6 @@ class Scraper:
     ):
         try:
             logging.debug(f"Preparing to update movie data for movie_id: {movie_id}")
-
             filmweb = FilmWeb(self.headers, self.endpoint_url)
             filmweb.update_movie(
                 FilmWebMovie(
@@ -107,6 +96,5 @@ class Scraper:
 
             return True
         except Exception as e:
-            logging.error(f"Error updating movie data for movie_id: {movie_id}")
-            logging.error(e)
+            logging.error(f"Exception occurred while updating data: {e}")
             return False

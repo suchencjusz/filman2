@@ -17,9 +17,7 @@ class Scraper:
 
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
         rating_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/rating"
-        critics_url = (
-            f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"  # they have film endpoint for series wtf? nvm
-        )
+        critics_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"
 
         info_data = self.fetch(info_url)
         rating_data = self.fetch(rating_url)
@@ -29,22 +27,12 @@ class Scraper:
         logging.debug(f"Fetched rating data: {rating_data}")
         logging.debug(f"Fetched critics data: {critics_data}")
 
-        if info_data is None:
-            logging.error(f"Error fetching info data for series: {task.task_job}")
+        if info_data is None or rating_data is None:
             return False
 
-        if rating_data is None:
-            logging.warning(f"Error fetching social rating data for series: {task.task_job}")
-
-        if critics_data is None:
-            logging.warning(f"Error fetching critics rating data for series: {task.task_job}")
-
         info_data = ujson.loads(info_data)
-        rating_data = None
+        rating_data = ujson.loads(rating_data)
         critics_rate = None
-
-        if rating_data is not None:
-            rating_data = ujson.loads(rating_data)
 
         if critics_data is not None:
             critics_data = ujson.loads(critics_data)
@@ -96,7 +84,7 @@ class Scraper:
             filmweb = FilmWeb(self.headers, self.endpoint_url)
             filmweb.update_series(
                 FilmWebSeries(
-                    id_media=series_id,
+                    id=series_id,
                     title=title,
                     year=year,
                     other_year=other_year,
