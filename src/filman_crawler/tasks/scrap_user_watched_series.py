@@ -85,7 +85,6 @@ class Scraper:
                     comment=series_rate_data.get("comment", None),
                     favorite=bool(series_rate_data.get("favorite", False)),
                 )
-                    
 
                 new_series_watched_parsed.append(watched_series_info)
             except Exception as e:
@@ -111,7 +110,7 @@ class Scraper:
             if update is False:
                 logging.error(f"Error updating series data for user: {task.task_job}")
                 return "Error updating series data"
-            
+
             logging.info(f"Updated series data for user: {task.task_job}")
             return "Data updated"
         except Exception as e:
@@ -151,7 +150,7 @@ class Scraper:
                 else:
                     logging.error(f"Error adding watched series: {series.id_media}")
                     continue
-            
+
                 tasks.create_task(
                     Task(
                         task_id=0,
@@ -161,7 +160,7 @@ class Scraper:
                         task_created=datetime.datetime.now(),
                     )
                 )
-            
+
             except Exception as e:
                 logging.error(f"Error updating series data for user: {filmweb_id}")
                 logging.error(e)
@@ -170,4 +169,3 @@ class Scraper:
         tasks.update_task_status(task_id, TaskStatus.COMPLETED)
 
         return True
-

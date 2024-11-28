@@ -141,7 +141,7 @@ class FilmWebUserWatchedMovieCreate(BaseModel):
 
 
 class FilmWebSeries(BaseModel):
-    id: int                         # hell nah builtin python type... 
+    id: int  # hell nah builtin python type...
     title: str | None = None
     year: int | None = None
     other_year: int | None = None

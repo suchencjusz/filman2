@@ -843,7 +843,57 @@ def test_get_filmweb_user_watched_movies_by_user_id(test_db):
 
     assert result is None
 
+def test_delete_filmweb_watched_movies(test_db):
+    result = crud.delete_filmweb_user_watched_movies(
+        test_db,
+        user_id=1,
+        filmweb_id=None,
+        discord_id=None,
+    )
 
+    assert result is True
+
+    # check length of watched movies
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=1,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 0
+
+    # check if other users still have watched movies
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 2
+
+    # and now delete all watched movies for user 3
+
+    result = crud.delete_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert result is True
+
+    # check length of watched movies
+
+    result = crud.get_filmweb_user_watched_movies(
+        test_db,
+        user_id=3,
+        filmweb_id=None,
+        discord_id=None,
+    )
+
+    assert len(result) == 0
 #
 # FILMWEB WATCHED SERIES
 #

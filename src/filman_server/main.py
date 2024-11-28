@@ -41,7 +41,7 @@ app.include_router(filmweb.filmweb_router)
 app.include_router(tasks.tasks_router)
 
 logging.debug("Application has started")
-logging.info("X") #todo: remove
+logging.info("X")  # todo: remove
 
 
 @app.get("/")
