@@ -882,6 +882,11 @@ def test_delete_filmweb_watched_movies(test_db):
         discord_id=None,
     )
 
+    #
+    #  TODO: DO SAME FOR SERIES
+    #
+
+
     assert result is True
 
     # check length of watched movies
