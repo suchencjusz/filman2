@@ -268,7 +268,7 @@ async def add_watched_series(
     summary="Get watched series by user",
     description="Get watched series by user, with series details",
 )
-async def get_watched_series(
+async def get_watched_series_all(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
