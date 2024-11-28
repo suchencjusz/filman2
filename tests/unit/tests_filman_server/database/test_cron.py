@@ -11,6 +11,18 @@ def cron():
 
 
 @patch("filman_server.cron.requests.get")
+def test_tasks_new_scrap_filmweb_users_series(mock_get):
+    mock_get.return_value.status_code = 200
+    Cron.tasks_new_scrap_filmweb_users_series()
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/users/series", timeout=5)
+
+@patch("filman_server.cron.requests.get")
+def test_tasks_new_scrap_filmweb_series(mock_get):
+    mock_get.return_value.status_code = 200
+    Cron.tasks_new_scrap_filmweb_series()
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/series", timeout=5)
+
+@patch("filman_server.cron.requests.get")
 def test_tasks_new_scrap_filmweb_users_movies(mock_get):
     mock_get.return_value.status_code = 200
     Cron.tasks_new_scrap_filmweb_users_movies()
