@@ -86,6 +86,7 @@ def get_task_to_do() -> Task:
             f"{CORE_ENDPOINT}/tasks/get/to_do",
             params={"task_types": TASK_TYPES},
             headers=HEADERS,
+            timeout=3,
         )
 
         if r.status_code != 200:
@@ -123,7 +124,7 @@ def do_task(task: Task):
 
 def check_connection() -> bool:
     try:
-        r = requests.get(CORE_ENDPOINT, headers=HEADERS)
+        r = requests.get(CORE_ENDPOINT, headers=HEADERS, timeout=5)
         if r.status_code == 200:
             return True
         return False

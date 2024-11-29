@@ -35,13 +35,13 @@ class Updaters:
 
         try:
             if method == "GET":
-                response = requests.get(url, **kwargs)
+                response = requests.get(url, **kwargs, timeout=10)
             elif method == "POST":
-                response = requests.post(url, **kwargs)
+                response = requests.post(url, **kwargs, timeout=10)
             elif method == "DELETE":
-                response = requests.delete(url, **kwargs)
+                response = requests.delete(url, **kwargs, timeout=10)
             elif method == "PUT":
-                response = requests.put(url, **kwargs)
+                response = requests.put(url, **kwargs, timeout=10)
             else:
                 logging.error(f"Unsupported HTTP method: {method}")
                 return None

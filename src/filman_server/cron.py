@@ -18,7 +18,7 @@ class Cron:
     @staticmethod
     def execute_task(url, task_name):
         try:
-            response = requests.get(url, timeout=5)
+            response = requests.get(url, timeout=10)
             logging.info(f"Executed {task_name}: {response.status_code}")
         except requests.exceptions.Timeout:
             logging.error(f"Timeout occurred while executing {task_name}")
