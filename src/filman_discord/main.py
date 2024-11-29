@@ -226,6 +226,10 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                         discord_id,
                     )
 
+        # if media_type == "series":
+# todo: write this
+
+
         async with bot.d.client_session.get(f"http://filman_server:8000/tasks/update/status/{task_id}/completed") as resp:
             if not resp.ok:
                 print(f"Error updating task status: {resp.status} {resp.reason}")
