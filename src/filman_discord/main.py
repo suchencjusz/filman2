@@ -97,7 +97,12 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
             return star_emoji_counter(rate) + f" **{rate}/10**"
         return "_brak oceny_"
 
-    def parse_movie_rate(rate: int, rate_type: str) -> str:
+    def parse_movie_rate(rate: int, rate_type: str) -> str:  # refactor
+        if rate is not None:
+            return star_emoji_counter(rate) + f" **{round(rate, 1)}/10**"
+        return f"_brak ocen {rate_type}_"
+
+    def parse_series_rate(rate: int, rate_type: str) -> str:  # refactor
         if rate is not None:
             return star_emoji_counter(rate) + f" **{round(rate, 1)}/10**"
         return f"_brak ocen {rate_type}_"
@@ -123,7 +128,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
         media_type: str,
         media_id: int,
     ) -> None:
-        logging.info(f"send_discord_notification_watched_movie {filmweb_id} {media_type} {media_id}")
 
         task_id = task["task_id"]
 
@@ -134,6 +138,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 if not resp2.ok:
                     return
 
+                logging.info(f"send_discord_notification_watched_movie {filmweb_id} {media_type} {media_id}")
                 logging.info(f"sending notification for {filmweb_id} {media_id}")
 
                 user_id = 0
@@ -226,9 +231,114 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                         discord_id,
                     )
 
-        # if media_type == "series":
-# todo: write this
+        if media_type == "series":
+            async with bot.d.client_session.get(
+                f"http://filman_server:8000/filmweb/user/watched/series/get?filmweb_id={filmweb_id}&series_id={media_id}"
+            ) as resp2:
+                if not resp2.ok:
+                    return
 
+                logging.info(f"send_discord_notification_watched_series {filmweb_id} {media_type} {media_id}")
+                logging.info(f"sending notification for {filmweb_id} {media_id}")
+
+                user_id = 0
+                message_destinations = []
+
+                async with bot.d.client_session.get(f"http://filman_server:8000/users/get?filmweb_id={filmweb_id}") as resp:
+                    if not resp.ok:
+                        return
+
+                    user = await resp.json()
+                    user_id = user["id"]
+                    discord_id = user["discord_id"]
+
+                async with bot.d.client_session.get(
+                    f"http://filman_server:8000/users/get_all_channels?user_id={user_id}"
+                ) as resp3:
+                    if not resp3.ok:
+                        return
+
+                    message_destinations = await resp3.json()
+
+                data = await resp2.json()
+
+                series = data["series"]
+
+                filmweb_id = data["filmweb_id"]
+                date_watched = data["date"]
+                rate = data["rate"]
+                comment = data["comment"]
+                favorite = data["favorite"]
+
+                # parse data to none-safe
+                date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(tz=datetime.timezone.utc)
+                comment = "\n".join(textwrap.wrap(comment, width=62)) if comment is not None else None
+                series_url = filmweb_movie_url_generator(series["title"], series["year"], series["id"])
+                series["poster_url"] = (
+                    "https://fwcdn.pl/fpo" + series["poster_url"]
+                    if series["poster_url"] is not None
+                    else "https://vectorified.com/images/no-data-icon-23.png"
+                )
+
+                rate_parsed_star = ""
+
+                rate_parsed_star = parse_rate(rate)
+                social_rate_parsed_star = parse_series_rate(series["community_rate"], "społeczności")
+                critcis_rate_parsed_star = parse_series_rate(series["critics_rate"], "krytyków")
+
+                series_title = ""
+                series_title = (
+                    f"{series['title']} ({series['year']})"
+                    if series["other_year"] is None
+                    else f"{series['title']} ({series['year']} - {series['other_year']})"
+                )
+
+                embed1 = hikari.Embed(
+                    title=series_title,
+                    description=f"<@{discord_id}>",
+                    url=series_url,
+                    colour=0x00FFC3,
+                    timestamp=date_watched,
+                )
+                embed1.set_thumbnail(series["poster_url"])
+
+                if favorite:
+                    rate_parsed_star += " :heart:"
+
+                embed1.add_field(
+                    name=f"Ocena `{filmweb_id}`",
+                    value=rate_parsed_star,
+                    inline=False,
+                )
+
+                if comment:
+                    embed1.add_field(
+                        name="Komentarz",
+                        value=comment,
+                        inline=False,
+                    )
+
+                embed1.add_field(
+                    name="Ocena społeczności",
+                    value=social_rate_parsed_star,
+                    inline=False,
+                )
+
+                embed1.add_field(
+                    name="Ocena krytyków",
+                    value=critcis_rate_parsed_star,
+                    inline=False,
+                )
+
+                for message_destination in message_destinations:
+                    await send_discord_message(
+                        app,
+                        message_destination,
+                        embed1,
+                        discord_id,
+                    )
+
+        
 
         async with bot.d.client_session.get(f"http://filman_server:8000/tasks/update/status/{task_id}/completed") as resp:
             if not resp.ok:
