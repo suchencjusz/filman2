@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import sys
 import textwrap
 
 import aiohttp
@@ -9,7 +10,11 @@ import lightbulb
 from lightbulb.ext import tasks
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 logging.getLogger("lightbulb").setLevel(LOG_LEVEL)
 logging.getLogger("hikari").setLevel(LOG_LEVEL)
 

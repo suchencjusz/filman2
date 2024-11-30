@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 import sentry_sdk
 import uvicorn
@@ -13,7 +14,12 @@ from filman_server.database.db import engine
 from filman_server.routes import discord, filmweb, tasks, users
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
 logging.getLogger("uvicorn").setLevel(LOG_LEVEL)
 logging.getLogger("uvicorn.access").setLevel(LOG_LEVEL)
 
