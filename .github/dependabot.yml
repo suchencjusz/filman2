@@ -1,6 +1,6 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/" # Root directory for the main requirements.txt
+    directory: "/"
     schedule:
       interval: "weekly"

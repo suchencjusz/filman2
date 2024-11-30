@@ -845,6 +845,7 @@ def test_get_filmweb_user_watched_movies_by_user_id(test_db):
 
     assert result is None
 
+
 def test_delete_filmweb_watched_movies(test_db):
     result = crud.delete_filmweb_user_watched_movies(
         test_db,
@@ -1057,6 +1058,7 @@ def test_get_filmweb_user_watched_series_all_by_user_id(test_db):
     )
 
     assert result is None
+
 
 def test_delete_filmweb_watched_series_all(test_db):
     result = crud.delete_filmweb_user_watched_series(
