@@ -511,6 +511,7 @@ def test_update_filmweb_series(test_db):
         other_year=2023,
         poster_url="https://example.com/image2.jpg",
         community_rate=5.8,
+        critics_rate=6.8,
     )
 
     result = crud.update_filmweb_series(test_db, series)
@@ -520,6 +521,7 @@ def test_update_filmweb_series(test_db):
     assert result.other_year == 2023
     assert result.poster_url == "https://example.com/image2.jpg"
     assert result.community_rate == 5.8
+    assert result.critics_rate == 6.8
 
     result = crud.get_series_filmweb_id(test_db, id=430668)
     assert result.id == 430668

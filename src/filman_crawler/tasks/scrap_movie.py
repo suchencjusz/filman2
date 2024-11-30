@@ -27,34 +27,50 @@ class Scraper:
         logging.debug(f"Fetched rating data: {rating_data}")
         logging.debug(f"Fetched critics data: {critics_data}")
 
+        logging.debug(f"Task id: {task.task_id}")
+
         if info_data is None or rating_data is None:
             return False
 
-        info_data = ujson.loads(info_data)
-        rating_data = ujson.loads(rating_data)
-        critics_rate = None
-
-        if critics_data is not None:
-            critics_data = ujson.loads(critics_data)
+        try:
+            info_data = ujson.loads(info_data)
+            rating_data = ujson.loads(rating_data) if rating_data else None
+            critics_data = ujson.loads(critics_data) if critics_data else None
+        except Exception as e:
+            logging.error(f"Error parsing movie data (info, rating, critics): {e}")
 
         title = info_data.get("title", None)
         year = info_data.get("year", None)
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
-        community_rate = rating_data.get("rate", None)
+        community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
+        logging.debug(f"Data for movie: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}")
+
         if title is None or year is None or poster_url is None:
+            logging.error(f"Error fetching movie data for movie (title/year/poster_url): {task.task_job}")
+            logging.debug(f"Title: {title}, Year: {year}, Poster URL: {poster_url}")
             return False
 
         update = self.update_data(
-            task.task_job,
-            title,
-            year,
-            poster_url,
-            community_rate,
-            critics_rate,
-            task.task_id,
+            movie_id=task.task_job,
+            title=title,
+            year=year,
+            poster_url=poster_url,
+            community_rate=community_rate,
+            critics_rate=critics_rate,
+            task_id=task.task_id,
         )
+
+        # update = self.update_data(
+        #     task.task_job,
+        #     title,
+        #     year,
+        #     poster_url,
+        #     community_rate,
+        #     critics_rate,
+        #     task.task_id,
+        # )
 
         if update:
             logging.info(f"Updated movie {title} ({year})")

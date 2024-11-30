@@ -30,33 +30,55 @@ class Scraper:
         if info_data is None or rating_data is None:
             return False
 
-        info_data = ujson.loads(info_data)
-        rating_data = ujson.loads(rating_data)
-        critics_rate = None
+        try:
+            info_data = ujson.loads(info_data)
+            rating_data = ujson.loads(rating_data) if rating_data else None
+            critics_data = ujson.loads(critics_data) if critics_data else None
 
-        if critics_data is not None:
-            critics_data = ujson.loads(critics_data)
+            logging.debug(f"Info data : {info_data}")
+            logging.debug(f"Rating data : {rating_data}")
+            logging.debug(f"Critics data : {critics_data}")
+        except Exception as e:
+            logging.error(f"Error parsing series data (info, rating, critics): {e}")
+
 
         title = info_data.get("title", None)
         year = info_data.get("year", None)
-        other_year = info_data.get("otherYear", None)
+        other_year = info_data.get("otherYear", None) 
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None) if rating_data else None
-        critics_rate = critics_data.get("rate", None) if critics_data else None # something is fucked up with critics here
+        critics_rate = critics_data.get("rate", None) if critics_data else None
 
-        if title is None or year is None:
+        logging.debug(f"Data for series: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}")
+
+        if title is None or year is None or poster_url is None:
+            logging.error(f"Error fetching series data for series (title/year/poster_url): {task.task_job}")
+            logging.debug(f"Title: {title}, Year: {year}, Poster URL: {poster_url}")
             return False
 
+        logging.debug(f"Updating series data for series: {task.task_job}")
+
         update = self.update_data(
-            task.task_job,
-            title,
-            year,
-            other_year,
-            poster_url,
-            community_rate,
-            critics_rate,
-            task.task_id,
+            series_id=task.task_job,
+            title=title,
+            year=year,
+            other_year=other_year,
+            poster_url=poster_url,
+            community_rate=community_rate,
+            critics_rate=critics_rate,
+            task_id=task.task_id,
         )
+
+        # update = self.update_data(
+        #     task.task_job,
+        #     title,
+        #     year,
+        #     other_year,
+        #     poster_url,
+        #     community_rate,
+        #     critics_rate,
+        #     task.task_id,
+        # )
 
         if update:
             logging.info(f"Updated series {title} ({year})")

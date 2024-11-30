@@ -317,6 +317,7 @@ def update_filmweb_series(db: Session, series: schemas.FilmWebSeries):
     db_series.poster_url = series.poster_url
     db_series.community_rate = series.community_rate
     db_series.other_year = series.other_year
+    db_series.critics_rate = series.critics_rate
 
     db.commit()
     db.refresh(db_series)
