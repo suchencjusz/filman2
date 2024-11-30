@@ -17,7 +17,7 @@ class Scraper:
 
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
         rating_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/rating"
-        critics_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating" # here?
+        critics_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"  # here?
 
         info_data = self.fetch(info_url)
         rating_data = self.fetch(rating_url)
@@ -41,10 +41,9 @@ class Scraper:
         except Exception as e:
             logging.error(f"Error parsing series data (info, rating, critics): {e}")
 
-
         title = info_data.get("title", None)
         year = info_data.get("year", None)
-        other_year = info_data.get("otherYear", None) 
+        other_year = info_data.get("otherYear", None)
         poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
