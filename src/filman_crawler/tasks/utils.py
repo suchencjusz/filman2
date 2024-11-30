@@ -6,9 +6,9 @@ import ujson
 
 from filman_server.database.schemas import (
     FilmWebMovie,
-    FilmWebMovieCreate,
     FilmWebSeries,
     FilmWebUserWatchedMovieCreate,
+    FilmWebUserWatchedSeriesCreate,
     Task,
     TaskStatus,
     TaskTypes,
@@ -35,13 +35,13 @@ class Updaters:
 
         try:
             if method == "GET":
-                response = requests.get(url, **kwargs)
+                response = requests.get(url, **kwargs, timeout=10)
             elif method == "POST":
-                response = requests.post(url, **kwargs)
+                response = requests.post(url, **kwargs, timeout=10)
             elif method == "DELETE":
-                response = requests.delete(url, **kwargs)
+                response = requests.delete(url, **kwargs, timeout=10)
             elif method == "PUT":
-                response = requests.put(url, **kwargs)
+                response = requests.put(url, **kwargs, timeout=10)
             else:
                 logging.error(f"Unsupported HTTP method: {method}")
                 return None
@@ -93,27 +93,62 @@ class Tasks(Updaters):
 
 class DiscordNotifications(Updaters):
     def send_notification(self, filmweb_id: str, media_type: str, media_id: int):
-        r = requests.post(
-            f"{self.endpoint_url}/tasks/create",
-            headers=self.headers,
-            json={
-                "task_id": 0,
-                "task_status": TaskStatus.QUEUED.value,
-                "task_type": TaskTypes.SEND_DISCORD_NOTIFICATION.value,
-                "task_job": f"{filmweb_id},{media_type},{media_id}",
-                "task_created": datetime.datetime.now().isoformat(),
-            },
+
+        task = Tasks(self.headers, self.endpoint_url)
+
+        task = task.create_task(
+            Task(
+                task_id=0,
+                task_status=TaskStatus.QUEUED,
+                task_type=TaskTypes.SEND_DISCORD_NOTIFICATION,
+                task_job=f"{filmweb_id},{media_type},{media_id}",
+                task_created=datetime.datetime.now(),
+            )
         )
 
-        if r.status_code != 200:
-            logging.error(f"Error sending discord notification: HTTP {r.status_code}")
-            logging.error(r.text)
+        if not task:
+            logging.error("Error creating task: SEND_DISCORD_NOTIFICATION")
             return False
 
         return True
 
 
 class FilmWeb(Updaters):
+    def update_series(self, series: FilmWebSeries):
+        r = requests.post(
+            f"{self.endpoint_url}/filmweb/series/update",
+            headers=self.headers,
+            json=series.model_dump(),
+        )
+
+        if r.status_code != 200:
+            logging.error(f"Error updating series data: HTTP {r.status_code}")
+            logging.error(r.text)
+            return False
+
+        return True
+
+    def add_watched_series(self, info: FilmWebUserWatchedSeriesCreate):
+        r = requests.post(
+            f"{self.endpoint_url}/filmweb/user/watched/series/add",
+            headers=self.headers,
+            json={
+                "id_media": int(info.id_media),
+                "filmweb_id": str(info.filmweb_id),
+                "date": info.date.isoformat(),
+                "rate": int(info.rate),
+                "comment": info.comment,
+                "favorite": bool(info.favorite),
+            },
+        )
+
+        if r.status_code != 200:
+            logging.error(f"Error adding watched series: HTTP {r.status_code}")
+            logging.error(r.text)
+            return False
+
+        return True
+
     def update_movie(self, movie: FilmWebMovie):
         r = requests.post(
             f"{self.endpoint_url}/filmweb/movie/update",

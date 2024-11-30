@@ -58,6 +58,7 @@ class Scraper:
             return "Error fetching last 100 watched movies from filmweb"
 
         first_time_scrap = True if user_already_watched_ids == [] else False
+
         user_already_watched_ids = set(user_already_watched_ids or [])
 
         new_movies_watched = [movie for movie in last_100_watched_data if movie[0] not in user_already_watched_ids]
@@ -107,13 +108,13 @@ class Scraper:
             )
 
             if update is False:
-                logging.error(f"Error updating data for {task.task_job}")
-                return "Error updating data"
+                logging.error(f"Error updating movies data for {task.task_job}")
+                return "Error updating movies data"
 
-            logging.info(f"Data updated for {task.task_job}")
+            logging.info(f"Data movies updated for {task.task_job}")
             return "Data updated"
         except Exception as e:
-            logging.error(f"Error updating data: {e}")
+            logging.error(f"Error updating movies data: {e}")
             return "Error updating data"
 
     def update_data(
@@ -136,13 +137,15 @@ class Scraper:
                     if first_time_scrap is False:
                         if (
                             dc_notifications.send_notification(
-                                filmweb_id=filmweb_id, media_type="movie", media_id=movie.id_media
+                                filmweb_id=filmweb_id,
+                                media_type="movie",
+                                media_id=movie.id_media,
                             )
                             is True
                         ):
-                            logging.info(f"Notification sent for {filmweb_id}")
+                            logging.info(f"Notification sent for movies: {filmweb_id}")
                         else:
-                            logging.error(f"Error sending notification for {filmweb_id}")
+                            logging.error(f"Error sending notification for movies: {filmweb_id}")
                             continue
                 else:
                     logging.error(f"Error updating movie data for {filmweb_id}")
@@ -160,6 +163,7 @@ class Scraper:
 
             except Exception as e:
                 logging.error(f"Exception while updating movie data: {e}")
+                logging.error(e)
                 continue
 
         tasks.update_task_status(task_id, TaskStatus.COMPLETED)

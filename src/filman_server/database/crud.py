@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timedelta
 
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +11,8 @@ from . import models, schemas
 # USERS
 #
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 def get_user(
@@ -283,7 +285,6 @@ def get_series_filmweb_id(db: Session, id: int):
 
 
 def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
-    # db_series = models.FilmWebSeries(**series.model_dump())
     existing_series = db.query(models.FilmWebSeries).filter_by(id=series.id).first()
     if existing_series:
         return existing_series
@@ -292,28 +293,35 @@ def create_filmweb_series(db: Session, series: schemas.FilmWebSeries):
         id=series.id,
         title=series.title,
         year=series.year,
+        other_year=series.other_year,
         poster_url=series.poster_url,
         community_rate=series.community_rate,
-        other_year=series.other_year,
+        critics_rate=series.critics_rate,
     )
 
     db.add(db_series)
     db.commit()
     db.refresh(db_series)
+
     return db_series
 
 
 def update_filmweb_series(db: Session, series: schemas.FilmWebSeries):
     db_series = get_series_filmweb_id(db, series.id)
+
     if db_series is None:
         return create_filmweb_series(db, series)
+
     db_series.title = series.title
     db_series.year = series.year
     db_series.poster_url = series.poster_url
     db_series.community_rate = series.community_rate
     db_series.other_year = series.other_year
+    db_series.critics_rate = series.critics_rate
+
     db.commit()
     db.refresh(db_series)
+
     return db_series
 
 
@@ -385,7 +393,7 @@ def delete_filmweb_user_mapping(
     return True
 
 
-# MOVIES
+# MOVIES WATCHED
 
 
 def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.FilmWebUserWatchedMovieCreate):
@@ -496,6 +504,109 @@ def delete_filmweb_user_watched_movies(
     return True
 
 
+# SERIES WATCHED
+def create_filmweb_user_watched_series(db: Session, user_watched_series: schemas.FilmWebUserWatchedSeriesCreate):
+    watched_series = get_series_filmweb_id(db, user_watched_series.id_media)
+
+    if watched_series is None:
+        watched_series = schemas.FilmWebSeriesCreate(
+            id=user_watched_series.id_media,
+        )
+
+        create_filmweb_series(db, watched_series)
+
+    db_series_watched = (
+        db.query(models.FilmWebUserWatchedSeries)
+        .filter(
+            models.FilmWebUserWatchedSeries.filmweb_id == user_watched_series.filmweb_id,
+            models.FilmWebUserWatchedSeries.id_media == user_watched_series.id_media,
+        )
+        .first()
+    )
+
+    if db_series_watched is not None:
+        raise IntegrityError("Series already in user watched", None, None)
+
+    db_series = models.FilmWebUserWatchedSeries(
+        id_media=user_watched_series.id_media,
+        filmweb_id=user_watched_series.filmweb_id,
+        date=user_watched_series.date,
+        rate=user_watched_series.rate,
+        comment=user_watched_series.comment,
+        favorite=user_watched_series.favorite,
+    )
+    db.add(db_series)
+    db.commit()
+    db.refresh(db_series)
+    return db_series
+
+
+def get_filmweb_user_watched_series_all(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+):
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    if user is None:
+        return None
+
+    # Get the filmweb_id from the mapping if not provided
+    if filmweb_id is None:
+        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        if filmweb_mapping is None:
+            return None
+        filmweb_id = filmweb_mapping.filmweb_id
+
+    return db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).all()
+
+
+def get_filmweb_user_watched_series(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+    id_media: int,
+):
+    user = get_user(db, user_id, filmweb_id, discord_id)
+
+    if user is None:
+        return None
+
+    # Get the filmweb_id from the mapping if not provided
+    if filmweb_id is None:
+        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        if filmweb_mapping is None:
+            return None
+        filmweb_id = filmweb_mapping.filmweb_id
+
+    return (
+        db.query(models.FilmWebUserWatchedSeries)
+        .filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id, models.FilmWebUserWatchedSeries.id_media == id_media)
+        .first()
+    )
+
+
+def delete_filmweb_user_watched_series(
+    db: Session,
+    user_id: int | None,
+    filmweb_id: str | None,
+    discord_id: int | None,
+) -> bool:
+    user_mapping = get_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
+
+    if user_mapping is None:
+        return False
+
+    filmweb_id = user_mapping.filmweb_id
+
+    db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).delete()
+    db.commit()
+
+    return True
+
+
 #
 # TASKS
 #
@@ -571,6 +682,8 @@ def remove_completed_tasks(db: Session):
 # MULTIPLE TASKS GENERATION
 #
 
+# MOVIES
+
 
 def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
     filmweb_users = db.query(models.FilmWebUserMapping).all()
@@ -598,6 +711,41 @@ def create_scrap_filmweb_movies_task(db: Session) -> bool:
                 task_status=schemas.TaskStatus.QUEUED,
                 task_type=schemas.TaskTypes.SCRAP_FILMWEB_MOVIE,
                 task_job=str(movie.id),
+            ),
+        )
+
+    return True
+
+
+# SERIES
+
+
+def create_scrap_filmweb_users_series_task(db: Session) -> bool:
+    filmweb_users = db.query(models.FilmWebUserMapping).all()
+
+    for user in filmweb_users:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES,
+                task_job=str(user.filmweb_id),
+            ),
+        )
+
+    return True
+
+
+def create_scrap_filmweb_series_task(db: Session) -> bool:
+    filmweb_series = db.query(models.FilmWebSeries).all()
+
+    for series in filmweb_series:
+        create_task(
+            db,
+            schemas.TaskCreate(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=schemas.TaskTypes.SCRAP_FILMWEB_SERIES,
+                task_job=str(series.id),
             ),
         )
 

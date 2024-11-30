@@ -1,6 +1,8 @@
 # for what purpose rabbitmq exists
 # if you can build your task broker and learn something :~~~~D
 
+import logging
+import os
 from datetime import datetime
 from typing import List
 
@@ -10,6 +12,9 @@ from sqlalchemy.orm import Session
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -128,6 +133,34 @@ def create_scrap_users_movies_task(db: Session = Depends(get_db)):
 )
 def create_scrap_movies_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_movies_task(db)
+
+    if db_task is None:
+        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+    return True
+
+
+@tasks_router.get(
+    "/new/scrap/filmweb/series",
+    response_model=bool,
+    summary="Add scrap series task",
+    description="Add task to scrap series",
+)
+def create_scrap_series_task(db: Session = Depends(get_db)):
+    db_task = crud.create_scrap_filmweb_series_task(db)
+
+    if db_task is None:
+        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+    return True
+
+
+@tasks_router.get(
+    "/new/scrap/filmweb/users/series",
+    response_model=bool,
+    summary="Add scrap users series task",
+    description="Add task to scrap users series (watched series)",
+)
+def create_scrap_users_series_task(db: Session = Depends(get_db)):
+    db_task = crud.create_scrap_filmweb_users_series_task(db)
 
     if db_task is None:
         raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")

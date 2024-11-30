@@ -21,6 +21,7 @@ var/
 *.egg
 
 # Installer logs
+log.txt
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -60,6 +61,9 @@ dev-docker-compose.yml
 database.db
 test.db
 filman.db
+debug.txt
+todo.txt
+bug.txt
 
 # VS Code
 .vscode/

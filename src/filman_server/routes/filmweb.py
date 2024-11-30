@@ -1,3 +1,5 @@
+import logging
+import os
 from typing import List
 
 import requests
@@ -7,6 +9,9 @@ from sqlalchemy.orm import Session
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 
@@ -45,6 +50,44 @@ async def update_movie(
     try:
         db_movie = crud.update_filmweb_movie(db, movie)
         return db_movie
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Integrity error")
+
+
+#
+# SERIES
+#
+
+
+@filmweb_router.get(
+    "/series/get",
+    response_model=schemas.FilmWebSeries,
+    summary="Get series",
+    description="Get series by id",
+)
+async def get_series(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    series = crud.get_series_filmweb_id(db, id)
+    if series is None:
+        raise HTTPException(status_code=404, detail="Series not found")
+    return series
+
+
+@filmweb_router.post(
+    "/series/update",
+    response_model=schemas.FilmWebSeries,
+    summary="Update/insert series to database",
+    description="Updates series in database if it exists, otherwise inserts it",
+)
+async def update_series(
+    series: schemas.FilmWebSeries,
+    db: Session = Depends(get_db),
+):
+    try:
+        db_series = crud.update_filmweb_series(db, series)
+        return db_series
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Integrity error")
 
@@ -141,10 +184,6 @@ async def add_watched_movie(
     try:
         db_movie = crud.create_filmweb_user_watched_movie(db, user_watched_movie)
 
-        # tu sie powinien tworzyc task do crawlera
-        # ze sie musi pobrac film z filmweba i dodac do bazy
-        # ~2 nie koniecznie
-
         if db_movie is None or db_movie is IntegrityError:
             raise HTTPException(status_code=404, detail="Movie not found")
 
@@ -198,40 +237,70 @@ async def get_watched_movie(
 
 
 #
-# SERIES
+# SERIES WATCHED
 #
 
 
-# @filmweb_router.get("/get/series", response_model=schemas.FilmWebSeries)
-# async def get_series(
-#     id: Optional[int] = None,
-#     db: Session = Depends(get_db),
-# ):
-#     series = crud.get_series_filmweb_id(db, id)
-#     if series is None:
-#         raise HTTPException(status_code=404, detail="Series not found")
-#     return series
+@filmweb_router.post(
+    "/user/watched/series/add",
+    response_model=schemas.FilmWebUserWatchedSeriesCreate,
+    summary="Add watched series by user",
+    description="Add watched series by user, if series does not exist in database it will be added with default values",
+)
+async def add_watched_series(
+    user_watched_series: schemas.FilmWebUserWatchedSeriesCreate,
+    db: Session = Depends(get_db),
+):
+    try:
+        db_series = crud.create_filmweb_user_watched_series(db, user_watched_series)
+
+        if db_series is None or db_series is IntegrityError:
+            raise HTTPException(status_code=404, detail="Series not found")
+
+        return db_series
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Series is already in user watched")
 
 
-# @filmweb_router.post("/add/series", response_model=schemas.FilmWebSeries)
-# async def add_series(
-#     series: schemas.FilmWebSeriesCreate,
-#     db: Session = Depends(get_db),
-# ):
-#     try:
-#         db_series = crud.create_filmweb_series(db, series)
-#         return db_series
-#     except IntegrityError:
-#         raise HTTPException(status_code=400, detail="Series already exists")
+@filmweb_router.get(
+    "/user/watched/series/get_all",
+    response_model=List[schemas.FilmWebUserWatchedSeries],
+    summary="Get watched series by user",
+    description="Get watched series by user, with series details",
+)
+async def get_watched_series_all(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    watched_series = crud.get_filmweb_user_watched_series_all(db, user_id, filmweb_id, discord_id)
+
+    if watched_series is None:
+        raise HTTPException(status_code=404, detail="User has no watched series")
+
+    return watched_series
 
 
-# @filmweb_router.post("/series/update", response_model=schemas.FilmWebSeries)
-# async def update_series(
-#     series: schemas.FilmWebSeries,
-#     db: Session = Depends(get_db),
-# ):
-#     try:
-#         db_series = crud.update_filmweb_series(db, series)
-#         return db_series
-#     except IntegrityError:
-#         raise HTTPException(status_code=400, detail="Series already exists")
+@filmweb_router.get(
+    "/user/watched/series/get",
+    response_model=schemas.FilmWebUserWatchedSeries,
+    summary="Get watched series by user",
+    description="Get watched series by user, with series details",
+)
+async def get_watched_series(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    series_id: int = None,
+    db: Session = Depends(get_db),
+):
+    if user_id is None and filmweb_id is None and discord_id is None:
+        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+
+    watched_series = crud.get_filmweb_user_watched_series(db, user_id, filmweb_id, discord_id, series_id)
+
+    if watched_series is None:
+        raise HTTPException(status_code=404, detail="User has no watched series")
+
+    return watched_series

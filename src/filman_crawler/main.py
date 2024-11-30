@@ -9,19 +9,17 @@ from fake_useragent import UserAgent
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
-
-# from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
+from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
 from filman_crawler.tasks.scrap_user_watched_movies import (
     Scraper as user_watched_movies_scrapper,
 )
-
-# from filman_crawler.tasks.scrap_user_watched_series import (
-#     Scraper as user_watched_series_scrapper,
-# )
+from filman_crawler.tasks.scrap_user_watched_series import (
+    Scraper as user_watched_series_scrapper,
+)
 from filman_server.database.schemas import Task, TaskTypes
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 CORE_ENDPOINT = os.environ.get("CORE_ENDPOINT", "http://localhost:8001")
 
@@ -88,6 +86,7 @@ def get_task_to_do() -> Task:
             f"{CORE_ENDPOINT}/tasks/get/to_do",
             params={"task_types": TASK_TYPES},
             headers=HEADERS,
+            timeout=3,
         )
 
         if r.status_code != 200:
@@ -107,17 +106,17 @@ def do_task(task: Task):
         scraper = movie_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job)
         scraper.scrap(task)
 
-    # elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
-    #     scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
-    #     scraper.scrap(task)
+    elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
+        scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
+        scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES:
         scraper = user_watched_movies_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT)
         scraper.scrap(task)
 
-    # elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
-    #     scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, user_id=task.task_job) # TODO fix constructor
-    #     scraper.scrap(task)
+    elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
+        scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT)
+        scraper.scrap(task)
 
     else:
         logging.error(f"Unknown task type: {task.task_type}")
@@ -125,12 +124,12 @@ def do_task(task: Task):
 
 def check_connection() -> bool:
     try:
-        r = requests.get(CORE_ENDPOINT, headers=HEADERS)
+        r = requests.get(CORE_ENDPOINT, headers=HEADERS, timeout=5)
         if r.status_code == 200:
             return True
         return False
     except Exception as e:
-        logging.error(f"Error checking connection: {e}")
+        logging.warning(f"Error checking connection: {e}")
         return False
 
 
@@ -141,7 +140,7 @@ def main():
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         while True:
-            logging.info("Fetching tasks from endpoint")
+            logging.debug("Fetching tasks from endpoint")
 
             if check_there_are_any_tasks():
                 task = get_task_to_do()
@@ -149,13 +148,18 @@ def main():
                 if task is not None:
                     executor.submit(do_task, task)
                 else:
-                    logging.info("No tasks found")
+                    logging.info("No tasks to do")
+            else:
+                logging.info("No tasks to do")
 
             time.sleep(wait_time)
 
 
 if __name__ == "__main__":
     while not check_connection():
-        logging.error("Connection not established, retrying in 5 seconds")
+        logging.warning("Connection not established, retrying in 5 seconds")
         time.sleep(5)
+
+    logging.info("Connection established")
+
     main()

@@ -11,31 +11,43 @@ def cron():
 
 
 @patch("filman_server.cron.requests.get")
+def test_tasks_new_scrap_filmweb_users_series(mock_get):
+    mock_get.return_value.status_code = 200
+    Cron.tasks_new_scrap_filmweb_users_series()
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/users/series", timeout=10)
+
+@patch("filman_server.cron.requests.get")
+def test_tasks_new_scrap_filmweb_series(mock_get):
+    mock_get.return_value.status_code = 200
+    Cron.tasks_new_scrap_filmweb_series()
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/series", timeout=10)
+
+@patch("filman_server.cron.requests.get")
 def test_tasks_new_scrap_filmweb_users_movies(mock_get):
     mock_get.return_value.status_code = 200
     Cron.tasks_new_scrap_filmweb_users_movies()
-    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/users/movies", timeout=5)
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/users/movies", timeout=10)
 
 
 @patch("filman_server.cron.requests.get")
 def test_tasks_new_scrap_filmweb_movies(mock_get):
     mock_get.return_value.status_code = 200
     Cron.tasks_new_scrap_filmweb_movies()
-    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/movies", timeout=5)
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/new/scrap/filmweb/movies", timeout=10)
 
 
 @patch("filman_server.cron.requests.get")
 def test_tasks_update_stuck_tasks(mock_get):
     mock_get.return_value.status_code = 200
     Cron.tasks_update_stuck_tasks()
-    mock_get.assert_called_once_with("http://localhost:8000/tasks/update/stuck/5", timeout=5)
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/update/stuck/5", timeout=10)
 
 
 @patch("filman_server.cron.requests.get")
 def test_tasks_update_old_tasks(mock_get):
     mock_get.return_value.status_code = 200
     Cron.tasks_update_old_tasks()
-    mock_get.assert_called_once_with("http://localhost:8000/tasks/update/old/20", timeout=5)
+    mock_get.assert_called_once_with("http://localhost:8000/tasks/update/old/20", timeout=10)
 
 
 @patch("filman_server.cron.Thread")

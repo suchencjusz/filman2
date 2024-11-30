@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 #
 # USER
@@ -15,23 +15,17 @@ from pydantic import BaseModel
 class User(BaseModel):
     id: int
     discord_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(BaseModel):
     discord_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserPreferences(BaseModel):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 #
@@ -41,17 +35,13 @@ class FilmWebUserMapping(BaseModel):
     id: int
     user_id: int
     filmweb_id: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebUserMappingCreate(BaseModel):
     user_id: int
     filmweb_id: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # class UserPreferencesCreate(BaseModel):
@@ -70,33 +60,25 @@ class DiscordGuilds(BaseModel):
     id: int
     discord_guild_id: int
     discord_channel_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DiscordGuildsCreate(BaseModel):
     discord_guild_id: int
     discord_channel_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DiscordDestinations(BaseModel):
     user_id: int
     discord_guild_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DiscordDestinationsCreate(BaseModel):
     user_id: int
     discord_guild_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 #
@@ -107,9 +89,7 @@ class DiscordDestinationsCreate(BaseModel):
 class LetterboxdUserMapping(BaseModel):
     letterboxd_id: str
     user_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # MOVIES
@@ -122,9 +102,7 @@ class FilmWebMovie(BaseModel):
     poster_url: str | None = None
     community_rate: float | None = None
     critics_rate: float | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebMovieCreate(BaseModel):
@@ -134,9 +112,7 @@ class FilmWebMovieCreate(BaseModel):
     poster_url: str | None = None
     community_rate: float | None = None
     critics_rate: float | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebUserWatchedMovie(BaseModel):
@@ -144,12 +120,10 @@ class FilmWebUserWatchedMovie(BaseModel):
     filmweb_id: str
 
     date: datetime
-    rate: int | None
-    comment: str | None
+    rate: int | None = None
+    comment: str | None = None
     favorite: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebUserWatchedMovieCreate(BaseModel):
@@ -157,41 +131,35 @@ class FilmWebUserWatchedMovieCreate(BaseModel):
     filmweb_id: str
 
     date: datetime
-    rate: int | None
-    comment: str | None
+    rate: int | None = None
+    comment: str | None = None
     favorite: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # SERIES
 
 
 class FilmWebSeries(BaseModel):
-    id: int
-    title: str
-    year: int
-    other_year: int
-    poster_url: str
-    community_rate: float
-    critics_rate: float
-
-    class Config:
-        orm_mode = True
+    id: int  # hell nah builtin python type...
+    title: str | None = None
+    year: int | None = None
+    other_year: int | None = None
+    poster_url: str | None = None
+    community_rate: float | None = None
+    critics_rate: float | None = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebSeriesCreate(BaseModel):
     id: int
-    title: str | None
-    year: int | None
-    other_year: int | None
-    poster_url: str | None
-    community_rate: float | None
-    critics_rate: float | None
-
-    class Config:
-        orm_mode = True
+    title: str | None = None
+    year: int | None = None
+    other_year: int | None = None
+    poster_url: str | None = None
+    community_rate: float | None = None
+    critics_rate: float | None = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FilmWebUserWatchedSeries(BaseModel):
@@ -199,38 +167,21 @@ class FilmWebUserWatchedSeries(BaseModel):
     filmweb_id: str
 
     date: datetime
-    rate: int | None
-    comment: str | None
+    rate: int | None = None
+    comment: str | None = None
     favorite: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class FilmwebUserWatchedSeries(BaseModel):
-    series: FilmWebSeries
-    filmweb_id: str
-
-    date: datetime
-    rate: int | None
-    comment: str | None
-    favorite: bool
-
-    class Config:
-        orm_mode = True
-
-
-class FilmwebUserWatchedSeriesCreate(BaseModel):
+class FilmWebUserWatchedSeriesCreate(BaseModel):
     id_media: int
     filmweb_id: str
 
     date: datetime
-    rate: int | None
-    comment: str | None
+    rate: int | None = None
+    comment: str | None = None
     favorite: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 #
@@ -262,9 +213,7 @@ class Task(BaseModel):
     task_created: datetime
     task_started: Optional[datetime] = None
     task_finished: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskCreate(BaseModel):
@@ -274,6 +223,4 @@ class TaskCreate(BaseModel):
     task_created: Optional[datetime] = None
     task_started: Optional[datetime] = None
     task_finished: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
