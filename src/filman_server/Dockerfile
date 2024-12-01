@@ -1,15 +1,20 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-alpine
 
-RUN apt update
-RUN apt install -y pkg-config default-libmysqlclient-dev build-essential
+RUN apk update && apk add --no-cache \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    openssl-dev \
+    mariadb-dev \
+    build-base
 
 WORKDIR /src/filman_server
 
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY /src/filman_server .
 
 ENV PYTHONPATH=/src
 
-CMD [ "python3", "-m", "filman_server.main" ]
+CMD ["python3", "-m", "filman_server.main"]
