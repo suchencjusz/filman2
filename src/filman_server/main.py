@@ -37,7 +37,6 @@ if os.environ.get("SENTRY_ENABLED", "false") == "true":
     )
 
 cron = Cron()
-cron.start()
 
 app = FastAPI()
 
@@ -47,6 +46,7 @@ app.include_router(filmweb.filmweb_router)
 app.include_router(tasks.tasks_router)
 
 logging.debug("Application has started")
+
 
 @app.get("/")
 async def root():
@@ -60,3 +60,4 @@ async def trigger_error():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    cron.start()

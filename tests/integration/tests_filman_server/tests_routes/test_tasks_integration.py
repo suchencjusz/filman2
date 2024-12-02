@@ -1,12 +1,11 @@
 import logging
-import responses
 import time
 
 import pytest
 from fastapi.testclient import TestClient
 from freezegun import freeze_time
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker
 
 from filman_server.database import models, schemas
 from filman_server.database.db import Base, get_db
@@ -15,10 +14,8 @@ from filman_server.main import app
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # memory db is not working for some reason
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# TestingSessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
 
-# Override the get_db dependency to use the test database
 def override_get_db():
     try:
         db = TestingSessionLocal()
@@ -37,6 +34,7 @@ client = TestClient(app)
 @pytest.fixture(scope="module")
 def test_client():
     yield client
+
 
 @pytest.fixture(autouse=True)
 def clear_database():
