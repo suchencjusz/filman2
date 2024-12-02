@@ -20,7 +20,7 @@ logging.basicConfig(
 logging.getLogger("lightbulb").setLevel(LOG_LEVEL)
 logging.getLogger("hikari").setLevel(LOG_LEVEL)
 
-if DISCORD_TOKEN == None or DISCORD_TOKEN == "": # todo check this
+if DISCORD_TOKEN == None or DISCORD_TOKEN == "":  # todo check this
     logging.error("Provide DISCORD_TOKEN!")
     exit(-1)
 
@@ -56,7 +56,7 @@ async def presence(app: lightbulb.BotApp) -> None:
     )
 
 
-@tasks.task(s=2, auto_start=True, pass_app=True, max_consecutive_failures=9999) # test and refactor this is sometime
+@tasks.task(s=2, auto_start=True, pass_app=True, max_consecutive_failures=9999)  # test and refactor this is sometime
 async def notifications_task(app: lightbulb.BotApp) -> None:
     def filmweb_movie_url_generator(movie_title: str, movie_year: int, movie_id: int) -> str:
         movie_title = movie_title.replace(" ", "+")
