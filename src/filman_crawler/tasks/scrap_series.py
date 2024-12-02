@@ -68,17 +68,6 @@ class Scraper:
             task_id=task.task_id,
         )
 
-        # update = self.update_data(
-        #     task.task_job,
-        #     title,
-        #     year,
-        #     other_year,
-        #     poster_url,
-        #     community_rate,
-        #     critics_rate,
-        #     task.task_id,
-        # )
-
         if update:
             logging.info(f"Updated series {title} ({year})")
         else:
