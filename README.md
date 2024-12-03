@@ -1,4 +1,4 @@
-![GitHub License](https://img.shields.io/github/license/suchencjusz/filman2) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/suchencjusz/filman2) ![GitHub Action Docker](https://img.shields.io/github/actions/workflow/status/suchencjusz/filman2/docker-build.yml) ![Black format](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Black format](https://img.shields.io/badge/code%20style-black-000000.svg) ![GitHub License](https://img.shields.io/github/license/suchencjusz/filman2) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/suchencjusz/filman2) ![GitHub Action Docker](https://img.shields.io/github/actions/workflow/status/suchencjusz/filman2/docker-build.yml)  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/804ea9aa4ef147688ce59a0ab4342a09)](https://app.codacy.com/gh/suchencjusz/filman2/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 [Link z zaproszeniem bota na serwer discord](https://discord.com/oauth2/authorize?client_id=1182371658347065394&scope=bot&permissions=2147929152)
 
