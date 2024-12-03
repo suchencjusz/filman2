@@ -23,9 +23,6 @@ logging.basicConfig(
 logging.getLogger("uvicorn").setLevel(LOG_LEVEL)
 logging.getLogger("uvicorn.access").setLevel(LOG_LEVEL)
 
-
-models.Base.metadata.create_all(bind=engine)
-
 if os.environ.get("SENTRY_ENABLED", "false") == "true":
     sentry_sdk.init(
         dsn=os.environ.get("SENTRY_DSN"),
@@ -36,18 +33,15 @@ if os.environ.get("SENTRY_ENABLED", "false") == "true":
         ],
     )
 
-cron = Cron()
-cron.start()
+models.Base.metadata.create_all(bind=engine)
 
+cron = Cron()
 app = FastAPI()
 
 app.include_router(users.users_router)
 app.include_router(discord.discord_router)
 app.include_router(filmweb.filmweb_router)
 app.include_router(tasks.tasks_router)
-
-logging.debug("Application has started")
-logging.info("X")  # todo: remove
 
 
 @app.get("/")
@@ -61,4 +55,8 @@ async def trigger_error():
 
 
 if __name__ == "__main__":
+    logging.info("Filman server started")
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    logging.debug("uvicorn running")
+    cron.start()
+    logging.debug("cron running")
