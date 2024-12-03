@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from urllib.parse import quote
+
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
@@ -107,7 +109,10 @@ async def set_user_mapping(
     user_mapping: schemas.FilmWebUserMappingCreate,
     db: Session = Depends(get_db),
 ):
-    r = requests.get(f"https://www.filmweb.pl/api/v1/user/{user_mapping.filmweb_id}/preview")
+
+    filmweb_id_encoded = quote(user_mapping.filmweb_id)
+
+    r = requests.get(f"https://www.filmweb.pl/api/v1/user/{filmweb_id_encoded}/preview")
 
     if r.status_code != 200:
         raise HTTPException(status_code=404, detail="Filmweb user not found")
