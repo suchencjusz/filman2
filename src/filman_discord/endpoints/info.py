@@ -14,7 +14,7 @@ async def info_command(ctx: lightbulb.SlashContext) -> None:
 
     embed.add_field(
         name="Wersja i ostatnia aktualizacja",
-        value="`1.1.8` - `2024-12-03`",
+        value="`1.1.7Av` - `2024-12-04`",
     )
 
     embed.add_field(
