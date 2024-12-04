@@ -56,7 +56,6 @@ async def trigger_error():
 
 if __name__ == "__main__":
     logging.info("Filman server started")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-    logging.debug("uvicorn running")
     cron.start()
     logging.debug("cron running")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
