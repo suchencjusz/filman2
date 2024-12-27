@@ -329,21 +329,53 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 
         await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
         return
-    
+
 
 # https://www.reddit.com/r/Discordjs/comments/10377qg/adding_the_possibility_to_mention_multiple_users/
 # https://hikari-lightbulb.readthedocs.io/en/2.3.5/api_references/decorators.html#lightbulb.decorators.option
 
+# @tracker_group.child
+# @lightbulb.option("users", "Wymień użytkowników, np. @User1 @User2", type=str, required=True)
+# @lightbulb.command("w2s", "wylosuj film z listy chcę obejrzeć dla użytkownika/użytkowników", pass_options=True)
+# @lightbulb.implements(lightbulb.SlashSubCommand)
+# async def w2s_subcommand(ctx: lightbulb.SlashContext, users: str) -> None:
+#     mentions = ctx.options.users.split()
+#     user_ids = []
+
+#     for mention in mentions:
+#         if mention.startswith("<@") and mention.endswith(">"):
+#             mention = mention.strip("<@!>")
+#             if mention.isdigit():
+#                 user_ids.append(int(mention))
+
+#     if not user_ids:
+#         await ctx.respond("Nie podano żadnych prawidłowych oznaczeń użytkowników.")
+#         return
+
+#     response = f"Oznaczono {len(user_ids)} użytkowników:\n" + "\n".join(f"<@{uid}>" for uid in user_ids)
+#     await ctx.respond(response)
+
+
 @tracker_group.child
-@lightbulb.option("discord_users", "użytkownicy discorda", required=True, type=hikari.User)
+@lightbulb.option("user5", "Piąty użytkownik (opcjonalny)", type=hikari.User, required=False)
+@lightbulb.option("user4", "Czwarty użytkownik (opcjonalny)", type=hikari.User, required=False)
+@lightbulb.option("user3", "Trzeci użytkownik (opcjonalny)", type=hikari.User, required=False)
+@lightbulb.option("user2", "Drugi użytkownik (opcjonalny)", type=hikari.User, required=False)
+@lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
 @lightbulb.command("w2s", "wylosuj film z listy chcę obejrzeć dla użytkownika/użytkowników", pass_options=True)
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def w2s_subcommand(ctx: lightbulb.SlashContext, discord_users: hikari.User) -> None:
-    logging.info(discord_users)
-
-    await ctx.respond("WIP")
-    return
-
+@lightbulb.implements(lightbulb.SlashCommand)
+async def w2s_subcommand(
+    ctx: lightbulb.SlashContext,
+    user1: hikari.User,
+    user2: hikari.User = None,
+    user3: hikari.User = None,
+    user4: hikari.User = None,
+    user5: hikari.User = None,
+) -> None:
+    response = f"Oznaczono {len([user1, user2, user3, user4, user5])} użytkowników:\n" + "\n".join(
+        f"{user.mention}" for user in [user1, user2, user3, user4, user5]
+    )
+    await ctx.respond(response)
 
 
 def load(bot: lightbulb.BotApp) -> None:
