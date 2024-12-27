@@ -3,6 +3,8 @@ from datetime import datetime
 import hikari
 import lightbulb
 
+import logging
+
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
 
@@ -327,6 +329,21 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 
         await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
         return
+    
+
+# https://www.reddit.com/r/Discordjs/comments/10377qg/adding_the_possibility_to_mention_multiple_users/
+# https://hikari-lightbulb.readthedocs.io/en/2.3.5/api_references/decorators.html#lightbulb.decorators.option
+
+@tracker_group.child
+@lightbulb.option("discord_users", "użytkownicy discorda", required=True, type=hikari.User)
+@lightbulb.command("w2s", "wylosuj film z listy chcę obejrzeć dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def w2s_subcommand(ctx: lightbulb.SlashContext, discord_users: hikari.User) -> None:
+    logging.info(discord_users)
+
+    await ctx.respond("WIP")
+    return
+
 
 
 def load(bot: lightbulb.BotApp) -> None:
@@ -335,3 +352,4 @@ def load(bot: lightbulb.BotApp) -> None:
 
 # @tracker_group.child
 # @lightbulb.command("list", "lista powiadomień", pass_options=True)
+import logging
