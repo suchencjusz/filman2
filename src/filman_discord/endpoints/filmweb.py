@@ -356,14 +356,37 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 #     await ctx.respond(response)
 
 
+# @tracker_group.child
+# @lightbulb.option("user5", "Piąty użytkownik (opcjonalny)", type=hikari.User, required=False)
+# @lightbulb.option("user4", "Czwarty użytkownik (opcjonalny)", type=hikari.User, required=False)
+# @lightbulb.option("user3", "Trzeci użytkownik (opcjonalny)", type=hikari.User, required=False)
+# @lightbulb.option("user2", "Drugi użytkownik (opcjonalny)", type=hikari.User, required=False)
+# @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
+# @lightbulb.command("w2s", "wylosuj film z listy chcę obejrzeć dla użytkownika/użytkowników", pass_options=True)
+# @lightbulb.implements(lightbulb.SlashCommand)
+# async def w2s_subcommand(
+#     ctx: lightbulb.SlashContext,
+#     user1: hikari.User,
+#     user2: hikari.User = None,
+#     user3: hikari.User = None,
+#     user4: hikari.User = None,
+#     user5: hikari.User = None,
+# ) -> None:
+#     response = f"Oznaczono {len([user1, user2, user3, user4, user5])} użytkowników:\n" + "\n".join(
+#         f"{user.mention}" for user in [user1, user2, user3, user4, user5]
+#     )
+#     await ctx.respond(response)
+
+
+
 @tracker_group.child
 @lightbulb.option("user5", "Piąty użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user4", "Czwarty użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user3", "Trzeci użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user2", "Drugi użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
-@lightbulb.command("w2s", "wylosuj film z listy chcę obejrzeć dla użytkownika/użytkowników", pass_options=True)
-@lightbulb.implements(lightbulb.SlashCommand)
+@lightbulb.command("w2s", "Wylosuj film z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,
     user1: hikari.User,
@@ -372,16 +395,19 @@ async def w2s_subcommand(
     user4: hikari.User = None,
     user5: hikari.User = None,
 ) -> None:
-    response = f"Oznaczono {len([user1, user2, user3, user4, user5])} użytkowników:\n" + "\n".join(
-        f"{user.mention}" for user in [user1, user2, user3, user4, user5]
-    )
+    users = [user1, user2, user3, user4, user5]
+    mentioned_users = [user.mention for user in users if user is not None]
+
+    response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
     await ctx.respond(response)
+
+@tracker_group.child
+@lightbulb.command("test", "Testowa komenda", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def test_command(ctx: lightbulb.SlashContext) -> None:
+    await ctx.respond("Działa!")
+
 
 
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(tracker_plugin)
-
-
-# @tracker_group.child
-# @lightbulb.command("list", "lista powiadomień", pass_options=True)
-import logging
