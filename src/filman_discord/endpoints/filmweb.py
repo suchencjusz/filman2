@@ -377,6 +377,14 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 #     )
 #     await ctx.respond(response)
 
+# TODO: add logic to process users in utils
+# from src.filman_discord.utils.w2s_logic import process_users
+
+    # users = [user1, user2, user3, user4, user5]
+    # await ctx.respond("Przetwarzanie...")
+
+    # response = await process_users(users)
+    # await ctx.edit_last_response(response)
 
 
 @tracker_group.child
@@ -399,7 +407,11 @@ async def w2s_subcommand(
     mentioned_users = [user.mention for user in users if user is not None]
 
     response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
-    await ctx.respond(response)
+    await ctx.respond("Przetwarzanie...")
+
+    await asyncio.sleep(5)
+
+    await ctx.edit_last_response(response)
 
 @tracker_group.child
 @lightbulb.command("test", "Testowa komenda", pass_options=True)
