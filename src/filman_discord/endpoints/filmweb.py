@@ -339,6 +339,7 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.option("user3", "Trzeci użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user2", "Drugi użytkownik (opcjonalny)", type=hikari.User, required=False)
 @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
+@lightbulb.option("common", "Losuj tylko z wspólnych filmów", type=bool, required=False)
 @lightbulb.command("w2s", "Wylosuj film z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
@@ -348,6 +349,7 @@ async def w2s_subcommand(
     user3: hikari.User = None,
     user4: hikari.User = None,
     user5: hikari.User = None,
+    common: bool = False,
 ) -> None:
     users = [user1, user2, user3, user4, user5]
     mentioned_users = [user.mention for user in users if user is not None]
@@ -360,7 +362,7 @@ async def w2s_subcommand(
     from filman_discord.utils.filmweb_w2s_logic import process_users
 
     
-    await ctx.edit_last_response(await process_users(users))
+    await ctx.edit_last_response(await process_users(users, common))
 
 
 @tracker_group.child
