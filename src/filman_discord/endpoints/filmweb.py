@@ -1,10 +1,10 @@
+import logging
 from datetime import datetime
 
 import hikari
 import lightbulb
 
-import logging
-
+from filman_discord.utils.filmweb_w2s_logic import process_media
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -354,15 +354,58 @@ async def w2s_subcommand(
     users = [user1, user2, user3, user4, user5]
     mentioned_users = [user.mention for user in users if user is not None]
 
+    for user in users:
+        if user is not None:
+            if user.is_bot:
+                embed = hikari.Embed(
+                    title="Nie możesz losować filmów dla bota, zostaw go w spokoju!",
+                    colour=0xFF4400,
+                    timestamp=datetime.now().astimezone(),
+                )
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+                return await ctx.respond(embed)
+
+    if len(mentioned_users) == 0:
+        embed = hikari.Embed(
+            title="Nie podano użytkowników!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        return await ctx.respond(embed)
+
+    if len(mentioned_users) == 1 and common is True:
+        embed = hikari.Embed(
+            title="Nie możesz losować wspólnych filmów dla jednej osoby, przecież to nie ma sensu xd",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        return await ctx.respond(embed)
+
     response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
-    await ctx.respond("Przetwarzanie...")
+
+    embed = hikari.Embed(
+        title="Losowanie filmu...",
+        description=response,
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+
+    await ctx.respond(embed)
 
     logging.debug(f"Processing users: {users}")
 
-    from filman_discord.utils.filmweb_w2s_logic import process_users
-
-    
-    await ctx.edit_last_response(await process_users(users, common))
+    await ctx.edit_last_response(content=await process_media(users, common), embed=None)
 
 
 @tracker_group.child
