@@ -51,8 +51,18 @@ async def filmweb_subcommand(ctx: lightbulb.SlashContext) -> None:
     )
 
     embed.add_field(
+        name="`/filmweb stop_everything`",
+        value="Anuluje wysyłanie powiadomień na wszystkich serwerach - usuwa dane użytkownika z bazy danych",
+    )
+
+    embed.add_field(
         name="`/filmweb here`",
         value="Dopisuje użytkownika do listy powiadomień na danym serwerze",
+    )
+
+    embed.add_field(
+        name="`/filmweb w2s`",
+        value="Losuje film/serial z list/y użytkowników \n opcja common losuje film z wspólnych elementów wszystkich użytkowników",
     )
 
     embed.set_footer(
