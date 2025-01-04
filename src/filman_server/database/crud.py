@@ -504,6 +504,10 @@ def delete_filmweb_user_watched_movies(
     return True
 
 
+def get_filmweb_watched_movies_all(db: Session) -> list[models.FilmWebUserWatchedMovie]:
+    return db.query(models.FilmWebUserWatchedMovie).all()
+
+
 # SERIES WATCHED
 def create_filmweb_user_watched_series(db: Session, user_watched_series: schemas.FilmWebUserWatchedSeriesCreate):
     watched_series = get_series_filmweb_id(db, user_watched_series.id_media)
@@ -605,6 +609,10 @@ def delete_filmweb_user_watched_series(
     db.commit()
 
     return True
+
+
+def get_filmweb_watched_series_all(db: Session) -> list[models.FilmWebUserWatchedSeries]:
+    return db.query(models.FilmWebUserWatchedSeries).all()
 
 
 #

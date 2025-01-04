@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 
 import hikari
 import lightbulb
+
+from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -329,9 +332,87 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
         return
 
 
+# todo: draw within common friends list
+@tracker_group.child
+@lightbulb.option("user5", "Piąty użytkownik", type=hikari.User, required=False)
+@lightbulb.option("user4", "Czwarty użytkownik", type=hikari.User, required=False)
+@lightbulb.option("user3", "Trzeci użytkownik", type=hikari.User, required=False)
+@lightbulb.option("user2", "Drugi użytkownik", type=hikari.User, required=False)
+@lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
+@lightbulb.option("common", "Losuj tylko z wspólnych elemntów list", type=bool, required=False, autocomplete=False)
+@lightbulb.option(
+    "typ", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+)
+@lightbulb.command("w2s", "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def w2s_subcommand(
+    ctx: lightbulb.SlashContext,
+    typ: str,
+    user1: hikari.User,
+    user2: hikari.User = None,
+    user3: hikari.User = None,
+    user4: hikari.User = None,
+    user5: hikari.User = None,
+    common: bool = False,
+) -> None:
+    users = [user1, user2, user3, user4, user5]
+    mentioned_users = [user.mention for user in users if user is not None]
+
+    for user in users:
+        if user is not None:
+            if user.is_bot:
+                embed = hikari.Embed(
+                    title="Nie możesz losować filmów dla bota, zostaw go w spokoju!",
+                    colour=0xFF4400,
+                    timestamp=datetime.now().astimezone(),
+                )
+                embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon=ctx.author.display_avatar_url,
+                )
+                return await ctx.respond(embed)
+
+    if len(mentioned_users) == 0:
+        embed = hikari.Embed(
+            title="Nie podano użytkowników!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        return await ctx.respond(embed)
+
+    if len(mentioned_users) == 1 and common is True:
+        embed = hikari.Embed(
+            title="Nie możesz losować wspólnych filmów dla jednej osoby, przecież to nie ma sensu xd",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        return await ctx.respond(embed)
+
+    response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
+
+    embed = hikari.Embed(
+        title=f"Losowanie `{typ}`...",
+        description=response,
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+
+    await ctx.respond(embed)
+
+    logging.debug(f"Processing users: {users}")
+
+    media_type = MediaType.FILM if typ == "film" else MediaType.SERIAL
+
+    await ctx.edit_last_response(content=await process_media(users, common, media_type=media_type), embed=None)
+
+
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(tracker_plugin)
-
-
-# @tracker_group.child
-# @lightbulb.command("list", "lista powiadomień", pass_options=True)

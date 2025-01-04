@@ -11,7 +11,7 @@ from sentry_sdk.integrations.starlette import StarletteIntegration
 from filman_server.cron import Cron
 from filman_server.database import models
 from filman_server.database.db import engine
-from filman_server.routes import discord, filmweb, tasks, users
+from filman_server.routes import discord, filmweb, tasks, users, utils
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 logging.basicConfig(
@@ -42,6 +42,7 @@ app.include_router(users.users_router)
 app.include_router(discord.discord_router)
 app.include_router(filmweb.filmweb_router)
 app.include_router(tasks.tasks_router)
+app.include_router(utils.utils_router)
 
 
 @app.get("/")

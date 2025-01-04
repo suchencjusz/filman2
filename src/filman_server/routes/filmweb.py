@@ -1,13 +1,12 @@
 import logging
 import os
 from typing import List
+from urllib.parse import quote
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-from urllib.parse import quote
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db

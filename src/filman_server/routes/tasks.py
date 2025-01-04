@@ -1,5 +1,5 @@
 # for what purpose rabbitmq exists
-# if you can build your task broker and learn something :~~~~D
+# if you can build your task broker and learn something :~~~~D (not doing it)
 
 import logging
 import os
