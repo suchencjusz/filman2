@@ -341,13 +341,13 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
 @lightbulb.option("common", "Losuj tylko z wspólnych elemntów list", type=bool, required=False, autocomplete=False)
 @lightbulb.option(
-    "type", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+    "typ", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
 )
 @lightbulb.command("w2s", "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,
-    type: str,
+    typ: str,
     user1: hikari.User,
     user2: hikari.User = None,
     user3: hikari.User = None,
@@ -399,7 +399,7 @@ async def w2s_subcommand(
     response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
 
     embed = hikari.Embed(
-        title=f"Losowanie `{type}`...",
+        title=f"Losowanie `{typ}`...",
         description=response,
         colour=0xFFC200,
         timestamp=datetime.now().astimezone(),
@@ -409,7 +409,7 @@ async def w2s_subcommand(
 
     logging.debug(f"Processing users: {users}")
 
-    media_type = MediaType.FILM if type == "film" else MediaType.SERIAL
+    media_type = MediaType.FILM if typ == "film" else MediaType.SERIAL
 
     await ctx.edit_last_response(content=await process_media(users, common, media_type=media_type), embed=None)
 

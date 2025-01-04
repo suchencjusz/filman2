@@ -1,8 +1,7 @@
 import logging
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from filman_server.database import crud, schemas
