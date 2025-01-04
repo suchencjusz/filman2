@@ -224,3 +224,15 @@ class TaskCreate(BaseModel):
     task_started: Optional[datetime] = None
     task_finished: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
+
+
+#
+# UTILS
+#
+
+
+class DatabaseInfo(BaseModel):
+    users_count: int
+    filmweb_watched_movies: int
+    filmweb_watched_series: int
+    discord_guilds: int

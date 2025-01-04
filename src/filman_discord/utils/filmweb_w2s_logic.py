@@ -6,9 +6,11 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 class MediaType(Enum):
     FILM = "film"
     SERIAL = "serial"
+
 
 async def fetch_filmweb_id(user: any) -> str | None:
     logger.debug(f"Fetching Filmweb ID for user: {user.id}")
@@ -24,14 +26,16 @@ async def fetch_filmweb_id(user: any) -> str | None:
         logger.error(f"Error fetching Filmweb ID for user: {user.id}, status: {response.status_code}")
     return None
 
+
 async def fetch_media_to_watch(filmweb_id: str, media_type: MediaType) -> dict[str, any] | None:
     logger.debug(f"Fetching list of media to watch for Filmweb ID: {filmweb_id}")
-    response = requests.get(f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/want2see/{media_type.value}")
+    response = requests.get(f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/want2see/{media_type.value}", timeout=5)
     if response.status_code == 200:
         return response.json()
     else:
         logger.error(f"Error fetching list of media for Filmweb ID: {filmweb_id}, status: {response.status_code}")
     return None
+
 
 async def process_media(users: any, draw_common_media: bool = False, media_type: MediaType = MediaType.FILM) -> str:
     mentioned_users = [user.mention for user in users if user is not None]

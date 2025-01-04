@@ -4,7 +4,7 @@ from datetime import datetime
 import hikari
 import lightbulb
 
-from filman_discord.utils.filmweb_w2s_logic import process_media, MediaType
+from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -347,13 +347,13 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,
+    type: str,
     user1: hikari.User,
     user2: hikari.User = None,
     user3: hikari.User = None,
     user4: hikari.User = None,
     user5: hikari.User = None,
     common: bool = False,
-    type: str = "film",
 ) -> None:
     users = [user1, user2, user3, user4, user5]
     mentioned_users = [user.mention for user in users if user is not None]
