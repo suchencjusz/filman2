@@ -10,11 +10,8 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v4
-
-      - name: 'Set up Python'
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: critical
+          deny-licenses: LGPL-2.0, BSD-2-Clause
