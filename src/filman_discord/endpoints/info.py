@@ -8,20 +8,20 @@ info_plugin = lightbulb.Plugin("Info")
 
 @info_plugin.command()
 @lightbulb.command("info", "informacje o bocie")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def info_group(ctx: lightbulb.SlashContext) -> None:
+@lightbulb.implements(lightbulb.SlashCommandGroup)
+async def info_group(_: lightbulb.SlashContext) -> None:
     pass
 
 
 @info_group.child
 @lightbulb.command("basic", "podstawowe informacje o bocie")
-@lightbulb.implements(lightbulb.SlashCommand)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
     embed = hikari.Embed(title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
         name="Wersja i ostatnia aktualizacja",
-        value="`1.1.8v` - `2025-01-04`",
+        value="`1.1.8Av` - `2025-01-05`",
     )
 
     embed.add_field(
@@ -44,7 +44,7 @@ async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
 
 @info_group.child
 @lightbulb.command("database", "informacje o bazie danych")
-@lightbulb.implements(lightbulb.SlashCommand)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def info_database_command(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.get("http://filman_server:8000/utils/database_info") as response:
         data = await response.json()
@@ -52,8 +52,8 @@ async def info_database_command(ctx: lightbulb.SlashContext) -> None:
     embed = hikari.Embed(title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
-        name=f"W bazie danych znajduje się {data['users_count']} użytkowników \n którzy wszyscy obejrzeli {data['filmweb_watched_movies']} filmów \n oraz {data['filmweb_watched_series']} seriali, \n a także jest zarejestrowanych {data['discord_guilds']} serwerów.",
-        value="",
+        name="Informacje o bazie danych",
+        value=f"W bazie danych znajduje się {data['users_count']} użytkowników, wszyscy obejrzeli {data['filmweb_watched_movies']} filmów oraz {data['filmweb_watched_series']} seriali, a w bazie jest zarejestrowanych {data['discord_guilds']} serwerów.",
     )
 
     embed.set_footer(
