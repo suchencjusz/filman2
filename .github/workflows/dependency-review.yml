@@ -12,3 +12,6 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: critical
+          deny-licenses: LGPL-2.0, BSD-2-Clause
