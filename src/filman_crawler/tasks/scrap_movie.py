@@ -37,7 +37,7 @@ class Scraper:
             rating_data = ujson.loads(rating_data) if rating_data else None
             critics_data = ujson.loads(critics_data) if critics_data else None
         except Exception as e:
-            logging.error(f"Error parsing movie data (info, rating, critics): {e}")
+            logging.warning(f"Error parsing movie data (info, rating, critics): {e}")
 
         title = info_data.get("title", None)
         year = info_data.get("year", None)

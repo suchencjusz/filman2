@@ -339,11 +339,26 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.option("user3", "Trzeci użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user2", "Drugi użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
-@lightbulb.option("common", "Losuj tylko z wspólnych elemntów list", type=bool, required=False, autocomplete=False)
 @lightbulb.option(
-    "typ", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+    "common",
+    "Losuj tylko z wspólnych elemntów list",
+    type=bool,
+    required=False,
+    autocomplete=False,
 )
-@lightbulb.command("w2s", "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.option(
+    "typ",
+    "Wybierz co chcesz losować: film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
+)
+@lightbulb.command(
+    "w2s",
+    "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników",
+    pass_options=True,
+)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,

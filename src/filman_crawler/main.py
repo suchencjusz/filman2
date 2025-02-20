@@ -60,7 +60,8 @@ ALLOWED_TASKS = [
 TASK_TYPES = [task for task in ALLOWED_TASKS]
 
 sentry_logging = LoggingIntegration(
-    level=logging.INFO, event_level=logging.ERROR  # Capture info and above as breadcrumbs  # Send errors as events
+    level=logging.WARNING,
+    event_level=logging.ERROR,  # Capture info and above as breadcrumbs  # Send errors as events
 )
 
 

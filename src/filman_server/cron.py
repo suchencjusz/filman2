@@ -27,19 +27,31 @@ class Cron:
 
     @staticmethod
     def tasks_new_scrap_filmweb_users_series():
-        Cron.execute_task("http://localhost:8000/tasks/new/scrap/filmweb/users/series", "tasks_new_scrap_filmweb_users_series")
+        Cron.execute_task(
+            "http://localhost:8000/tasks/new/scrap/filmweb/users/series",
+            "tasks_new_scrap_filmweb_users_series",
+        )
 
     @staticmethod
     def tasks_new_scrap_filmweb_series():
-        Cron.execute_task("http://localhost:8000/tasks/new/scrap/filmweb/series", "tasks_new_scrap_filmweb_series")
+        Cron.execute_task(
+            "http://localhost:8000/tasks/new/scrap/filmweb/series",
+            "tasks_new_scrap_filmweb_series",
+        )
 
     @staticmethod
     def tasks_new_scrap_filmweb_users_movies():
-        Cron.execute_task("http://localhost:8000/tasks/new/scrap/filmweb/users/movies", "tasks_new_scrap_filmweb_users_movies")
+        Cron.execute_task(
+            "http://localhost:8000/tasks/new/scrap/filmweb/users/movies",
+            "tasks_new_scrap_filmweb_users_movies",
+        )
 
     @staticmethod
     def tasks_new_scrap_filmweb_movies():
-        Cron.execute_task("http://localhost:8000/tasks/new/scrap/filmweb/movies", "tasks_new_scrap_filmweb_movies")
+        Cron.execute_task(
+            "http://localhost:8000/tasks/new/scrap/filmweb/movies",
+            "tasks_new_scrap_filmweb_movies",
+        )
 
     @staticmethod
     def tasks_update_stuck_tasks():

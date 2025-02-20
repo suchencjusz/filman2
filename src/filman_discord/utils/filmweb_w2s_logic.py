@@ -14,7 +14,11 @@ class MediaType(Enum):
 
 async def fetch_filmweb_id(user: any) -> str | None:
     logger.debug(f"Fetching Filmweb ID for user: {user.id}")
-    response = requests.get(f"http://filman_server:8000/filmweb/user/mapping/get", params={"discord_id": user.id})
+    response = requests.get(
+        f"http://filman_server:8000/filmweb/user/mapping/get",
+        params={"discord_id": user.id},
+        timeout=5,
+    )
     if response.status_code == 200:
         filmweb_id = response.json().get("filmweb_id")
         if filmweb_id:
@@ -29,7 +33,10 @@ async def fetch_filmweb_id(user: any) -> str | None:
 
 async def fetch_media_to_watch(filmweb_id: str, media_type: MediaType) -> dict[str, any] | None:
     logger.debug(f"Fetching list of media to watch for Filmweb ID: {filmweb_id}")
-    response = requests.get(f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/want2see/{media_type.value}", timeout=5)
+    response = requests.get(
+        f"https://www.filmweb.pl/api/v1/user/{filmweb_id}/want2see/{media_type.value}",
+        timeout=5,
+    )
     if response.status_code == 200:
         return response.json()
     else:
