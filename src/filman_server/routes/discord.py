@@ -10,7 +10,9 @@ from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 discord_router = APIRouter(prefix="/discord", tags=["discord"])
 
@@ -21,7 +23,9 @@ discord_router = APIRouter(prefix="/discord", tags=["discord"])
     summary="Configure a guild",
     description="Configure a discord guild, this endpoint is connecting a guild text channel to guild id (is used for managing where notifications are sent)",
 )
-async def configure_guild(guild: schemas.DiscordGuildsCreate, db: Session = Depends(get_db)):
+async def configure_guild(
+    guild: schemas.DiscordGuildsCreate, db: Session = Depends(get_db)
+):
     try:
         db_guild = crud.set_guild(db, guild)
         return db_guild

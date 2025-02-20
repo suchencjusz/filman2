@@ -8,7 +8,9 @@ from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 utils_router = APIRouter(prefix="/utils", tags=["utils"])
 

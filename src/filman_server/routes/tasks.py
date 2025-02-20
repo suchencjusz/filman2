@@ -14,7 +14,9 @@ from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -71,7 +73,9 @@ def get_task_to_do(
     summary="Update task status",
     description="Update task status to given status",
 )
-def update_task_status(task_id: int, task_status: schemas.TaskStatus, db: Session = Depends(get_db)):
+def update_task_status(
+    task_id: int, task_status: schemas.TaskStatus, db: Session = Depends(get_db)
+):
     db_task = crud.update_task_status(db, task_id, task_status)
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -88,7 +92,9 @@ def update_stuck_tasks(minutes: int, db: Session = Depends(get_db)):
     db_tasks = crud.update_stuck_tasks(db, minutes)
 
     if db_tasks is None:
-        raise HTTPException(status_code=400, detail="Tasks not updated! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not updated! Something went wrong"
+        )
     return True
 
 
@@ -102,7 +108,9 @@ def update_old_tasks(minutes: int, db: Session = Depends(get_db)):
     db_tasks = crud.update_old_tasks(db, minutes)
 
     if db_tasks is None:
-        raise HTTPException(status_code=400, detail="Tasks not updated! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not updated! Something went wrong"
+        )
     return True
 
 
@@ -121,7 +129,9 @@ def create_scrap_users_movies_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_users_movies_task(db)
 
     if db_task is None:
-        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not created! Something went wrong"
+        )
     return True
 
 
@@ -135,7 +145,9 @@ def create_scrap_movies_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_movies_task(db)
 
     if db_task is None:
-        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not created! Something went wrong"
+        )
     return True
 
 
@@ -149,7 +161,9 @@ def create_scrap_series_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_series_task(db)
 
     if db_task is None:
-        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not created! Something went wrong"
+        )
     return True
 
 
@@ -163,5 +177,7 @@ def create_scrap_users_series_task(db: Session = Depends(get_db)):
     db_task = crud.create_scrap_filmweb_users_series_task(db)
 
     if db_task is None:
-        raise HTTPException(status_code=400, detail="Tasks not created! Something went wrong")
+        raise HTTPException(
+            status_code=400, detail="Tasks not created! Something went wrong"
+        )
     return True

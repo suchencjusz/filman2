@@ -60,7 +60,8 @@ ALLOWED_TASKS = [
 TASK_TYPES = [task for task in ALLOWED_TASKS]
 
 sentry_logging = LoggingIntegration(
-    level=logging.INFO, event_level=logging.ERROR  # Capture info and above as breadcrumbs  # Send errors as events
+    level=logging.WARNING,
+    event_level=logging.ERROR,  # Capture info and above as breadcrumbs  # Send errors as events
 )
 
 
@@ -109,19 +110,27 @@ def get_task_to_do() -> Task:
 
 def do_task(task: Task):
     if task.task_type == TaskTypes.SCRAP_FILMWEB_MOVIE:
-        scraper = movie_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job)
+        scraper = movie_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT, movie_id=task.task_job
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_SERIES:
-        scraper = series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job)
+        scraper = series_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT, series_id=task.task_job
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES:
-        scraper = user_watched_movies_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT)
+        scraper = user_watched_movies_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT
+        )
         scraper.scrap(task)
 
     elif task.task_type == TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES:
-        scraper = user_watched_series_scrapper(headers=HEADERS, endpoint_url=CORE_ENDPOINT)
+        scraper = user_watched_series_scrapper(
+            headers=HEADERS, endpoint_url=CORE_ENDPOINT
+        )
         scraper.scrap(task)
 
     else:

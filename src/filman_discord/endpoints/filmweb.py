@@ -18,7 +18,9 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 
 @tracker_group.child
 # @lightbulb.cooldown(1, 60, bucket=lightbulb.CooldownBucketType.user)
-@lightbulb.option("filmweb_username", "nazwa użytkownika na filmwebie", required=True, type=str)
+@lightbulb.option(
+    "filmweb_username", "nazwa użytkownika na filmwebie", required=True, type=str
+)
 @lightbulb.command("me", "monitoruj swoje konto filmweb", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> None:
@@ -104,10 +106,14 @@ async def me_subcommand(ctx: lightbulb.SlashContext, filmweb_username: str) -> N
     await ctx.respond(embed)
 
     # scrap user watched data
-    async with ctx.bot.d.client_session.get(f"http://filman_server:8000/tasks/new/scrap/filmweb/users/movies") as resp:
+    async with ctx.bot.d.client_session.get(
+        f"http://filman_server:8000/tasks/new/scrap/filmweb/users/movies"
+    ) as resp:
         pass
 
-    async with ctx.bot.d.client_session.get(f"http://filman_server:8000/tasks/new/scrap/filmweb/users/series") as resp:
+    async with ctx.bot.d.client_session.get(
+        f"http://filman_server:8000/tasks/new/scrap/filmweb/users/series"
+    ) as resp:
         pass
 
     return
@@ -237,7 +243,9 @@ async def stop_subcommand(ctx: lightbulb.SlashContext) -> None:
 
 
 @tracker_group.child
-@lightbulb.command("stop_everything", "przestań powiadamiać na WSZYSTKICH serwerach", pass_options=True)
+@lightbulb.command(
+    "stop_everything", "przestań powiadamiać na WSZYSTKICH serwerach", pass_options=True
+)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def stop_everything_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.delete(
@@ -338,12 +346,29 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.option("user4", "Czwarty użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user3", "Trzeci użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user2", "Drugi użytkownik", type=hikari.User, required=False)
-@lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
-@lightbulb.option("common", "Losuj tylko z wspólnych elemntów list", type=bool, required=False, autocomplete=False)
 @lightbulb.option(
-    "typ", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+    "user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True
 )
-@lightbulb.command("w2s", "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.option(
+    "common",
+    "Losuj tylko z wspólnych elemntów list",
+    type=bool,
+    required=False,
+    autocomplete=False,
+)
+@lightbulb.option(
+    "typ",
+    "Wybierz co chcesz losować: film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
+)
+@lightbulb.command(
+    "w2s",
+    "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników",
+    pass_options=True,
+)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,
@@ -396,7 +421,9 @@ async def w2s_subcommand(
         )
         return await ctx.respond(embed)
 
-    response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(mentioned_users)
+    response = f"Oznaczono {len(mentioned_users)} użytkowników:\n" + "\n".join(
+        mentioned_users
+    )
 
     embed = hikari.Embed(
         title=f"Losowanie `{typ}`...",
@@ -411,7 +438,9 @@ async def w2s_subcommand(
 
     media_type = MediaType.FILM if typ == "film" else MediaType.SERIAL
 
-    await ctx.edit_last_response(content=await process_media(users, common, media_type=media_type), embed=None)
+    await ctx.edit_last_response(
+        content=await process_media(users, common, media_type=media_type), embed=None
+    )
 
 
 def load(bot: lightbulb.BotApp) -> None:

@@ -44,14 +44,25 @@ def clear_database():
 def test_configure_guild(test_client):
     logging.debug("Starting test_configure_guild")
     test_guilds_data = [
-        {"discord_guild_id": 1209989703772799055, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799055,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     for guild_data in test_guilds_data:
         logging.debug(f"Posting guild data: {guild_data}")
-        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
+        response = test_client.post(
+            "/discord/configure/guild", json=guild_data, timeout=3
+        )
         logging.debug(f"Response status code: {response.status_code}")
         assert response.status_code == 200
 
@@ -81,13 +92,24 @@ def test_configure_guild(test_client):
 # /discord/guilds
 def test_get_guilds(test_client):
     test_guilds_data = [
-        {"discord_guild_id": 1209989703772799055, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799055,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     for guild_data in test_guilds_data:
-        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
+        response = test_client.post(
+            "/discord/configure/guild", json=guild_data, timeout=3
+        )
         assert response.status_code == 200
 
     # check if guilds are in the database
@@ -105,9 +127,18 @@ def test_get_guilds(test_client):
 # /discord/guild/members
 def test_get_guild_members(test_client):
     test_guilds_data = [
-        {"discord_guild_id": 1209989703772799055, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799055,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     test_users_data = [
@@ -117,7 +148,9 @@ def test_get_guild_members(test_client):
     ]
 
     for guild_data in test_guilds_data:
-        response = test_client.post("/discord/configure/guild", json=guild_data, timeout=3)
+        response = test_client.post(
+            "/discord/configure/guild", json=guild_data, timeout=3
+        )
         assert response.status_code == 200
 
     for user_data in test_users_data:
@@ -134,14 +167,21 @@ def test_get_guild_members(test_client):
         for user_data in test_users_data:
             response = test_client.get(
                 "/users/add_to_guild",
-                params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+                params={
+                    "discord_id": user_data["discord_id"],
+                    "discord_guild_id": guild_data["discord_guild_id"],
+                },
                 timeout=3,
             )
             assert response.status_code == 200
 
     # get all members of the first guild
     response = test_client.get(
-        "/discord/guild/members", params={"discord_guild_id": test_guilds_data[0]["discord_guild_id"]}, timeout=3
+        "/discord/guild/members",
+        params={"discord_guild_id": test_guilds_data[0]["discord_guild_id"]},
+        timeout=3,
     )
     assert response.status_code == 200
-    assert [user["discord_id"] for user in response.json()] == [user["discord_id"] for user in test_users_data]
+    assert [user["discord_id"] for user in response.json()] == [
+        user["discord_id"] for user in test_users_data
+    ]

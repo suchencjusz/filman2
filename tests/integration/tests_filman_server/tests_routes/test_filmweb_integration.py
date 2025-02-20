@@ -165,7 +165,9 @@ def test_add_watched_series(test_client):
 
     # users should not have watched series
     for user_id in [1, 2, 3]:
-        response = test_client.get("/filmweb/user/watched/series/get_all", params={"user_id": user_id})
+        response = test_client.get(
+            "/filmweb/user/watched/series/get_all", params={"user_id": user_id}
+        )
         assert response.json()["detail"] == "User has no watched series"
         assert response.status_code == 404
 
@@ -194,24 +196,35 @@ def test_add_watched_series(test_client):
 
     # map users to filmweb ids (they are already mapped)
     for filmweb_id, user_id in zip(test_users_filmweb_ids, [1, 2, 3]):
-        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filmweb_id})
+        response = test_client.post(
+            "/filmweb/user/mapping/set",
+            json={"user_id": user_id, "filmweb_id": filmweb_id},
+        )
         assert response.status_code == 200
 
     # check user mappings via ids
     for user_id, filmweb_id in zip([1, 2, 3], test_users_filmweb_ids):
-        response = test_client.get("/filmweb/user/mapping/get", params={"user_id": user_id})
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"user_id": user_id}
+        )
         assert response.status_code == 200
         assert response.json()["filmweb_id"] == filmweb_id
 
     # check user mappings via filmweb ids
     for user_id, filmweb_id in zip([1, 2, 3], test_users_filmweb_ids):
-        response = test_client.get("/filmweb/user/mapping/get", params={"filmweb_id": filmweb_id})
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"filmweb_id": filmweb_id}
+        )
         assert response.status_code == 200
         assert response.json()["user_id"] == user_id
 
     # check user mappings via discord ids
-    for user_id, discord_id in zip([1, 2, 3], [321309474667253282, 321309474167253283, 321309474267253284]):
-        response = test_client.get("/filmweb/user/mapping/get", params={"discord_id": discord_id})
+    for user_id, discord_id in zip(
+        [1, 2, 3], [321309474667253282, 321309474167253283, 321309474267253284]
+    ):
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"discord_id": discord_id}
+        )
         assert response.status_code == 200
         assert response.json()["user_id"] == user_id
 
@@ -230,7 +243,9 @@ def test_add_watched_series(test_client):
     assert response.status_code == 200
 
     # check if the series was added to the watched series
-    response = test_client.get("/filmweb/user/watched/series/get_all", params={"user_id": 1})
+    response = test_client.get(
+        "/filmweb/user/watched/series/get_all", params={"user_id": 1}
+    )
     assert response.status_code == 200
     assert response.json()[0]["series"]["id"] == 430668
     assert response.json()[0]["rate"] == 9
@@ -238,7 +253,10 @@ def test_add_watched_series(test_client):
     assert response.json()[0]["favorite"] == True
 
     # check with other endpoint (one series)
-    response = test_client.get("/filmweb/user/watched/series/get", params={"filmweb_id": "maciek", "series_id": 430668})
+    response = test_client.get(
+        "/filmweb/user/watched/series/get",
+        params={"filmweb_id": "maciek", "series_id": 430668},
+    )
     assert response.status_code == 200
     assert response.json()["series"]["id"] == 430668
     assert response.json()["series"]["title"] == "Breaking Bad"
@@ -285,7 +303,9 @@ def test_add_watched_series(test_client):
     assert response.json()["favorite"] == True
 
     # check if the series were added to the watched series
-    response = test_client.get("/filmweb/user/watched/series/get_all", params={"user_id": 2})
+    response = test_client.get(
+        "/filmweb/user/watched/series/get_all", params={"user_id": 2}
+    )
     assert response.status_code == 200
     assert response.json()[0]["series"]["id"] == 1
     assert response.json()[0]["rate"] == 8
@@ -353,7 +373,9 @@ def test_add_watched_series(test_client):
     assert response.json()["favorite"] == True
 
     # check if the series were added to the watched series
-    response = test_client.get("/filmweb/user/watched/series/get_all", params={"user_id": 3})
+    response = test_client.get(
+        "/filmweb/user/watched/series/get_all", params={"user_id": 3}
+    )
     assert response.status_code == 200
     assert response.json()[0]["series"]["id"] == 430668
     assert response.json()[0]["rate"] == 9
@@ -385,7 +407,9 @@ def test_add_watched_series(test_client):
     assert response.status_code == 200
 
     # check if the series was added to the watched series
-    response = test_client.get("/filmweb/user/watched/series/get_all", params={"user_id": 1})
+    response = test_client.get(
+        "/filmweb/user/watched/series/get_all", params={"user_id": 1}
+    )
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -433,12 +457,17 @@ def test_add_watched_movie(test_client):
 
     # users should not have watched movies
     for user_id in [1, 2, 3]:
-        response = test_client.get("/filmweb/user/watched/movies/get", params={"user_id": user_id, "movie_id": 628})
+        response = test_client.get(
+            "/filmweb/user/watched/movies/get",
+            params={"user_id": user_id, "movie_id": 628},
+        )
         assert response.json()["detail"] == "User has no watched movies"
         assert response.status_code == 404
 
     # try to check watched movie without user_id
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"movie_id": 628})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get", params={"movie_id": 628}
+    )
     assert response.status_code == 400
 
     for movie in test_movies_data:
@@ -462,24 +491,35 @@ def test_add_watched_movie(test_client):
 
     # map users to filmweb ids
     for filweb_id, user_id in zip(test_users_filmweb_ids, [1, 2, 3]):
-        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filweb_id})
+        response = test_client.post(
+            "/filmweb/user/mapping/set",
+            json={"user_id": user_id, "filmweb_id": filweb_id},
+        )
         assert response.status_code == 200
 
     # check user mappings via ids
     for user_id, filmweb_id in zip([1, 2, 3], test_users_filmweb_ids):
-        response = test_client.get("/filmweb/user/mapping/get", params={"user_id": user_id})
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"user_id": user_id}
+        )
         assert response.status_code == 200
         assert response.json()["filmweb_id"] == filmweb_id
 
     # check user mappings via filmweb ids
     for user_id, filmweb_id in zip([1, 2, 3], test_users_filmweb_ids):
-        response = test_client.get("/filmweb/user/mapping/get", params={"filmweb_id": filmweb_id})
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"filmweb_id": filmweb_id}
+        )
         assert response.status_code == 200
         assert response.json()["user_id"] == user_id
 
     # check user mappings via discord ids
-    for user_id, discord_id in zip([1, 2, 3], [321309474667253282, 321309474167253283, 321309474267253284]):
-        response = test_client.get("/filmweb/user/mapping/get", params={"discord_id": discord_id})
+    for user_id, discord_id in zip(
+        [1, 2, 3], [321309474667253282, 321309474167253283, 321309474267253284]
+    ):
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"discord_id": discord_id}
+        )
         assert response.status_code == 200
         assert response.json()["user_id"] == user_id
 
@@ -498,7 +538,9 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get_all", params={"user_id": 1}
+    )
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -506,7 +548,10 @@ def test_add_watched_movie(test_client):
     assert response.json()[0]["favorite"] == False
 
     # check with other endpoint (one movie)
-    response = test_client.get("/filmweb/user/watched/movies/get", params={"filmweb_id": "maciek", "movie_id": 628})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get",
+        params={"filmweb_id": "maciek", "movie_id": 628},
+    )
     assert response.status_code == 200
     assert response.json()["movie"]["id"] == 628
     assert response.json()["movie"]["title"] == "Matrix"
@@ -553,7 +598,9 @@ def test_add_watched_movie(test_client):
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 2})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get_all", params={"user_id": 2}
+    )
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 1
     assert response.json()[0]["rate"] == 5
@@ -621,7 +668,9 @@ def test_add_watched_movie(test_client):
     assert response.json()["favorite"] == True
 
     # check if the movies were added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 3})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get_all", params={"user_id": 3}
+    )
     assert response.status_code == 200
     assert response.json()[0]["movie"]["id"] == 628
     assert response.json()[0]["rate"] == 7
@@ -653,7 +702,9 @@ def test_add_watched_movie(test_client):
     assert response.status_code == 200
 
     # check if the movie was added to the watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get_all", params={"user_id": 1}
+    )
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -714,12 +765,17 @@ def test_user_mapping_delete(test_client):
 
     # map users to filmweb ids
     for filmweb_id, user_id in zip(test_users_filmweb_ids, [1, 2, 3]):
-        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filmweb_id})
+        response = test_client.post(
+            "/filmweb/user/mapping/set",
+            json={"user_id": user_id, "filmweb_id": filmweb_id},
+        )
         assert response.status_code == 200
 
     # check user mappings via ids
     for user_id, filmweb_id in zip([1, 2, 3], test_users_filmweb_ids):
-        response = test_client.get("/filmweb/user/mapping/get", params={"user_id": user_id})
+        response = test_client.get(
+            "/filmweb/user/mapping/get", params={"user_id": user_id}
+        )
         assert response.status_code == 200
         assert response.json()["filmweb_id"] == filmweb_id
 
@@ -728,5 +784,7 @@ def test_user_mapping_delete(test_client):
     assert response.status_code == 200
 
     # check user 1 watched movies
-    response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
+    response = test_client.get(
+        "/filmweb/user/watched/movies/get_all", params={"user_id": 1}
+    )
     assert response.status_code == 404

@@ -27,16 +27,24 @@ class Scraper:
 
         tasks = Tasks(self.headers, self.endpoint_url)
 
-        last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
+        last_100_watched = (
+            f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
+        )
         user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get_all?filmweb_id={task.task_job}"
 
         try:
-            logging.debug(f"Fetching user already watched movies from: {user_already_watched}")
-            user_already_watched_data = self.fetch(user_already_watched, params={"filmweb_id": task.task_job})
+            logging.debug(
+                f"Fetching user already watched movies from: {user_already_watched}"
+            )
+            user_already_watched_data = self.fetch(
+                user_already_watched, params={"filmweb_id": task.task_job}
+            )
             user_already_watched_data = ujson.loads(user_already_watched_data)
 
             if user_already_watched is not None or user_already_watched_data != []:
-                user_already_watched_ids = [movie["movie"]["id"] for movie in user_already_watched_data]
+                user_already_watched_ids = [
+                    movie["movie"]["id"] for movie in user_already_watched_data
+                ]
             else:
                 user_already_watched_ids = []
 
@@ -45,7 +53,9 @@ class Scraper:
             return "Error fetching user already watched movies"
 
         try:
-            logging.debug(f"Fetching last 100 watched movies from (filmweb): {last_100_watched}")
+            logging.debug(
+                f"Fetching last 100 watched movies from (filmweb): {last_100_watched}"
+            )
             last_100_watched_data = self.fetch(last_100_watched)
             last_100_watched_data = ujson.loads(last_100_watched_data)
 
@@ -61,15 +71,23 @@ class Scraper:
 
         user_already_watched_ids = set(user_already_watched_ids or [])
 
-        new_movies_watched = [movie for movie in last_100_watched_data if movie[0] not in user_already_watched_ids]
+        new_movies_watched = [
+            movie
+            for movie in last_100_watched_data
+            if movie[0] not in user_already_watched_ids
+        ]
         new_movies_watched_parsed = []
 
         logging.debug(f"Found {len(new_movies_watched)} new movies watched")
 
         for movie in new_movies_watched:
             try:
-                logging.debug(f"Fetching user movie rate for movie from filmweb: {movie[0]}")
-                movie_rate_data = self.fetch(f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}")
+                logging.debug(
+                    f"Fetching user movie rate for movie from filmweb: {movie[0]}"
+                )
+                movie_rate_data = self.fetch(
+                    f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}"
+                )
 
                 if movie_rate_data is None:
                     logging.error(f"Error fetching movie rate for movie: {movie[0]}")
@@ -80,7 +98,9 @@ class Scraper:
                 watched_movie_info = FilmWebUserWatchedMovieCreate(
                     id_media=movie[0],
                     filmweb_id=task.task_job,
-                    date=datetime.datetime.fromtimestamp(movie_rate_data["timestamp"] / 1000),
+                    date=datetime.datetime.fromtimestamp(
+                        movie_rate_data["timestamp"] / 1000
+                    ),
                     rate=movie_rate_data.get("rate", 0),
                     comment=movie_rate_data.get("comment", None),
                     favorite=bool(movie_rate_data.get("favorite", False)),
@@ -124,7 +144,9 @@ class Scraper:
         first_time_scrap: bool,
         task_id: int,
     ):
-        logging.info(f"Updating data for {filmweb_id} with {len(movies_watched)} movies")
+        logging.info(
+            f"Updating data for {filmweb_id} with {len(movies_watched)} movies"
+        )
 
         filmweb = FilmWeb(self.headers, self.endpoint_url)
         tasks = Tasks(self.headers, self.endpoint_url)
@@ -145,7 +167,9 @@ class Scraper:
                         ):
                             logging.info(f"Notification sent for movies: {filmweb_id}")
                         else:
-                            logging.error(f"Error sending notification for movies: {filmweb_id}")
+                            logging.error(
+                                f"Error sending notification for movies: {filmweb_id}"
+                            )
                             continue
                 else:
                     logging.error(f"Error updating movie data for {filmweb_id}")
