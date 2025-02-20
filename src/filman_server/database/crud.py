@@ -12,9 +12,7 @@ from . import models, schemas
 #
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(
-    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 def get_user(
@@ -33,9 +31,7 @@ def get_user(
             .first()
         )
     elif discord_id:
-        return (
-            db.query(models.User).filter(models.User.discord_id == discord_id).first()
-        )
+        return db.query(models.User).filter(models.User.discord_id == discord_id).first()
     else:
         return None
 
@@ -75,15 +71,12 @@ def get_user_destinations_channels(
 ) -> list[int]:
     query = db.query(models.DiscordGuilds.discord_channel_id).join(
         models.DiscordDestinations,
-        models.DiscordDestinations.discord_guild_id
-        == models.DiscordGuilds.discord_guild_id,
+        models.DiscordDestinations.discord_guild_id == models.DiscordGuilds.discord_guild_id,
     )
     if user_id:
         query = query.filter(models.DiscordDestinations.user_id == user_id)
     if discord_user_id:
-        query = query.filter(
-            models.DiscordDestinations.discord_user_id == discord_user_id
-        )
+        query = query.filter(models.DiscordDestinations.discord_user_id == discord_user_id)
     return [channel_id for (channel_id,) in query.all()]
 
 
@@ -99,11 +92,7 @@ def get_user_destination(
     if user is None:
         return None
 
-    return (
-        db.query(models.DiscordDestinations)
-        .filter_by(user_id=user.id, discord_guild_id=discord_guild_id)
-        .first()
-    )
+    return db.query(models.DiscordDestinations).filter_by(user_id=user.id, discord_guild_id=discord_guild_id).first()
 
 
 def set_user_destination(
@@ -111,16 +100,10 @@ def set_user_destination(
     user_id: int,
     discord_guild_id: int,
 ) -> models.DiscordDestinations:
-    db_dest = (
-        db.query(models.DiscordDestinations)
-        .filter_by(user_id=user_id, discord_guild_id=discord_guild_id)
-        .first()
-    )
+    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user_id, discord_guild_id=discord_guild_id).first()
 
     if db_dest is None:
-        db_dest = models.DiscordDestinations(
-            user_id=user_id, discord_guild_id=discord_guild_id
-        )
+        db_dest = models.DiscordDestinations(user_id=user_id, discord_guild_id=discord_guild_id)
         db.add(db_dest)
     else:
         db_dest.discord_guild_id = discord_guild_id
@@ -142,11 +125,7 @@ def delete_user_destination(
     if user is None:
         return None
 
-    db_dest = (
-        db.query(models.DiscordDestinations)
-        .filter_by(user_id=user.id, discord_guild_id=discord_guild_id)
-        .first()
-    )
+    db_dest = db.query(models.DiscordDestinations).filter_by(user_id=user.id, discord_guild_id=discord_guild_id).first()
 
     if db_dest is None:
         return None
@@ -178,11 +157,7 @@ def delete_user_destinations(
 
 
 def get_guild(db: Session, discord_guild_id: int):
-    return (
-        db.query(models.DiscordGuilds)
-        .filter(models.DiscordGuilds.discord_guild_id == discord_guild_id)
-        .first()
-    )
+    return db.query(models.DiscordGuilds).filter(models.DiscordGuilds.discord_guild_id == discord_guild_id).first()
 
 
 def get_guild_members(db: Session, discord_guild_id: int) -> list[schemas.User]:
@@ -249,9 +224,7 @@ def get_movie_filmweb_id(db: Session, id: int) -> models.FilmWebMovie | None:
     return db.query(models.FilmWebMovie).filter(models.FilmWebMovie.id == id).first()
 
 
-def create_filmweb_movie(
-    db: Session, movie: schemas.FilmWebMovie
-) -> models.FilmWebMovie:
+def create_filmweb_movie(db: Session, movie: schemas.FilmWebMovie) -> models.FilmWebMovie:
     existing_movie = db.query(models.FilmWebMovie).filter_by(id=movie.id).first()
     if existing_movie:
         return existing_movie
@@ -373,11 +346,7 @@ def get_filmweb_user_mapping(
     if user is None:
         return None
 
-    return (
-        db.query(models.FilmWebUserMapping)
-        .filter(models.FilmWebUserMapping.user_id == user.id)
-        .first()
-    )
+    return db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
 
 
 # sets filmweb user nickname to corelate with discord user (main user in db)
@@ -393,9 +362,7 @@ def set_filmweb_user_mapping(
 
     # creates
     if db_mapping is None:
-        db_mapping = models.FilmWebUserMapping(
-            user_id=user.id, filmweb_id=mapping.filmweb_id
-        )
+        db_mapping = models.FilmWebUserMapping(user_id=user.id, filmweb_id=mapping.filmweb_id)
         db.add(db_mapping)
     # updates
     else:
@@ -416,21 +383,13 @@ def delete_filmweb_user_mapping(
     user = get_user(db, user_id, filmweb_id, discord_id)
 
     if user is None:
-        logging.debug(
-            f"User not found for user_id {user_id} and filmweb_id {filmweb_id}"
-        )
+        logging.debug(f"User not found for user_id {user_id} and filmweb_id {filmweb_id}")
         return False
 
-    db_mapping = (
-        db.query(models.FilmWebUserMapping)
-        .filter(models.FilmWebUserMapping.user_id == user.id)
-        .first()
-    )
+    db_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
 
     if db_mapping is None:
-        logging.debug(
-            f"Mapping not found for user {user.id} and filmweb_id {filmweb_id}"
-        )
+        logging.debug(f"Mapping not found for user {user.id} and filmweb_id {filmweb_id}")
         return None
 
     db.delete(db_mapping)
@@ -442,9 +401,7 @@ def delete_filmweb_user_mapping(
 # MOVIES WATCHED
 
 
-def create_filmweb_user_watched_movie(
-    db: Session, user_watched_movie: schemas.FilmWebUserWatchedMovieCreate
-):
+def create_filmweb_user_watched_movie(db: Session, user_watched_movie: schemas.FilmWebUserWatchedMovieCreate):
     watched_movie = get_movie_filmweb_id(db, user_watched_movie.id_media)
 
     if watched_movie is None:
@@ -495,9 +452,7 @@ def get_filmweb_user_watched_movie(
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
         filmweb_mapping = (
-            db.query(models.FilmWebUserMapping)
-            .filter(models.FilmWebUserMapping.user_id == user.id)
-            .first()
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
         )
         if filmweb_mapping is None:
             return None
@@ -528,9 +483,7 @@ def get_filmweb_user_watched_movies(
     # If filmweb_id is not provided, get it from the user mapping
     if filmweb_id is None:
         filmweb_mapping = (
-            db.query(models.FilmWebUserMapping)
-            .filter(models.FilmWebUserMapping.user_id == user.id)
-            .first()
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
         )
         if filmweb_mapping is None:
             return None
@@ -538,9 +491,7 @@ def get_filmweb_user_watched_movies(
 
     # Query the database for all watched movies for the given filmweb_id
     watched_movies = (
-        db.query(models.FilmWebUserWatchedMovie)
-        .filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id)
-        .all()
+        db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).all()
     )
 
     return watched_movies
@@ -559,9 +510,7 @@ def delete_filmweb_user_watched_movies(
 
     filmweb_id = user_mapping.filmweb_id
 
-    db.query(models.FilmWebUserWatchedMovie).filter(
-        models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id
-    ).delete()
+    db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).delete()
     db.commit()
 
     return True
@@ -572,9 +521,7 @@ def get_filmweb_watched_movies_all(db: Session) -> list[models.FilmWebUserWatche
 
 
 # SERIES WATCHED
-def create_filmweb_user_watched_series(
-    db: Session, user_watched_series: schemas.FilmWebUserWatchedSeriesCreate
-):
+def create_filmweb_user_watched_series(db: Session, user_watched_series: schemas.FilmWebUserWatchedSeriesCreate):
     watched_series = get_series_filmweb_id(db, user_watched_series.id_media)
 
     if watched_series is None:
@@ -587,8 +534,7 @@ def create_filmweb_user_watched_series(
     db_series_watched = (
         db.query(models.FilmWebUserWatchedSeries)
         .filter(
-            models.FilmWebUserWatchedSeries.filmweb_id
-            == user_watched_series.filmweb_id,
+            models.FilmWebUserWatchedSeries.filmweb_id == user_watched_series.filmweb_id,
             models.FilmWebUserWatchedSeries.id_media == user_watched_series.id_media,
         )
         .first()
@@ -625,18 +571,14 @@ def get_filmweb_user_watched_series_all(
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
         filmweb_mapping = (
-            db.query(models.FilmWebUserMapping)
-            .filter(models.FilmWebUserMapping.user_id == user.id)
-            .first()
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
         )
         if filmweb_mapping is None:
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
     return (
-        db.query(models.FilmWebUserWatchedSeries)
-        .filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id)
-        .all()
+        db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).all()
     )
 
 
@@ -655,9 +597,7 @@ def get_filmweb_user_watched_series(
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
         filmweb_mapping = (
-            db.query(models.FilmWebUserMapping)
-            .filter(models.FilmWebUserMapping.user_id == user.id)
-            .first()
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
         )
         if filmweb_mapping is None:
             return None
@@ -686,9 +626,7 @@ def delete_filmweb_user_watched_series(
 
     filmweb_id = user_mapping.filmweb_id
 
-    db.query(models.FilmWebUserWatchedSeries).filter(
-        models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id
-    ).delete()
+    db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).delete()
     db.commit()
 
     return True
@@ -727,9 +665,7 @@ def __change_task_status(db: Session, task_id: int, task_status: schemas.TaskSta
     if task_started is not None:
         db_task.task_started = task_started
 
-    task_finished = (
-        datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
-    )
+    task_finished = datetime.now() if task_status == schemas.TaskStatus.COMPLETED else None
     if task_finished is not None:
         db_task.task_finished = task_finished
 
@@ -769,9 +705,7 @@ def get_task_to_do(db: Session, task_types: schemas.TaskTypes, head: bool = Fals
 
 
 def remove_completed_tasks(db: Session):
-    db.query(models.Task).filter(
-        models.Task.task_status == schemas.TaskStatus.COMPLETED
-    ).delete()
+    db.query(models.Task).filter(models.Task.task_status == schemas.TaskStatus.COMPLETED).delete()
     db.commit()
 
 
@@ -871,9 +805,7 @@ def update_stuck_tasks(db: Session, minutes: int = 15):  # dodaj minuty
 
 
 def update_old_tasks(db: Session, minutes: int = 30):
-    db.query(models.Task).filter(
-        models.Task.task_created < datetime.now() - timedelta(minutes=minutes)
-    ).delete()
+    db.query(models.Task).filter(models.Task.task_created < datetime.now() - timedelta(minutes=minutes)).delete()
     db.commit()
 
     return True

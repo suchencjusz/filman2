@@ -12,9 +12,7 @@ from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(
-    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 
@@ -216,9 +214,7 @@ async def get_watched_movies(
     discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    watched_movies = crud.get_filmweb_user_watched_movies(
-        db, user_id, filmweb_id, discord_id
-    )
+    watched_movies = crud.get_filmweb_user_watched_movies(db, user_id, filmweb_id, discord_id)
 
     if watched_movies is None:
         raise HTTPException(status_code=404, detail="User has no watched movies")
@@ -245,9 +241,7 @@ async def get_watched_movie(
             detail="At least one of user_id, filmweb_id or discord_id must be provided",
         )
 
-    watched_movie = crud.get_filmweb_user_watched_movie(
-        db, user_id, filmweb_id, discord_id, movie_id
-    )
+    watched_movie = crud.get_filmweb_user_watched_movie(db, user_id, filmweb_id, discord_id, movie_id)
 
     if watched_movie is None:
         raise HTTPException(status_code=404, detail="User has no watched movies")
@@ -293,9 +287,7 @@ async def get_watched_series_all(
     discord_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    watched_series = crud.get_filmweb_user_watched_series_all(
-        db, user_id, filmweb_id, discord_id
-    )
+    watched_series = crud.get_filmweb_user_watched_series_all(db, user_id, filmweb_id, discord_id)
 
     if watched_series is None:
         raise HTTPException(status_code=404, detail="User has no watched series")
@@ -322,9 +314,7 @@ async def get_watched_series(
             detail="At least one of user_id, filmweb_id or discord_id must be provided",
         )
 
-    watched_series = crud.get_filmweb_user_watched_series(
-        db, user_id, filmweb_id, discord_id, series_id
-    )
+    watched_series = crud.get_filmweb_user_watched_series(db, user_id, filmweb_id, discord_id, series_id)
 
     if watched_series is None:
         raise HTTPException(status_code=404, detail="User has no watched series")

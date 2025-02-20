@@ -11,9 +11,7 @@ from filman_server.database import models, schemas
 from filman_server.database.db import Base, get_db
 from filman_server.main import app
 
-SQLALCHEMY_DATABASE_URL = (
-    "sqlite:///./test.db"  # memory db is not working for some reason
-)
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # memory db is not working for some reason
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -134,9 +132,7 @@ def test_tasks_to_do_head(test_client: TestClient):
     ]
 
     for task_types, expected_status in task_types_and_status_codes:
-        response = test_client.head(
-            "/tasks/get/to_do", params={"task_types": task_types}
-        )
+        response = test_client.head("/tasks/get/to_do", params={"task_types": task_types})
         assert response.status_code == expected_status
 
 
@@ -174,9 +170,7 @@ def test_tasks_to_do_get(test_client: TestClient):
         assert response.status_code == 200
 
     for task_data in task_data_list:
-        response = test_client.get(
-            "/tasks/get/to_do", params={"task_types": [task_data["task_type"]]}
-        )
+        response = test_client.get("/tasks/get/to_do", params={"task_types": [task_data["task_type"]]})
         assert response.status_code == 200
 
         task = response.json()
@@ -212,13 +206,9 @@ def test_task_update_task_status(test_client: TestClient):
 
     for task_status in task_status_all:
 
-        logging.info(
-            f"Updating task status to (id: {task['task_id']}, status: {task_status[1].value})"
-        )
+        logging.info(f"Updating task status to (id: {task['task_id']}, status: {task_status[1].value})")
 
-        response = test_client.get(
-            f"/tasks/update/status/{task['task_id']}/{task_status[1].value}"
-        )
+        response = test_client.get(f"/tasks/update/status/{task['task_id']}/{task_status[1].value}")
         assert response.status_code == 200
 
         updated_task = response.json()
@@ -239,9 +229,7 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
     assert response.json() is True
 
     # check if there are any tasks in the database
-    response = test_client.head(
-        "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user"]}
-    )
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user"]})
     assert response.status_code == 404
 
     # create users and filmweb mappings
@@ -276,9 +264,7 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
     assert response.status_code == 200
     assert response.json() is True
 
-    response = test_client.head(
-        "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]}
-    )
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
     assert response.status_code == 200
 
     with freeze_time("2023-01-01 12:00:00") as frozen_time:
@@ -330,9 +316,7 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
     assert response.json() is True
 
     # check if there are any tasks in the database
-    response = test_client.head(
-        "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]}
-    )
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
     assert response.status_code == 404
 
     # add some movies to fimweb database
@@ -372,15 +356,11 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
     assert response.status_code == 200
     assert response.json() is True
 
-    response = test_client.head(
-        "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]}
-    )
+    response = test_client.head("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
     assert response.status_code == 200
 
     with freeze_time("2023-01-01 12:00:00") as frozen_time:
-        response = test_client.get(
-            "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]}
-        )
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
         assert response.status_code == 200
         assert response.json()["task_id"] == 1
         assert response.json()["task_status"] == "running"
@@ -395,9 +375,7 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
         assert response.status_code == 200
         assert response.json() is True
 
-        response = test_client.get(
-            "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]}
-        )
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
         assert response.status_code == 200
         assert response.json()["task_id"] == 1
 
@@ -407,8 +385,6 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
         assert response.status_code == 200
         assert response.json() is True
 
-        response = test_client.get(
-            "/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]}
-        )
+        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
         assert response.status_code == 200
         assert response.json()["task_id"] == 2

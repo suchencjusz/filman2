@@ -53,32 +53,18 @@ def test_db():
     session.commit()
 
     # Create filmweb mappings
-    filmweb_mapping1 = models.FilmWebUserMapping(
-        id=1, user_id=user2.id, filmweb_id="filmweb123"
-    )
-    filmweb_mapping2 = models.FilmWebUserMapping(
-        id=2, user_id=user3.id, filmweb_id="kanye_west"
-    )
+    filmweb_mapping1 = models.FilmWebUserMapping(id=1, user_id=user2.id, filmweb_id="filmweb123")
+    filmweb_mapping2 = models.FilmWebUserMapping(id=2, user_id=user3.id, filmweb_id="kanye_west")
     session.add(filmweb_mapping1)
     session.add(filmweb_mapping2)
     session.commit()
 
     # Create discord guilds
-    discord_guild1 = models.DiscordGuilds(
-        discord_guild_id=123456789, discord_channel_id=100000
-    )
-    discord_guild2 = models.DiscordGuilds(
-        discord_guild_id=987654321, discord_channel_id=200000
-    )
-    discord_guild3 = models.DiscordGuilds(
-        discord_guild_id=111111111, discord_channel_id=300000
-    )
-    discord_guild4 = models.DiscordGuilds(
-        discord_guild_id=222222222, discord_channel_id=400000
-    )
-    discord_guild5 = models.DiscordGuilds(
-        discord_guild_id=333333333, discord_channel_id=500000
-    )
+    discord_guild1 = models.DiscordGuilds(discord_guild_id=123456789, discord_channel_id=100000)
+    discord_guild2 = models.DiscordGuilds(discord_guild_id=987654321, discord_channel_id=200000)
+    discord_guild3 = models.DiscordGuilds(discord_guild_id=111111111, discord_channel_id=300000)
+    discord_guild4 = models.DiscordGuilds(discord_guild_id=222222222, discord_channel_id=400000)
+    discord_guild5 = models.DiscordGuilds(discord_guild_id=333333333, discord_channel_id=500000)
     session.add(discord_guild1)
     session.add(discord_guild2)
     session.add(discord_guild3)
@@ -88,51 +74,31 @@ def test_db():
 
     # Create discord destinations
     # User 1 should be in 1 guild
-    destination1 = models.DiscordDestinations(
-        user_id=user1.id, discord_guild_id=123456789
-    )
+    destination1 = models.DiscordDestinations(user_id=user1.id, discord_guild_id=123456789)
     session.add(destination1)
     session.commit()
 
     # User 2 should be in 2 guilds
-    destination2 = models.DiscordDestinations(
-        user_id=user2.id, discord_guild_id=987654321
-    )
-    destination3 = models.DiscordDestinations(
-        user_id=user2.id, discord_guild_id=111111111
-    )
+    destination2 = models.DiscordDestinations(user_id=user2.id, discord_guild_id=987654321)
+    destination3 = models.DiscordDestinations(user_id=user2.id, discord_guild_id=111111111)
     session.add(destination2)
     session.add(destination3)
     session.commit()
 
     # User 3 should be in 3 guilds
-    destination4 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=123456789
-    )
-    destination5 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=987654321
-    )
-    destination6 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=111111111
-    )
+    destination4 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=123456789)
+    destination5 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=987654321)
+    destination6 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=111111111)
     session.add(destination4)
     session.add(destination5)
     session.add(destination6)
     session.commit()
 
     # User 4 should be in 4 guilds
-    destination7 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=123456789
-    )
-    destination8 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=987654321
-    )
-    destination9 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=111111111
-    )
-    destination10 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=222222222
-    )
+    destination7 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=123456789)
+    destination8 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=987654321)
+    destination9 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=111111111)
+    destination10 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=222222222)
     session.add(destination7)
     session.add(destination8)
     session.add(destination9)

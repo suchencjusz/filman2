@@ -44,20 +44,14 @@ class Scraper:
         title = info_data.get("title", None)
         year = info_data.get("year", None)
         other_year = info_data.get("otherYear", None)
-        poster_url = info_data.get(
-            "posterPath", "https://vectorified.com/images/no-data-icon-23.png"
-        )
+        poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
-        logging.debug(
-            f"Data for series: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}"
-        )
+        logging.debug(f"Data for series: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}")
 
         if title is None or year is None or poster_url is None:
-            logging.error(
-                f"Error fetching series data for series (title/year/poster_url): {task.task_job}"
-            )
+            logging.error(f"Error fetching series data for series (title/year/poster_url): {task.task_job}")
             logging.debug(f"Title: {title}, Year: {year}, Poster URL: {poster_url}")
             return False
 

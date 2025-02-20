@@ -56,13 +56,9 @@ async def presence(app: lightbulb.BotApp) -> None:
     )
 
 
-@tasks.task(
-    s=2, auto_start=True, pass_app=True, max_consecutive_failures=9999
-)  # test and refactor this is sometime
+@tasks.task(s=2, auto_start=True, pass_app=True, max_consecutive_failures=9999)  # test and refactor this is sometime
 async def notifications_task(app: lightbulb.BotApp) -> None:
-    def filmweb_movie_url_generator(
-        movie_title: str, movie_year: int, movie_id: int
-    ) -> str:
+    def filmweb_movie_url_generator(movie_title: str, movie_year: int, movie_id: int) -> str:
         movie_title = movie_title.replace(" ", "+")
         return f"https://www.filmweb.pl/film/{movie_title}-{movie_year}-{movie_id}"
 
@@ -153,9 +149,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 if not resp2.ok:
                     return
 
-                logging.info(
-                    f"send_discord_notification_watched_movie {filmweb_id} {media_type} {media_id}"
-                )
+                logging.info(f"send_discord_notification_watched_movie {filmweb_id} {media_type} {media_id}")
                 logging.info(f"sending notification for {filmweb_id} {media_id}")
 
                 user_id = 0
@@ -190,17 +184,9 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 favorite = data["favorite"]
 
                 # parse data to none-safe
-                date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(
-                    tz=datetime.timezone.utc
-                )
-                comment = (
-                    "\n".join(textwrap.wrap(comment, width=62))
-                    if comment is not None
-                    else None
-                )
-                movie_url = filmweb_movie_url_generator(
-                    movie["title"], movie["year"], movie["id"]
-                )
+                date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(tz=datetime.timezone.utc)
+                comment = "\n".join(textwrap.wrap(comment, width=62)) if comment is not None else None
+                movie_url = filmweb_movie_url_generator(movie["title"], movie["year"], movie["id"])
                 movie["poster_url"] = (
                     "https://fwcdn.pl/fpo" + movie["poster_url"]
                     if movie["poster_url"] is not None
@@ -210,12 +196,8 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 rate_parsed_star = ""
 
                 rate_parsed_star = parse_rate(rate)
-                social_rate_parsed_star = parse_movie_rate(
-                    movie["community_rate"], "społeczności"
-                )
-                critcis_rate_parsed_star = parse_movie_rate(
-                    movie["critics_rate"], "krytyków"
-                )
+                social_rate_parsed_star = parse_movie_rate(movie["community_rate"], "społeczności")
+                critcis_rate_parsed_star = parse_movie_rate(movie["critics_rate"], "krytyków")
 
                 embed1 = hikari.Embed(
                     title=f"{movie['title']} ({movie['year']})",
@@ -269,9 +251,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 if not resp2.ok:
                     return
 
-                logging.info(
-                    f"send_discord_notification_watched_series {filmweb_id} {media_type} {media_id}"
-                )
+                logging.info(f"send_discord_notification_watched_series {filmweb_id} {media_type} {media_id}")
                 logging.info(f"sending notification for {filmweb_id} {media_id}")
 
                 user_id = 0
@@ -306,17 +286,9 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 favorite = data["favorite"]
 
                 # parse data to none-safe
-                date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(
-                    tz=datetime.timezone.utc
-                )
-                comment = (
-                    "\n".join(textwrap.wrap(comment, width=62))
-                    if comment is not None
-                    else None
-                )
-                series_url = filmweb_movie_url_generator(
-                    series["title"], series["year"], series["id"]
-                )
+                date_watched = datetime.datetime.fromisoformat(date_watched).astimezone(tz=datetime.timezone.utc)
+                comment = "\n".join(textwrap.wrap(comment, width=62)) if comment is not None else None
+                series_url = filmweb_movie_url_generator(series["title"], series["year"], series["id"])
                 series["poster_url"] = (
                     "https://fwcdn.pl/fpo" + series["poster_url"]
                     if series["poster_url"] is not None
@@ -326,12 +298,8 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
                 rate_parsed_star = ""
 
                 rate_parsed_star = parse_rate(rate)
-                social_rate_parsed_star = parse_series_rate(
-                    series["community_rate"], "społeczności"
-                )
-                critcis_rate_parsed_star = parse_series_rate(
-                    series["critics_rate"], "krytyków"
-                )
+                social_rate_parsed_star = parse_series_rate(series["community_rate"], "społeczności")
+                critcis_rate_parsed_star = parse_series_rate(series["critics_rate"], "krytyków")
 
                 series_title = ""
                 series_title = (
@@ -406,9 +374,7 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
 
         logging.info(task)
 
-        if (
-            task["task_type"] == "send_discord_notification"
-        ):  # divide it to other funtion
+        if task["task_type"] == "send_discord_notification":  # divide it to other funtion
 
             filmweb_id = task["task_job"].split(",")[0]
             media_type = task["task_job"].split(",")[1]

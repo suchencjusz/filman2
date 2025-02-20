@@ -17,9 +17,7 @@ async def help_group(_: lightbulb.SlashContext) -> None:
 @lightbulb.command("configure", "konfiguracja serwera")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
-    embed = hikari.Embed(
-        title="`/configure`", colour=0xFFC200, timestamp=datetime.now().astimezone()
-    )
+    embed = hikari.Embed(title="`/configure`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(name="`/configure channel`", value="Ustawia kanał powiadomień")
 
@@ -35,9 +33,7 @@ async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.command("filmweb", "akcje związane z kontem filmweb")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def filmweb_subcommand(ctx: lightbulb.SlashContext) -> None:
-    embed = hikari.Embed(
-        title="`/filmweb`", colour=0xFFC200, timestamp=datetime.now().astimezone()
-    )
+    embed = hikari.Embed(title="`/filmweb`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
         name="`/filmweb me`",

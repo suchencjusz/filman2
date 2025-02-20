@@ -17,9 +17,7 @@ class Scraper:
 
         info_url = f"https://www.filmweb.pl/api/v1/title/{task.task_job}/info"
         rating_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/rating"
-        critics_url = (
-            f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"
-        )
+        critics_url = f"https://www.filmweb.pl/api/v1/film/{task.task_job}/critics/rating"
 
         info_data = self.fetch(info_url)
         rating_data = self.fetch(rating_url)
@@ -43,20 +41,14 @@ class Scraper:
 
         title = info_data.get("title", None)
         year = info_data.get("year", None)
-        poster_url = info_data.get(
-            "posterPath", "https://vectorified.com/images/no-data-icon-23.png"
-        )
+        poster_url = info_data.get("posterPath", "https://vectorified.com/images/no-data-icon-23.png")
         community_rate = rating_data.get("rate", None) if rating_data else None
         critics_rate = critics_data.get("rate", None) if critics_data else None
 
-        logging.debug(
-            f"Data for movie: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}"
-        )
+        logging.debug(f"Data for movie: {title} ({year}) - {poster_url} - {community_rate} - {critics_rate}")
 
         if title is None or year is None or poster_url is None:
-            logging.error(
-                f"Error fetching movie data for movie (title/year/poster_url): {task.task_job}"
-            )
+            logging.error(f"Error fetching movie data for movie (title/year/poster_url): {task.task_job}")
             logging.debug(f"Title: {title}, Year: {year}, Poster URL: {poster_url}")
             return False
 

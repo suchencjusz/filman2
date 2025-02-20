@@ -27,24 +27,16 @@ class Scraper:
 
         tasks = Tasks(self.headers, self.endpoint_url)
 
-        last_100_watched = (
-            f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/serial"
-        )
+        last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/serial"
         user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/series/get_all?filmweb_id={task.task_job}"
 
         try:
-            logging.debug(
-                f"Fetching user already watched series from: {user_already_watched}"
-            )
-            user_already_watched_data = self.fetch(
-                user_already_watched, params={"filmweb_id": task.task_job}
-            )
+            logging.debug(f"Fetching user already watched series from: {user_already_watched}")
+            user_already_watched_data = self.fetch(user_already_watched, params={"filmweb_id": task.task_job})
             user_already_watched_data = ujson.loads(user_already_watched_data)
 
             if user_already_watched is not None or user_already_watched_data != []:
-                user_already_watched_ids = [
-                    series["series"]["id"] for series in user_already_watched_data
-                ]
+                user_already_watched_ids = [series["series"]["id"] for series in user_already_watched_data]
             else:
                 user_already_watched_ids = []
 
@@ -53,9 +45,7 @@ class Scraper:
             return "Error fetching user already watched movies"
 
         try:
-            logging.debug(
-                f"Fetching last 100 watched series from (filmweb): {last_100_watched}"
-            )
+            logging.debug(f"Fetching last 100 watched series from (filmweb): {last_100_watched}")
             last_100_watched_data = self.fetch(last_100_watched)
             last_100_watched_data = ujson.loads(last_100_watched_data)
 
@@ -71,20 +61,14 @@ class Scraper:
 
         user_already_watched_ids = set(user_already_watched_ids or [])
 
-        new_series_watched = [
-            series
-            for series in last_100_watched_data
-            if series[0] not in user_already_watched_ids
-        ]
+        new_series_watched = [series for series in last_100_watched_data if series[0] not in user_already_watched_ids]
         new_series_watched_parsed = []
 
         logging.debug(f"Found {len(new_series_watched)} new series watched")
 
         for series in new_series_watched:
             try:
-                logging.debug(
-                    f"Fetching user series rate for series from filmweb: {series[0]}"
-                )
+                logging.debug(f"Fetching user series rate for series from filmweb: {series[0]}")
                 series_rate_data = self.fetch(
                     f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/serial/{series[0]}"
                 )
@@ -98,9 +82,7 @@ class Scraper:
                 watched_series_info = FilmWebUserWatchedSeriesCreate(
                     id_media=series[0],
                     filmweb_id=task.task_job,
-                    date=datetime.datetime.fromtimestamp(
-                        series_rate_data["timestamp"] / 1000
-                    ),
+                    date=datetime.datetime.fromtimestamp(series_rate_data["timestamp"] / 1000),
                     rate=series_rate_data.get("rate", 0),
                     comment=series_rate_data.get("comment", None),
                     favorite=bool(series_rate_data.get("favorite", False)),
@@ -163,13 +145,9 @@ class Scraper:
                             )
                             is True
                         ):
-                            logging.info(
-                                f"Notification sent for series: {series.id_media}"
-                            )
+                            logging.info(f"Notification sent for series: {series.id_media}")
                         else:
-                            logging.error(
-                                f"Error sending notification for series: {series.id_media}"
-                            )
+                            logging.error(f"Error sending notification for series: {series.id_media}")
                             continue
                 else:
                     logging.error(f"Error adding watched series: {series.id_media}")

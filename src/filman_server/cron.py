@@ -7,9 +7,7 @@ import requests
 import schedule
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(
-    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 class Cron:
@@ -57,15 +55,11 @@ class Cron:
 
     @staticmethod
     def tasks_update_stuck_tasks():
-        Cron.execute_task(
-            "http://localhost:8000/tasks/update/stuck/5", "tasks_update_stuck_tasks"
-        )
+        Cron.execute_task("http://localhost:8000/tasks/update/stuck/5", "tasks_update_stuck_tasks")
 
     @staticmethod
     def tasks_update_old_tasks():
-        Cron.execute_task(
-            "http://localhost:8000/tasks/update/old/20", "tasks_update_old_tasks"
-        )
+        Cron.execute_task("http://localhost:8000/tasks/update/old/20", "tasks_update_old_tasks")
 
     def schedule_tasks(self):
         # filmweb series

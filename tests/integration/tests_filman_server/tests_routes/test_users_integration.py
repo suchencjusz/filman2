@@ -209,10 +209,7 @@ def test_remove_user_from_guild(test_client):
             discord_destination = response.json()
 
             assert discord_destination["user_id"] > 0
-            assert (
-                discord_destination["discord_guild_id"]
-                == guild_data["discord_guild_id"]
-            )
+            assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
 
     # check channels of user nr 1
     response = test_client.get("/users/get_all_channels", params={"user_id": 1})
@@ -248,9 +245,7 @@ def test_remove_user_from_guild(test_client):
 
     guild_members = response.json()
     assert len(guild_members) == 4
-    assert [test_users_data[0]["discord_id"]] not in [
-        member["discord_id"] for member in guild_members
-    ]
+    assert [test_users_data[0]["discord_id"]] not in [member["discord_id"] for member in guild_members]
 
 
 # Remove user from all guilds
@@ -315,10 +310,7 @@ def test_remove_user_from_all_guilds(test_client):
             discord_destination = response.json()
 
             assert discord_destination["user_id"] > 0
-            assert (
-                discord_destination["discord_guild_id"]
-                == guild_data["discord_guild_id"]
-            )
+            assert discord_destination["discord_guild_id"] == guild_data["discord_guild_id"]
 
     # check guild members
     response = test_client.get(
@@ -342,12 +334,8 @@ def test_remove_user_from_all_guilds(test_client):
     )
 
     assert response.status_code == 200
-    assert [test_users_data[0]["discord_id"]] not in [
-        member["discord_id"] for member in response.json()
-    ]
+    assert [test_users_data[0]["discord_id"]] not in [member["discord_id"] for member in response.json()]
 
     # check using other endpoint
-    response = test_client.get(
-        "/users/get_all_guilds", params={"discord_id": test_users_data[0]["discord_id"]}
-    )
+    response = test_client.get("/users/get_all_guilds", params={"discord_id": test_users_data[0]["discord_id"]})
     assert response.status_code == 404

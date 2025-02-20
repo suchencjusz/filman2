@@ -17,9 +17,7 @@ async def info_group(_: lightbulb.SlashContext) -> None:
 @lightbulb.command("basic", "podstawowe informacje o bocie")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
-    embed = hikari.Embed(
-        title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone()
-    )
+    embed = hikari.Embed(title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
         name="Wersja i ostatnia aktualizacja",
@@ -48,14 +46,10 @@ async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.command("database", "informacje o bazie danych")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def info_database_command(ctx: lightbulb.SlashContext) -> None:
-    async with ctx.bot.d.client_session.get(
-        "http://filman_server:8000/utils/database_info"
-    ) as response:
+    async with ctx.bot.d.client_session.get("http://filman_server:8000/utils/database_info") as response:
         data = await response.json()
 
-    embed = hikari.Embed(
-        title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone()
-    )
+    embed = hikari.Embed(title="`Filman`", colour=0xFFC200, timestamp=datetime.now().astimezone())
 
     embed.add_field(
         name="Informacje o bazie danych",

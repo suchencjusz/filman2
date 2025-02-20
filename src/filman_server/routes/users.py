@@ -10,9 +10,7 @@ from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logging.basicConfig(
-    level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 users_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -146,15 +144,11 @@ async def add_to_guild(
     if guild is None:
         raise HTTPException(status_code=405, detail="Guild not found")
 
-    discord_destination = crud.get_user_destination(
-        db, user_id, discord_id, discord_guild_id
-    )
+    discord_destination = crud.get_user_destination(db, user_id, discord_id, discord_guild_id)
     if discord_destination is not None:
         raise HTTPException(status_code=409, detail="User already in this guild")
 
-    discord_destination = crud.set_user_destination(
-        db, user_id=user_id, discord_guild_id=discord_guild_id
-    )
+    discord_destination = crud.set_user_destination(db, user_id=user_id, discord_guild_id=discord_guild_id)
 
     return discord_destination
 
@@ -173,9 +167,7 @@ async def remove_from_guild(
 ):
 
     if user_id is None and discord_user_id is None:
-        raise HTTPException(
-            status_code=400, detail="Either user_id or discord_user_id is required"
-        )
+        raise HTTPException(status_code=400, detail="Either user_id or discord_user_id is required")
 
     guild = crud.get_guild(db, discord_guild_id)
     if guild is None:
@@ -185,9 +177,7 @@ async def remove_from_guild(
     if discord_destination is None:
         raise HTTPException(status_code=404, detail="User not found in any guild")
 
-    discord_destination = crud.get_user_destination(
-        db, user_id, discord_user_id, discord_guild_id
-    )
+    discord_destination = crud.get_user_destination(db, user_id, discord_user_id, discord_guild_id)
     if discord_destination is None:
         raise HTTPException(status_code=404, detail="User not found in this guild")
 
@@ -208,9 +198,7 @@ async def remove_from_all_guilds(
     db: Session = Depends(get_db),
 ):
     if user_id is None and discord_user_id is None:
-        raise HTTPException(
-            status_code=400, detail="Either user_id or discord_user_id is required"
-        )
+        raise HTTPException(status_code=400, detail="Either user_id or discord_user_id is required")
 
     discord_destinations = crud.get_user_destinations(db, user_id, discord_user_id)
     if discord_destinations is None:

@@ -33,25 +33,17 @@ def permissions_for(member: hikari.Member) -> hikari.Permissions:
 
     guild = member.get_guild()
 
-    if (
-        hikari.Permissions.ADMINISTRATOR in permissions
-        or guild
-        and member.id == guild.owner_id
-    ):
+    if hikari.Permissions.ADMINISTRATOR in permissions or guild and member.id == guild.owner_id:
         return hikari.Permissions.all_permissions()
 
     return permissions
 
 
 @configure_group.child
-@lightbulb.option(
-    "text_channel", "kanał tekstowy", type=hikari.TextableChannel, required=True
-)
+@lightbulb.option("text_channel", "kanał tekstowy", type=hikari.TextableChannel, required=True)
 @lightbulb.command("channel", "ustaw kanał z powiadomieniami", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def channel_subcommand(
-    ctx: lightbulb.SlashContext, text_channel: hikari.TextableChannel
-) -> None:
+async def channel_subcommand(ctx: lightbulb.SlashContext, text_channel: hikari.TextableChannel) -> None:
     author_permissions = permissions_for(ctx.member)
 
     if hikari.Permissions.ADMINISTRATOR not in author_permissions:

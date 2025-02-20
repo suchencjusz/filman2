@@ -53,32 +53,18 @@ def test_db():
     session.commit()
 
     # Create filmweb mappings
-    filmweb_mapping1 = models.FilmWebUserMapping(
-        id=1, user_id=user2.id, filmweb_id="filmweb123"
-    )
-    filmweb_mapping2 = models.FilmWebUserMapping(
-        id=2, user_id=user3.id, filmweb_id="kanye_west"
-    )
+    filmweb_mapping1 = models.FilmWebUserMapping(id=1, user_id=user2.id, filmweb_id="filmweb123")
+    filmweb_mapping2 = models.FilmWebUserMapping(id=2, user_id=user3.id, filmweb_id="kanye_west")
     session.add(filmweb_mapping1)
     session.add(filmweb_mapping2)
     session.commit()
 
     # Create discord guilds
-    discord_guild1 = models.DiscordGuilds(
-        discord_guild_id=123456789, discord_channel_id=100000
-    )
-    discord_guild2 = models.DiscordGuilds(
-        discord_guild_id=987654321, discord_channel_id=200000
-    )
-    discord_guild3 = models.DiscordGuilds(
-        discord_guild_id=111111111, discord_channel_id=300000
-    )
-    discord_guild4 = models.DiscordGuilds(
-        discord_guild_id=222222222, discord_channel_id=400000
-    )
-    discord_guild5 = models.DiscordGuilds(
-        discord_guild_id=333333333, discord_channel_id=500000
-    )
+    discord_guild1 = models.DiscordGuilds(discord_guild_id=123456789, discord_channel_id=100000)
+    discord_guild2 = models.DiscordGuilds(discord_guild_id=987654321, discord_channel_id=200000)
+    discord_guild3 = models.DiscordGuilds(discord_guild_id=111111111, discord_channel_id=300000)
+    discord_guild4 = models.DiscordGuilds(discord_guild_id=222222222, discord_channel_id=400000)
+    discord_guild5 = models.DiscordGuilds(discord_guild_id=333333333, discord_channel_id=500000)
     session.add(discord_guild1)
     session.add(discord_guild2)
     session.add(discord_guild3)
@@ -88,51 +74,31 @@ def test_db():
 
     # Create discord destinations
     # User 1 should be in 1 guild
-    destination1 = models.DiscordDestinations(
-        user_id=user1.id, discord_guild_id=123456789
-    )
+    destination1 = models.DiscordDestinations(user_id=user1.id, discord_guild_id=123456789)
     session.add(destination1)
     session.commit()
 
     # User 2 should be in 2 guilds
-    destination2 = models.DiscordDestinations(
-        user_id=user2.id, discord_guild_id=987654321
-    )
-    destination3 = models.DiscordDestinations(
-        user_id=user2.id, discord_guild_id=111111111
-    )
+    destination2 = models.DiscordDestinations(user_id=user2.id, discord_guild_id=987654321)
+    destination3 = models.DiscordDestinations(user_id=user2.id, discord_guild_id=111111111)
     session.add(destination2)
     session.add(destination3)
     session.commit()
 
     # User 3 should be in 3 guilds
-    destination4 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=123456789
-    )
-    destination5 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=987654321
-    )
-    destination6 = models.DiscordDestinations(
-        user_id=user3.id, discord_guild_id=111111111
-    )
+    destination4 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=123456789)
+    destination5 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=987654321)
+    destination6 = models.DiscordDestinations(user_id=user3.id, discord_guild_id=111111111)
     session.add(destination4)
     session.add(destination5)
     session.add(destination6)
     session.commit()
 
     # User 4 should be in 4 guilds
-    destination7 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=123456789
-    )
-    destination8 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=987654321
-    )
-    destination9 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=111111111
-    )
-    destination10 = models.DiscordDestinations(
-        user_id=user4.id, discord_guild_id=222222222
-    )
+    destination7 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=123456789)
+    destination8 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=987654321)
+    destination9 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=111111111)
+    destination10 = models.DiscordDestinations(user_id=user4.id, discord_guild_id=222222222)
     session.add(destination7)
     session.add(destination8)
     session.add(destination9)
@@ -227,30 +193,22 @@ def test_get_user_destinations_by_user_id(test_db):
 
 def test_get_user_destinations_by_discord_user_id(test_db):
     # User 1 should be in 1 guild
-    result = crud.get_user_destinations(
-        test_db, user_id=None, discord_user_id=123456789
-    )
+    result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=123456789)
     assert len(result) == 1
     assert result[0].discord_guild_id == 123456789
 
     # User 2 should be in 2 guilds
-    result = crud.get_user_destinations(
-        test_db, user_id=None, discord_user_id=987654321
-    )
+    result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=987654321)
     assert len(result) == 2
     assert result[0].discord_guild_id in [123456789, 111111111]
 
     # User 3 should be in 3 guilds
-    result = crud.get_user_destinations(
-        test_db, user_id=None, discord_user_id=777777777
-    )
+    result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=777777777)
     assert len(result) == 3
     assert result[0].discord_guild_id in [123456789, 987654321, 111111111]
 
     # User 4 should be in 4 guilds
-    result = crud.get_user_destinations(
-        test_db, user_id=None, discord_user_id=888888888
-    )
+    result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=888888888)
     assert len(result) == 4
     assert result[0].discord_guild_id in [123456789, 987654321, 111111111, 222222222]
 
@@ -261,9 +219,7 @@ def test_get_user_destinations_by_non_existent_user_id(test_db):
 
 
 def test_get_user_destinations_by_non_existent_discord_user_id(test_db):
-    result = crud.get_user_destinations(
-        test_db, user_id=None, discord_user_id=999999999
-    )
+    result = crud.get_user_destinations(test_db, user_id=None, discord_user_id=999999999)
     assert result is None
 
 
@@ -271,51 +227,33 @@ def test_get_user_destinations_by_non_existent_discord_user_id(test_db):
 
 
 def test_get_user_destination_by_user_id_user_in_guild(test_db):
-    result = crud.get_user_destination(
-        test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789
-    )
+    result = crud.get_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789)
     assert result.user_id == 1
 
-    result = crud.get_user_destination(
-        test_db, user_id=2, discord_user_id=None, discord_guild_id=987654321
-    )
+    result = crud.get_user_destination(test_db, user_id=2, discord_user_id=None, discord_guild_id=987654321)
     assert result.user_id == 2
 
-    result = crud.get_user_destination(
-        test_db, user_id=3, discord_user_id=None, discord_guild_id=123456789
-    )
+    result = crud.get_user_destination(test_db, user_id=3, discord_user_id=None, discord_guild_id=123456789)
     assert result.user_id == 3
 
-    result = crud.get_user_destination(
-        test_db, user_id=4, discord_user_id=None, discord_guild_id=123456789
-    )
+    result = crud.get_user_destination(test_db, user_id=4, discord_user_id=None, discord_guild_id=123456789)
     assert result.user_id == 4
 
-    result = crud.get_user_destination(
-        test_db, user_id=4, discord_user_id=None, discord_guild_id=987654321
-    )
+    result = crud.get_user_destination(test_db, user_id=4, discord_user_id=None, discord_guild_id=987654321)
     assert result.user_id == 4
 
 
 def test_get_user_destination_by_user_id_user_not_in_guild(test_db):
-    result = crud.get_user_destination(
-        test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321
-    )
+    result = crud.get_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321)
     assert result is None
 
-    result = crud.get_user_destination(
-        test_db, user_id=2, discord_user_id=None, discord_guild_id=123456789
-    )
+    result = crud.get_user_destination(test_db, user_id=2, discord_user_id=None, discord_guild_id=123456789)
     assert result is None
 
-    result = crud.get_user_destination(
-        test_db, user_id=3, discord_user_id=None, discord_guild_id=222222222
-    )
+    result = crud.get_user_destination(test_db, user_id=3, discord_user_id=None, discord_guild_id=222222222)
     assert result is None
 
-    result = crud.get_user_destination(
-        test_db, user_id=4, discord_user_id=None, discord_guild_id=333333333
-    )
+    result = crud.get_user_destination(test_db, user_id=4, discord_user_id=None, discord_guild_id=333333333)
     assert result is None
 
 
@@ -354,19 +292,13 @@ def test_set_user_destination(test_db):
 def test_delete_user_destination(test_db):
     # remove 3 guilds from user 1
 
-    result = crud.delete_user_destination(
-        test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789
-    )
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=123456789)
     assert result.user_id == 1
 
-    result = crud.delete_user_destination(
-        test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321
-    )
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=987654321)
     assert result.user_id == 1
 
-    result = crud.delete_user_destination(
-        test_db, user_id=1, discord_user_id=None, discord_guild_id=111111111
-    )
+    result = crud.delete_user_destination(test_db, user_id=1, discord_user_id=None, discord_guild_id=111111111)
     assert result.user_id == 1
 
     result = crud.get_user_destinations(test_db, user_id=1, discord_user_id=None)
