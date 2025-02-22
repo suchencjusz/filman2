@@ -17,6 +17,80 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 
 
 @tracker_group.child
+@lightbulb.option(
+    "typ", "film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+)
+@lightbulb.command("last10", "ostatnio ocenione filmy", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def last10_subcommand(ctx: lightbulb.SlashContext, typ: str,) -> None:
+    
+    typ = "movie" if typ == "film" else "series"
+    
+    #
+    # to do: rewrite it seperate file
+    # 
+
+    async with ctx.bot.d.client_session.get(
+        f"http://filman_server:8000/filmweb/user/watched/movies/get_all",
+        params={"discord_id": ctx.author.id},
+    ) as resp:
+        if not resp.ok:
+            await ctx.respond(
+                f"API zwróciło {resp.status} status :c",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+            return
+        
+        movies = await resp.json()
+
+        movies = sorted(movies, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S"), reverse=True) 
+        
+        if len(movies) == 0:
+            embed = hikari.Embed(
+                title=f"Nie oceniono jeszcze żadnych filmów!",
+                colour=0xFF4400,
+                timestamp=datetime.now().astimezone(),
+            )
+            embed.set_footer(
+                text=f"Requested by {ctx.author}",
+                icon=ctx.author.display_avatar_url,
+            )
+            await ctx.respond(embed)
+            return
+
+        # to do: movies != 0
+
+        if len(movies) > 10:
+            movies = movies[0:10]
+        else:
+            movies = movies[0:len(movies)]
+
+    embed = hikari.Embed(
+        title=f"Ostatnio ocenione filmy",
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+
+    for movie in movies:
+        embed.add_field(
+            name=movie[typ]["title"],
+            value=f"Ocena: {movie['rate']}",
+            inline=False,
+        )
+
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+
+    await ctx.respond(embed)
+
+
+#
+#
+#
+
+@tracker_group.child
 # @lightbulb.cooldown(1, 60, bucket=lightbulb.CooldownBucketType.user)
 @lightbulb.option("filmweb_username", "nazwa użytkownika na filmwebie", required=True, type=str)
 @lightbulb.command("me", "monitoruj swoje konto filmweb", pass_options=True)

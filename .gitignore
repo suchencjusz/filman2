@@ -53,6 +53,7 @@ docs/_build/
 
 # Virtual environments
 venv/
+.venv/
 
 # Secrets
 data/
