@@ -9,6 +9,8 @@ import hikari
 import lightbulb
 from lightbulb.ext import tasks
 
+from filman_discord.utils.star_counter import star_emoji_counter
+
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
@@ -61,47 +63,6 @@ async def notifications_task(app: lightbulb.BotApp) -> None:
     def filmweb_movie_url_generator(movie_title: str, movie_year: int, movie_id: int) -> str:
         movie_title = movie_title.replace(" ", "+")
         return f"https://www.filmweb.pl/film/{movie_title}-{movie_year}-{movie_id}"
-
-    def star_emoji_counter(stars: float) -> str:
-        """
-        Convert float rating to emoji string.
-
-        :param stars: float rating
-
-        :return: emoji string
-        """
-
-        return_string = ""
-        stars_int = int(stars)
-        stars = float(stars)
-
-        full = "🌕"
-        near_full = "🌖"
-        half = "🌗"
-        near_zero = "🌘"
-        zero = "🌑"
-
-        t = 10 - stars_int
-
-        for i in range(0, stars_int):
-            return_string += full
-
-        difference = stars - float(stars_int)
-
-        if difference >= 0.7:
-            return_string += near_full
-            t = t - 1
-        elif difference >= 0.3:
-            return_string += half
-            t = t - 1
-        elif difference > 0:
-            return_string += near_zero
-            t = t - 1
-
-        for i in range(0, t):
-            return_string += zero
-
-        return return_string
 
     def parse_rate(rate: int) -> str:
         if rate is not None and rate != 0:

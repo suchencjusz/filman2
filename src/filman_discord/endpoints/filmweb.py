@@ -5,6 +5,8 @@ import hikari
 import lightbulb
 
 from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
+from filman_discord.utils.star_counter import star_emoji_counter
+
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -61,7 +63,7 @@ async def last10_subcommand(ctx: lightbulb.SlashContext, typ: str,) -> None:
         # to do: movies != 0
 
         if len(movies) > 10:
-            movies = movies[0:10]
+            movies = movies[0:25]
         else:
             movies = movies[0:len(movies)]
 
@@ -71,12 +73,17 @@ async def last10_subcommand(ctx: lightbulb.SlashContext, typ: str,) -> None:
         timestamp=datetime.now().astimezone(),
     )
 
+    temp_star_list = ""
+
     for movie in movies:
-        embed.add_field(
-            name=movie[typ]["title"],
-            value=f"Ocena: {movie['rate']}",
-            inline=False,
-        )
+        temp_star_list += f"{star_emoji_counter(movie['rate'])} {movie[typ]['title']} ({movie[typ]['year']})\n"
+
+    embed.add_field(
+        name="Filmy",
+        value=temp_star_list,
+        inline=False,
+    )
+
 
     embed.set_footer(
         text=f"Requested by {ctx.author}",
