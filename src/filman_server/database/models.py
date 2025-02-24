@@ -1,15 +1,4 @@
-from sqlalchemy import (
-    BIGINT,
-    VARCHAR,
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    SmallInteger,
-    String,
-)
+from sqlalchemy import BIGINT, VARCHAR, Boolean, Column, DateTime, Float, ForeignKey, Integer, SmallInteger, String
 from sqlalchemy.orm import relationship
 
 from .db import Base
@@ -24,7 +13,10 @@ class User(Base):
     discord_destinations = relationship("DiscordDestinations", back_populates="user", cascade="all, delete-orphan")
 
     filmweb_user_mapping = relationship(
-        "FilmWebUserMapping", back_populates="user", uselist=False, cascade="all, delete-orphan"
+        "FilmWebUserMapping",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
 
@@ -37,10 +29,14 @@ class FilmWebUserMapping(Base):
 
     user = relationship("User", back_populates="filmweb_user_mapping")
     watched_movies = relationship(
-        "FilmWebUserWatchedMovie", back_populates="filmweb_user_mapping", cascade="all, delete-orphan"
+        "FilmWebUserWatchedMovie",
+        back_populates="filmweb_user_mapping",
+        cascade="all, delete-orphan",
     )
     watched_series = relationship(
-        "FilmWebUserWatchedSeries", back_populates="filmweb_user_mapping", cascade="all, delete-orphan"
+        "FilmWebUserWatchedSeries",
+        back_populates="filmweb_user_mapping",
+        cascade="all, delete-orphan",
     )
 
 
@@ -105,7 +101,10 @@ class FilmWebUserWatchedMovie(__FilmwebWatched):
 
     id_media = Column(Integer, ForeignKey("filmweb_movies.id"), primary_key=True, index=True)
     filmweb_id = Column(
-        String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True
+        String(128),
+        ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
     )
 
     movie = relationship("FilmWebMovie", backref="filmweb_user_watched_movies")
@@ -117,7 +116,10 @@ class FilmWebUserWatchedSeries(__FilmwebWatched):
 
     id_media = Column(Integer, ForeignKey("filmweb_series.id"), primary_key=True, index=True)
     filmweb_id = Column(
-        String(128), ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"), primary_key=True, index=True
+        String(128),
+        ForeignKey("filmweb_user_mapping.filmweb_id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
     )
 
     series = relationship("FilmWebSeries", backref="filmweb_user_watched_series")

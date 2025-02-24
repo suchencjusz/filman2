@@ -104,9 +104,18 @@ def test_add_user_to_guild(test_client):
     ]
 
     test_discord_guilds_data = [
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799058,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     # create users
@@ -150,9 +159,18 @@ def test_remove_user_from_guild(test_client):
     ]
 
     test_discord_guilds_data = [
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799058,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     # create users
@@ -181,7 +199,10 @@ def test_remove_user_from_guild(test_client):
         for guild_data in test_discord_guilds_data:
             response = test_client.get(
                 f"/users/add_to_guild",
-                params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+                params={
+                    "discord_id": user_data["discord_id"],
+                    "discord_guild_id": guild_data["discord_guild_id"],
+                },
             )
             assert response.status_code == 200
 
@@ -239,9 +260,18 @@ def test_remove_user_from_all_guilds(test_client):
     ]
 
     test_discord_guilds_data = [
-        {"discord_guild_id": 1209989703772799056, "discord_channel_id": 132632676225122304},
-        {"discord_guild_id": 1209989703772799057, "discord_channel_id": 132632676225122305},
-        {"discord_guild_id": 1209989703772799058, "discord_channel_id": 132632676225122306},
+        {
+            "discord_guild_id": 1209989703772799056,
+            "discord_channel_id": 132632676225122304,
+        },
+        {
+            "discord_guild_id": 1209989703772799057,
+            "discord_channel_id": 132632676225122305,
+        },
+        {
+            "discord_guild_id": 1209989703772799058,
+            "discord_channel_id": 132632676225122306,
+        },
     ]
 
     # create users
@@ -270,7 +300,10 @@ def test_remove_user_from_all_guilds(test_client):
         for guild_data in test_discord_guilds_data:
             response = test_client.get(
                 f"/users/add_to_guild",
-                params={"discord_id": user_data["discord_id"], "discord_guild_id": guild_data["discord_guild_id"]},
+                params={
+                    "discord_id": user_data["discord_id"],
+                    "discord_guild_id": guild_data["discord_guild_id"],
+                },
             )
             assert response.status_code == 200
 

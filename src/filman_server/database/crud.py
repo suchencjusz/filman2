@@ -70,7 +70,8 @@ def get_user_destinations_channels(
     discord_user_id: int | None,
 ) -> list[int]:
     query = db.query(models.DiscordGuilds.discord_channel_id).join(
-        models.DiscordDestinations, models.DiscordDestinations.discord_guild_id == models.DiscordGuilds.discord_guild_id
+        models.DiscordDestinations,
+        models.DiscordDestinations.discord_guild_id == models.DiscordGuilds.discord_guild_id,
     )
     if user_id:
         query = query.filter(models.DiscordDestinations.user_id == user_id)
@@ -200,7 +201,9 @@ def delete_guild(db: Session, discord_guild_id: int):
         return None
 
     # delete all connected destinations
-    db.query(models.DiscordDestinations).filter(models.DiscordDestinations.discord_guild_id == discord_guild_id).delete()
+    db.query(models.DiscordDestinations).filter(
+        models.DiscordDestinations.discord_guild_id == discord_guild_id
+    ).delete()
 
     db.delete(db_guild)
     db.commit()
@@ -347,7 +350,9 @@ def get_filmweb_user_mapping(
 
 
 # sets filmweb user nickname to corelate with discord user (main user in db)
-def set_filmweb_user_mapping(db: Session, mapping: schemas.FilmWebUserMappingCreate) -> models.FilmWebUserMapping | None:
+def set_filmweb_user_mapping(
+    db: Session, mapping: schemas.FilmWebUserMappingCreate
+) -> models.FilmWebUserMapping | None:
     user = get_user(db, mapping.user_id, None, None)
 
     if user is None:
@@ -446,14 +451,19 @@ def get_filmweb_user_watched_movie(
 
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
-        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        filmweb_mapping = (
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        )
         if filmweb_mapping is None:
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
     return (
         db.query(models.FilmWebUserWatchedMovie)
-        .filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id, models.FilmWebUserWatchedMovie.id_media == id_media)
+        .filter(
+            models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id,
+            models.FilmWebUserWatchedMovie.id_media == id_media,
+        )
         .first()
     )
 
@@ -472,7 +482,9 @@ def get_filmweb_user_watched_movies(
 
     # If filmweb_id is not provided, get it from the user mapping
     if filmweb_id is None:
-        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        filmweb_mapping = (
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        )
         if filmweb_mapping is None:
             return None
         filmweb_id = filmweb_mapping.filmweb_id
@@ -558,12 +570,16 @@ def get_filmweb_user_watched_series_all(
 
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
-        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        filmweb_mapping = (
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        )
         if filmweb_mapping is None:
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
-    return db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).all()
+    return (
+        db.query(models.FilmWebUserWatchedSeries).filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id).all()
+    )
 
 
 def get_filmweb_user_watched_series(
@@ -580,14 +596,19 @@ def get_filmweb_user_watched_series(
 
     # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
-        filmweb_mapping = db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        filmweb_mapping = (
+            db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
+        )
         if filmweb_mapping is None:
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
     return (
         db.query(models.FilmWebUserWatchedSeries)
-        .filter(models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id, models.FilmWebUserWatchedSeries.id_media == id_media)
+        .filter(
+            models.FilmWebUserWatchedSeries.filmweb_id == filmweb_id,
+            models.FilmWebUserWatchedSeries.id_media == id_media,
+        )
         .first()
     )
 
@@ -611,7 +632,9 @@ def delete_filmweb_user_watched_series(
     return True
 
 
-def get_filmweb_watched_series_all(db: Session) -> list[models.FilmWebUserWatchedSeries]:
+def get_filmweb_watched_series_all(
+    db: Session,
+) -> list[models.FilmWebUserWatchedSeries]:
     return db.query(models.FilmWebUserWatchedSeries).all()
 
 

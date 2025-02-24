@@ -73,7 +73,10 @@ def test_execute_task_timeout(mock_logging_error, mock_get):
     mock_logging_error.assert_called_once_with("Timeout occurred while executing test_task")
 
 
-@patch("filman_server.cron.requests.get", side_effect=requests.exceptions.RequestException("Connection error"))
+@patch(
+    "filman_server.cron.requests.get",
+    side_effect=requests.exceptions.RequestException("Connection error"),
+)
 @patch("filman_server.cron.logging.error")
 def test_execute_task_exception(mock_logging_error, mock_get):
     Cron.execute_task("http://localhost:8000/tasks/new/scrap/filmweb/users/series", "test_task")

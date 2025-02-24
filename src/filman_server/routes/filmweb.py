@@ -136,7 +136,10 @@ async def get_user_mapping(
     db: Session = Depends(get_db),
 ):
     if user_id is None and filmweb_id is None and discord_id is None:
-        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of user_id, filmweb_id or discord_id must be provided",
+        )
 
     user_mapping = crud.get_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
     if user_mapping is None:
@@ -157,7 +160,10 @@ async def delete_user_mapping(
     db: Session = Depends(get_db),
 ):
     if user_id is None and filmweb_id is None and discord_id is None:
-        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of user_id, filmweb_id or discord_id must be provided",
+        )
 
     user_mapping = crud.delete_filmweb_user_mapping(db, user_id, discord_id, filmweb_id)
 
@@ -230,7 +236,10 @@ async def get_watched_movie(
     db: Session = Depends(get_db),
 ):
     if user_id is None and filmweb_id is None and discord_id is None:
-        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of user_id, filmweb_id or discord_id must be provided",
+        )
 
     watched_movie = crud.get_filmweb_user_watched_movie(db, user_id, filmweb_id, discord_id, movie_id)
 
@@ -300,7 +309,10 @@ async def get_watched_series(
     db: Session = Depends(get_db),
 ):
     if user_id is None and filmweb_id is None and discord_id is None:
-        raise HTTPException(status_code=400, detail="At least one of user_id, filmweb_id or discord_id must be provided")
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of user_id, filmweb_id or discord_id must be provided",
+        )
 
     watched_series = crud.get_filmweb_user_watched_series(db, user_id, filmweb_id, discord_id, series_id)
 

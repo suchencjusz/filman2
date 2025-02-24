@@ -4,9 +4,9 @@ from datetime import datetime
 import hikari
 import lightbulb
 
+from filman_discord.utils.filmweb_last10_logic import last10
 from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
 from filman_discord.utils.star_counter import star_emoji_counter
-
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -20,17 +20,30 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 
 @tracker_group.child
 @lightbulb.option(
-    "typ", "film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+    "typ",
+    "film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
 )
+@lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
 @lightbulb.command("last10", "ostatnio ocenione filmy", pass_options=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def last10_subcommand(ctx: lightbulb.SlashContext, typ: str,) -> None:
-    
+async def last10_subcommand(
+    ctx: lightbulb.SlashContext,
+    typ: str,
+    user: hikari.User,
+) -> None:
+
+    if user is None:
+        user = ctx.author
+
     typ = "movie" if typ == "film" else "series"
-    
+
     #
     # to do: rewrite it seperate file
-    # 
+    # to do: catch 401 402 if user is not present etc. itp. itd.
 
     async with ctx.bot.d.client_session.get(
         f"http://filman_server:8000/filmweb/user/watched/movies/get_all",
@@ -42,60 +55,18 @@ async def last10_subcommand(ctx: lightbulb.SlashContext, typ: str,) -> None:
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
             return
-        
-        movies = await resp.json()
 
-        movies = sorted(movies, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S"), reverse=True) 
-        
-        if len(movies) == 0:
-            embed = hikari.Embed(
-                title=f"Nie oceniono jeszcze żadnych filmów!",
-                colour=0xFF4400,
-                timestamp=datetime.now().astimezone(),
-            )
-            embed.set_footer(
-                text=f"Requested by {ctx.author}",
-                icon=ctx.author.display_avatar_url,
-            )
-            await ctx.respond(embed)
-            return
+        media = await resp.json()
 
-        # to do: movies != 0
+        last10_embed = last10(media, typ)
 
-        if len(movies) > 10:
-            movies = movies[0:25]
-        else:
-            movies = movies[0:len(movies)]
-
-    embed = hikari.Embed(
-        title=f"Ostatnio ocenione filmy",
-        colour=0xFFC200,
-        timestamp=datetime.now().astimezone(),
-    )
-
-    temp_star_list = ""
-
-    for movie in movies:
-        temp_star_list += f"{star_emoji_counter(movie['rate'])} {movie[typ]['title']} ({movie[typ]['year']})\n"
-
-    embed.add_field(
-        name="Filmy",
-        value=temp_star_list,
-        inline=False,
-    )
-
-
-    embed.set_footer(
-        text=f"Requested by {ctx.author}",
-        icon=ctx.author.display_avatar_url,
-    )
-
-    await ctx.respond(embed)
+    # await ctx.respond(embed)
 
 
 #
 #
 #
+
 
 @tracker_group.child
 # @lightbulb.cooldown(1, 60, bucket=lightbulb.CooldownBucketType.user)
@@ -420,11 +391,26 @@ async def cancel_subcommand(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.option("user3", "Trzeci użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user2", "Drugi użytkownik", type=hikari.User, required=False)
 @lightbulb.option("user1", "Pierwszy użytkownik (wymagany)", type=hikari.User, required=True)
-@lightbulb.option("common", "Losuj tylko z wspólnych elemntów list", type=bool, required=False, autocomplete=False)
 @lightbulb.option(
-    "typ", "Wybierz co chcesz losować: film / serial", type=str, required=True, choices=["film", "serial"], default="film"
+    "common",
+    "Losuj tylko z wspólnych elemntów list",
+    type=bool,
+    required=False,
+    autocomplete=False,
 )
-@lightbulb.command("w2s", "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników", pass_options=True)
+@lightbulb.option(
+    "typ",
+    "Wybierz co chcesz losować: film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
+)
+@lightbulb.command(
+    "w2s",
+    "Wylosuj film lub serial z listy 'chcę obejrzeć' dla użytkownika/użytkowników",
+    pass_options=True,
+)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def w2s_subcommand(
     ctx: lightbulb.SlashContext,

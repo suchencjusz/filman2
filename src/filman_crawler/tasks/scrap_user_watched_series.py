@@ -5,15 +5,7 @@ import ujson
 
 from filman_server.database.schemas import FilmWebUserWatchedSeriesCreate
 
-from .utils import (
-    DiscordNotifications,
-    FilmWeb,
-    Task,
-    Tasks,
-    TaskStatus,
-    TaskTypes,
-    Updaters,
-)
+from .utils import DiscordNotifications, FilmWeb, Task, Tasks, TaskStatus, TaskTypes, Updaters
 
 
 class Scraper:
@@ -69,7 +61,9 @@ class Scraper:
         for series in new_series_watched:
             try:
                 logging.debug(f"Fetching user series rate for series from filmweb: {series[0]}")
-                series_rate_data = self.fetch(f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/serial/{series[0]}")
+                series_rate_data = self.fetch(
+                    f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/serial/{series[0]}"
+                )
 
                 if series_rate_data is None:
                     logging.error(f"Error fetching series rate for series: {series[0]}")

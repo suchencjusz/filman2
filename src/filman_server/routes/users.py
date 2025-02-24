@@ -42,7 +42,10 @@ async def get_user(
     db: Session = Depends(get_db),
 ):
     if user_id is None and filmweb_id is None and discord_id is None:
-        raise HTTPException(status_code=400, detail="Either user_id, filmweb_id or discord_id is required")
+        raise HTTPException(
+            status_code=400,
+            detail="Either user_id, filmweb_id or discord_id is required",
+        )
 
     user = crud.get_user(db, user_id, filmweb_id, discord_id)
     if user is None:

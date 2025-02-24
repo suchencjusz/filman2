@@ -107,8 +107,23 @@ def test_tasks_to_do_head(test_client: TestClient):
         (["scrap_filmweb_movie"], 200),
         (["scrap_filmweb_user_watched_series"], 200),
         (["scrap_filmweb_user_watched_series", "scrap_filmweb_movie"], 200),
-        (["scrap_filmweb_user", "scrap_filmweb_movie", "scrap_filmweb_user_watched_series"], 200),
-        (["scrap_filmweb_user", "scrap_filmweb_movie", "scrap_filmweb_user_watched_series", "scrap_filmweb_series"], 200),
+        (
+            [
+                "scrap_filmweb_user",
+                "scrap_filmweb_movie",
+                "scrap_filmweb_user_watched_series",
+            ],
+            200,
+        ),
+        (
+            [
+                "scrap_filmweb_user",
+                "scrap_filmweb_movie",
+                "scrap_filmweb_user_watched_series",
+                "scrap_filmweb_series",
+            ],
+            200,
+        ),
         ([], 422),
         ([""], 422),
         (["hello"], 422),
@@ -239,7 +254,10 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
 
         # map users to filmweb ids
     for filmweb_id, user_id in zip(test_filmweb_nicknames, [1, 2, 3, 4]):
-        response = test_client.post("/filmweb/user/mapping/set", json={"user_id": user_id, "filmweb_id": filmweb_id})
+        response = test_client.post(
+            "/filmweb/user/mapping/set",
+            json={"user_id": user_id, "filmweb_id": filmweb_id},
+        )
         assert response.status_code == 200
 
     response = test_client.get("/tasks/new/scrap/filmweb/users/movies")
@@ -250,7 +268,10 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
     assert response.status_code == 200
 
     with freeze_time("2023-01-01 12:00:00") as frozen_time:
-        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        response = test_client.get(
+            "/tasks/get/to_do",
+            params={"task_types": ["scrap_filmweb_user_watched_movies"]},
+        )
         assert response.status_code == 200
         assert response.json()["task_id"] == 1
         assert response.json()["task_status"] == "running"
@@ -265,7 +286,10 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
         assert response.status_code == 200
         assert response.json() is True
 
-        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        response = test_client.get(
+            "/tasks/get/to_do",
+            params={"task_types": ["scrap_filmweb_user_watched_movies"]},
+        )
         assert response.status_code == 200
         assert response.json()["task_id"] == 1
 
@@ -275,7 +299,10 @@ def test_tasks_new_scrap_filmweb_users_movies(test_client: TestClient):
         assert response.status_code == 200
         assert response.json() is True
 
-        response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_user_watched_movies"]})
+        response = test_client.get(
+            "/tasks/get/to_do",
+            params={"task_types": ["scrap_filmweb_user_watched_movies"]},
+        )
         assert response.status_code == 200
         assert response.json()["task_id"] == 2
 

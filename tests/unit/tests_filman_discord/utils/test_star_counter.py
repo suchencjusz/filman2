@@ -22,34 +22,36 @@ def test_star_emoji_counter_ones():
 
 
 def test_star_emoji_counter_tens():
-    assert star_emoji_counter(9.0) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌑"
- 
-    assert star_emoji_counter(9.1) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌘"
-    assert star_emoji_counter(9.2) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌘"
- 
-    assert star_emoji_counter(9.3) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
-    assert star_emoji_counter(9.4) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
-    assert star_emoji_counter(9.5) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
-    assert star_emoji_counter(9.6) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
-    assert star_emoji_counter(9.7) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
- 
-    assert star_emoji_counter(9.8) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌖"
-    assert star_emoji_counter(9.9) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌖"
+    assert star_emoji_counter(9.0) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌑"
+
+    assert star_emoji_counter(9.1) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌘"
+    assert star_emoji_counter(9.2) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌘"
+
+    assert star_emoji_counter(9.3) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
+    assert star_emoji_counter(9.4) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
+    assert star_emoji_counter(9.5) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
+    assert star_emoji_counter(9.6) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
+    assert star_emoji_counter(9.7) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌗"
+
+    assert star_emoji_counter(9.8) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌖"
+    assert star_emoji_counter(9.9) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌖"
 
     assert star_emoji_counter(10.0) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌕"
+
 
 def test_star_emoji_from_0_to_10():
-    assert star_emoji_counter(0.0) ==  "🌑🌑🌑🌑🌑🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(1.0) ==  "🌕🌑🌑🌑🌑🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(2.0) ==  "🌕🌕🌑🌑🌑🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(3.0) ==  "🌕🌕🌕🌑🌑🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(4.0) ==  "🌕🌕🌕🌕🌑🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(5.0) ==  "🌕🌕🌕🌕🌕🌑🌑🌑🌑🌑"
-    assert star_emoji_counter(6.0) ==  "🌕🌕🌕🌕🌕🌕🌑🌑🌑🌑"
-    assert star_emoji_counter(7.0) ==  "🌕🌕🌕🌕🌕🌕🌕🌑🌑🌑"
-    assert star_emoji_counter(8.0) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌑🌑"
-    assert star_emoji_counter(9.0) ==  "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌑"
+    assert star_emoji_counter(0.0) == "🌑🌑🌑🌑🌑🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(1.0) == "🌕🌑🌑🌑🌑🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(2.0) == "🌕🌕🌑🌑🌑🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(3.0) == "🌕🌕🌕🌑🌑🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(4.0) == "🌕🌕🌕🌕🌑🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(5.0) == "🌕🌕🌕🌕🌕🌑🌑🌑🌑🌑"
+    assert star_emoji_counter(6.0) == "🌕🌕🌕🌕🌕🌕🌑🌑🌑🌑"
+    assert star_emoji_counter(7.0) == "🌕🌕🌕🌕🌕🌕🌕🌑🌑🌑"
+    assert star_emoji_counter(8.0) == "🌕🌕🌕🌕🌕🌕🌕🌕🌑🌑"
+    assert star_emoji_counter(9.0) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌑"
     assert star_emoji_counter(10.0) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌕"
+
 
 def test_star_emoji_rounding():
     assert star_emoji_counter(1.00001) == "🌕🌑🌑🌑🌑🌑🌑🌑🌑🌑"
@@ -63,18 +65,18 @@ def test_star_emoji_rounding():
 
     assert star_emoji_counter(9.99999) == "🌕🌕🌕🌕🌕🌕🌕🌕🌕🌕"
 
+    assert star_emoji_counter(5.12500) == "🌕🌕🌕🌕🌕🌘🌑🌑🌑🌑"
+    assert star_emoji_counter(5.37500) == "🌕🌕🌕🌕🌕🌗🌑🌑🌑🌑"
+    assert star_emoji_counter(5.50000) == "🌕🌕🌕🌕🌕🌗🌑🌑🌑🌑"
+    assert star_emoji_counter(5.62500) == "🌕🌕🌕🌕🌕🌗🌑🌑🌑🌑"
+    assert star_emoji_counter(5.75000) == "🌕🌕🌕🌕🌕🌖🌑🌑🌑🌑"
+    assert star_emoji_counter(5.87500) == "🌕🌕🌕🌕🌕🌖🌑🌑🌑🌑"
+    assert star_emoji_counter(5.99999) == "🌕🌕🌕🌕🌕🌕🌑🌑🌑🌑"
+
+
 def test_star_emoji_counter_invalid():
     with pytest.raises(ValueError):
         star_emoji_counter(-1.0)
 
     with pytest.raises(ValueError):
         star_emoji_counter(10.1)
-
-import logging
-
-LOGGER = logging.getLogger(__name__)
-
-
-def printx():
-    for i in range(0, 10, 0.1):
-        LOGGER.critical(f"i: {i}")
