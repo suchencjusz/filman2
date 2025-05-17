@@ -4,7 +4,7 @@ from datetime import datetime
 import hikari
 import lightbulb
 
-from filman_discord.utils.filmweb_last10_logic import last10
+from filman_discord.utils.filmweb_last10_logic import last10, last_n_media
 from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
 from filman_discord.utils.star_counter import star_emoji_counter
 
@@ -17,7 +17,7 @@ tracker_plugin = lightbulb.Plugin("Filmweb")
 async def tracker_group(_: lightbulb.SlashContext) -> None:
     pass
 
-
+#todo sprawdz czy dziala
 @tracker_group.child
 @lightbulb.option(
     "typ",
@@ -27,26 +27,30 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
     choices=["film", "serial"],
     default="film",
 )
+@lightbulb.option(
+    "amount",
+    "Ilość filmów/seriali do wyświetlenia",
+    type=int,
+    required=True,
+    default=5,
+)
 @lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
-@lightbulb.command("last10", "ostatnio ocenione filmy", pass_options=True)
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def last10_subcommand(
+@lightbulb.command("last_n", "ostatnie N ocenionych filmów/serialów", pass_options=True)
+async def last_n_subcommand(
     ctx: lightbulb.SlashContext,
     typ: str,
     user: hikari.User,
+    amount: int,
 ) -> None:
-
+    
     if user is None:
         user = ctx.author
 
-    typ = "movie" if typ == "film" else "series"
-
-    #
-    # to do: rewrite it seperate file
-    # to do: catch 401 402 if user is not present etc. itp. itd.
+    typ = "movies" if typ == "film" else "series"
+    last_n_parsed = ""
 
     async with ctx.bot.d.client_session.get(
-        f"http://filman_server:8000/filmweb/user/watched/movies/get_all",
+        f"http://filman_server:8000/filmweb/user/watched/{typ}/get_all",
         params={"discord_id": ctx.author.id},
     ) as resp:
         if not resp.ok:
@@ -58,9 +62,103 @@ async def last10_subcommand(
 
         media = await resp.json()
 
-        last10_embed = last10(media, typ)
+        last_n_parsed = last_n_media(media, typ, amount)
 
-    # await ctx.respond(embed)
+    if len(last_n_parsed) == 0:
+        embed = hikari.Embed(
+            title=f"Nie znaleziono żadnych ocenionych {typ}!", # todo napraw odmianę
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+        return
+    
+    typ = "filmy" if typ == "movie" else "seriale"
+    embed = hikari.Embed(
+        title=f"Ostatnio ocenione {typ} ({amount}):",
+        description=last_n_parsed,
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+    
+    await ctx.respond(embed)
+
+
+
+@tracker_group.child
+@lightbulb.option(
+    "typ",
+    "film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
+)
+@lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
+@lightbulb.command("last10", "ostatnio ocenione filmy/seriale", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def last10_subcommand(
+    ctx: lightbulb.SlashContext,
+    typ: str,
+    user: hikari.User,
+) -> None:
+
+    if user is None:
+        user = ctx.author
+
+    typ = "movies" if typ == "film" else "series"
+    last10_parsed = ""
+    
+    async with ctx.bot.d.client_session.get(
+        f"http://filman_server:8000/filmweb/user/watched/{typ}/get_all",
+        params={"discord_id": ctx.author.id},
+    ) as resp:
+        if not resp.ok:
+            await ctx.respond(
+                f"API zwróciło {resp.status} status :c",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+            return
+
+        media = await resp.json()
+
+        last10_parsed = last10(media, typ)
+
+    if len(last10_parsed) == 0:
+        embed = hikari.Embed(
+            title=f"Nie znaleziono żadnych ocenionych {typ}!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+        return
+
+    typ = "film" if typ == "movie" else "serial"
+
+    embed = hikari.Embed(
+        title=f"Ostatnio ocenione {typ}:",
+        description=last10_parsed,
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+
+    await ctx.respond(embed)
 
 
 #

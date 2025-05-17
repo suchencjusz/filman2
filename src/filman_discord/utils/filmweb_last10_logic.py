@@ -1,53 +1,47 @@
-import hikari
-import lightbulb
+from filman_server.database.models import FilmWebMovie, FilmWebSeries
+from filman_discord.utils.star_counter import star_emoji_counter
 
-def last10(media: list, typ: str) -> hikari.Embed:
+from datetime import datetime
+
+
+def last10(media: list, typ:str) -> str:
+    """
+
+    arg:
+        media: list of media to be sorted
+        typ: type of media (movie or series)
     
+    Sorts the list of media, add stars, title and year to the list and returns the last 10 items.
+    
+    """
+
+    return last_n_media(media, typ, 10)
 
 
-# movies = sorted(movies, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S"), reverse=True)
+def last_n_media(media: list, typ:str, n:int) -> str:
+    """
+    arg:
+        media: list of media to be sorted
+        typ: type of media (movie or series)
+        n: number of items to return
+    
+    Sorts the list of media, add stars, title and year to the list and returns the last n items.
+    
+    """
+    
+    media = sorted(media, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S"), reverse=True)
 
-#         if len(movies) == 0:
-#             embed = hikari.Embed(
-#                 title=f"Nie oceniono jeszcze żadnych filmów!",
-#                 colour=0xFF4400,
-#                 timestamp=datetime.now().astimezone(),
-#             )
-#             embed.set_footer(
-#                 text=f"Requested by {ctx.author}",
-#                 icon=ctx.author.display_avatar_url,
-#             )
-#             await ctx.respond(embed)
-#             return
+    if len(media) == 0:
+        return []
 
-#         # to do: movies != 0
+    if len(media) > n:
+        media = media[0:n]
 
-#         if len(movies) > 10:
-#             movies = movies[0:25]
-#         else:
-#             movies = movies[0:len(movies)]
+    _to_return = ""
 
-#     embed = hikari.Embed(
-#         title=f"Ostatnio ocenione filmy",
-#         colour=0xFFC200,
-#         timestamp=datetime.now().astimezone(),
-#     )
+    typ = "movie" if typ == "movies" else "series"
 
-#     temp_star_list = ""
+    for m in media:
+        _to_return += f"{star_emoji_counter(m['rate'])} {m[typ]['title']} ({m[typ]['year']})\n"
 
-#     for movie in movies:
-#         temp_star_list += f"{star_emoji_counter(movie['rate'])} {movie[typ]['title']} ({movie[typ]['year']})\n"
-
-#     embed.add_field(
-#         name="Filmy",
-#         value=temp_star_list,
-#         inline=False,
-#     )
-
-
-#     embed.set_footer(
-#         text=f"Requested by {ctx.author}",
-#         icon=ctx.author.display_avatar_url,
-#     )
-
-#     await ctx.respond(embed)
+    return _to_return
