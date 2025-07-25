@@ -17,7 +17,7 @@
 
 # CMD [ "python3", "-OO", "main.py"]
 
-FROM python:3.11-alpine
+FROM python:3.14.0rc1-alpine
 
 RUN apk update && apk add --no-cache \
     gcc \
