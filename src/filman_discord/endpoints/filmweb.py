@@ -18,6 +18,9 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
     pass
 
 #todo sprawdz czy dziala
+# todo
+#
+# chyba jest jakis limit nowych lini czy cos
 @tracker_group.child
 @lightbulb.option(
     "typ",
@@ -36,6 +39,7 @@ async def tracker_group(_: lightbulb.SlashContext) -> None:
 )
 @lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
 @lightbulb.command("last_n", "ostatnie N ocenionych filmów/serialów", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
 async def last_n_subcommand(
     ctx: lightbulb.SlashContext,
     typ: str,
@@ -77,6 +81,35 @@ async def last_n_subcommand(
         await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
         return
     
+    base_suffix = "\n\n*Zbyt dużo wyników (limit 4096 znaków)*"
+    max_len = 4096
+
+    if len(last_n_parsed) > (max_len - len(base_suffix)):
+        original_len = len(last_n_parsed)
+
+        removed = 0
+        for _ in range(6):
+            info_suffix = f"{base_suffix} (skrócono o {removed} znaków)"
+            allowed = max_len - len(info_suffix) - 3
+            if allowed < 0:
+                last_n_parsed = base_suffix
+                break
+            new_removed = original_len - allowed
+            if new_removed == removed:
+                last_n_parsed = last_n_parsed[:allowed].rstrip() + "..." + info_suffix
+                break
+            removed = new_removed
+        else:
+            info_suffix = base_suffix
+            allowed = max_len - len(info_suffix) - 3
+            if allowed < 0:
+                last_n_parsed = base_suffix
+            else:
+                last_n_parsed = last_n_parsed[:allowed].rstrip() + "..." + info_suffix
+
+    logging.critical(f"Last N parsed: {last_n_parsed}")
+    logging.critical(f"size {len(last_n_parsed)}")
+
     typ = "filmy" if typ == "movie" else "seriale"
     embed = hikari.Embed(
         title=f"Ostatnio ocenione {typ} ({amount}):",
@@ -132,7 +165,7 @@ async def last10_subcommand(
 
         last10_parsed = last10(media, typ)
 
-    if len(last10_parsed) == 0:
+    if len(last10_parsed) == "":
         embed = hikari.Embed(
             title=f"Nie znaleziono żadnych ocenionych {typ}!",
             colour=0xFF4400,

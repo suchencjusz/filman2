@@ -12,6 +12,7 @@ WORKDIR /src
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir watchdog
 
 COPY /src/filman_server /src/filman_server
 COPY /src/filman_crawler /src/filman_crawler
