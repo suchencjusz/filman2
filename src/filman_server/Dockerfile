@@ -8,13 +8,20 @@ RUN apk update && apk add --no-cache \
     mariadb-dev \
     build-base
 
-WORKDIR /src/filman_server
+WORKDIR /app
 
-COPY requirements.txt requirements.txt
+# Copy dependency manifest
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY /src/filman_server .
+# Copy Alembic config and migrations (needed for runtime migrations)
+COPY alembic.ini ./
+COPY migrations ./migrations
 
-ENV PYTHONPATH=/src
+# Copy application source
+COPY src ./src
 
-CMD ["python3", "-m", "filman_server.main"]
+ENV PYTHONPATH=/app/src \
+    RUN_MIGRATIONS_ON_STARTUP=1
+
+CMD ["python", "-m", "filman_server.main"]

@@ -10,6 +10,7 @@ from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from filman_server.cron import Cron
 from filman_server.database import models
+from filman_server.database.migrate import trigger_migrations
 from filman_server.database.db import engine
 from filman_server.routes import discord, filmweb, tasks, users, utils
 
@@ -33,6 +34,7 @@ if os.environ.get("SENTRY_ENABLED", "false") == "true":
         ],
     )
 
+trigger_migrations()
 models.Base.metadata.create_all(bind=engine)
 
 cron = Cron()
