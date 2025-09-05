@@ -1,5 +1,3 @@
-version: "3.6"
-
 volumes:
   mariadb:
     driver: local
@@ -21,10 +19,20 @@ services:
       context: .
       dockerfile: src/filman_server/Dockerfile
 
+    # bind-mount host source for fast dev reloads
+    volumes:
+      - ./:/app:delegated
+
     environment:
       - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_dev
       - SENTRY_ENABLED=false
       - SENTRY_DSN=
+      - PYTHONPATH=/app/src
+      - MIGRATIONS_PATH=/app/migrations
+      - ALEMBIC_INI=/app/alembic.ini
+
+    # run uvicorn with --reload so the process restarts on file changes
+    command: ["uvicorn", "filman_server.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -41,9 +49,17 @@ services:
       context: .
       dockerfile: src/filman_discord/Dockerfile
 
+    # bind-mount host code for live reload
+    volumes:
+      - ./:/app:delegated
+
     environment:
       - DISCORD_TOKEN=
-    
+      - PYTHONPATH=/app/src
+
+    # use watchmedo to restart the bot process when Python files change
+    command: ["watchmedo", "auto-restart", "--patterns=*.py;*.yaml;*.yml", "--recursive", "--", "python3", "-OO", "main.py"]
+
     networks:
       - db
 
@@ -57,12 +73,19 @@ services:
       context: .
       dockerfile: src/filman_crawler/Dockerfile
 
+    # bind-mount host code for live reload
+    volumes:
+      - ./:/app:delegated
+
     environment:
       - CORE_ENDPOINT=http://filman_server:8000
       - SENTRY_ENABLED=false
       - SENTRY_DSN=
+      - PYTHONPATH=/app/src
 
-    
+    # restart the crawler process on file changes
+    command: ["watchmedo", "auto-restart", "--patterns=*.py;*.yaml;*.yml", "--recursive", "--", "python3", "-m", "filman_crawler.main"]
+
     networks:
       - db
 
