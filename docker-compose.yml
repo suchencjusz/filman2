@@ -18,8 +18,11 @@ services:
     environment:
       - SENTRY_ENABLED=false
       - SENTRY_DSN=
-    # if you wish to use real sql db instead of sqlite uncomment this line (it is better way ofc)
-    # - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_db
+      - SQLALCHEMY_DATABASE_URL=mysql://root:root1234@mariadb/filman_db
+      - RUN_MIGRATIONS_ON_STARTUP=1
+      
+      # - MIGRATIONS_PATH=/app/migrations
+      # - ALEMBIC_INI=/app/alembic.ini
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

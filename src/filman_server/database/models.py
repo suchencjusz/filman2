@@ -103,7 +103,7 @@ class __FilmwebWatched(Base):
 
     date = Column(DateTime)
     rate = Column(SmallInteger)
-    comment = Column(String(256))
+    comment = Column(String(1024))
     favorite = Column(Boolean)
 
 
