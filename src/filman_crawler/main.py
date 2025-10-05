@@ -20,7 +20,6 @@ from filman_crawler.tasks.scrap_user_watched_series import (
 from filman_server.database.schemas import Task, TaskTypes
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
