@@ -19,8 +19,8 @@ from filman_crawler.tasks.scrap_user_watched_series import (
 )
 from filman_server.database.schemas import Task, TaskTypes
 
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -145,7 +145,7 @@ def main():
 
     wait_time = 2
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         while True:
             logging.debug("Fetching tasks from endpoint")
 
