@@ -72,11 +72,11 @@ class Cron:
 
         # tasks mgmt
         self.schedule.every(5).minutes.do(self.tasks_update_stuck_tasks)
-        self.schedule.every(20).minutes.do(self.tasks_update_old_tasks)
+        self.schedule.every(30).minutes.do(self.tasks_update_old_tasks)
 
         while True:
             self.schedule.run_pending()
-            time.sleep(1)
+            time.sleep(3)
 
     def start(self):
         scheduler_thread = Thread(target=self.schedule_tasks)

@@ -24,10 +24,16 @@ if DISCORD_TOKEN == None or DISCORD_TOKEN == "":  # todo check this
     logging.error("Provide DISCORD_TOKEN!")
     exit(-1)
 
+intents = hikari.Intents.GUILDS | hikari.Intents.GUILD_MESSAGES | hikari.Intents.MESSAGE_CONTENT
+
 bot = lightbulb.BotApp(
     DISCORD_TOKEN,
-    intents=hikari.Intents.ALL,
+    intents=intents,
     banner=None,
+    cache_settings=hikari.impl.CacheSettings(
+        max_messages=0,
+        max_dm_channel_ids=0,
+    ),
 )
 
 tasks.load(bot)
