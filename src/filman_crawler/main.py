@@ -11,12 +11,8 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 
 from filman_crawler.tasks.scrap_movie import Scraper as movie_scrapper
 from filman_crawler.tasks.scrap_series import Scraper as series_scrapper
-from filman_crawler.tasks.scrap_user_watched_movies import (
-    Scraper as user_watched_movies_scrapper,
-)
-from filman_crawler.tasks.scrap_user_watched_series import (
-    Scraper as user_watched_series_scrapper,
-)
+from filman_crawler.tasks.scrap_user_watched_movies import Scraper as user_watched_movies_scrapper
+from filman_crawler.tasks.scrap_user_watched_series import Scraper as user_watched_series_scrapper
 from filman_server.database.schemas import Task, TaskTypes
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")

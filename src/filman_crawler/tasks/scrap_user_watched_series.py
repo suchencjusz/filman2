@@ -5,15 +5,7 @@ import ujson
 
 from filman_server.database.schemas import FilmWebUserWatchedSeriesCreate
 
-from .utils import (
-    DiscordNotifications,
-    FilmWeb,
-    Task,
-    Tasks,
-    TaskStatus,
-    TaskTypes,
-    Updaters,
-)
+from .utils import DiscordNotifications, FilmWeb, Task, Tasks, TaskStatus, TaskTypes, Updaters
 
 
 class Scraper:

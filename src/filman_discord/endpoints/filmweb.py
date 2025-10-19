@@ -4,7 +4,9 @@ from datetime import datetime
 import hikari
 import lightbulb
 
+from filman_discord.utils.filmweb_last10_logic import last10, last_n_media
 from filman_discord.utils.filmweb_w2s_logic import MediaType, process_media
+from filman_discord.utils.star_counter import star_emoji_counter
 
 tracker_plugin = lightbulb.Plugin("Filmweb")
 
@@ -14,6 +16,190 @@ tracker_plugin = lightbulb.Plugin("Filmweb")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
 async def tracker_group(_: lightbulb.SlashContext) -> None:
     pass
+
+#todo sprawdz czy dziala
+#
+# wniosek: niemozliwe do zrobienia bo jest jakis magiczny limit nowych lini w embedach albo cos xd bruh
+#
+# todo
+#
+# chyba jest jakis limit nowych lini czy cos
+# @tracker_group.child
+# @lightbulb.option(
+#     "typ",
+#     "film / serial",
+#     type=str,
+#     required=True,
+#     choices=["film", "serial"],
+#     default="film",
+# )
+# @lightbulb.option(
+#     "amount",
+#     "Ilość filmów/seriali do wyświetlenia",
+#     type=int,
+#     required=True,
+#     default=5,
+# )
+# @lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
+# @lightbulb.command("last_n", "ostatnie N ocenionych filmów/serialów", pass_options=True)
+# @lightbulb.implements(lightbulb.SlashSubCommand)
+# async def last_n_subcommand(
+#     ctx: lightbulb.SlashContext,
+#     typ: str,
+#     user: hikari.User,
+#     amount: int,
+# ) -> None:
+    
+#     if user is None:
+#         user = ctx.author
+
+#     typ = "movies" if typ == "film" else "series"
+#     last_n_parsed = ""
+
+#     async with ctx.bot.d.client_session.get(
+#         f"http://filman_server:8000/filmweb/user/watched/{typ}/get_all",
+#         params={"discord_id": ctx.author.id},
+#     ) as resp:
+#         if not resp.ok:
+#             await ctx.respond(
+#                 f"API zwróciło {resp.status} status :c",
+#                 flags=hikari.MessageFlag.EPHEMERAL,
+#             )
+#             return
+
+#         media = await resp.json()
+
+#         last_n_parsed = last_n_media(media, typ, amount)
+
+#     if len(last_n_parsed) == 0:
+#         embed = hikari.Embed(
+#             title=f"Nie znaleziono żadnych ocenionych {typ}!", # todo napraw odmianę
+#             colour=0xFF4400,
+#             timestamp=datetime.now().astimezone(),
+#         )
+#         embed.set_footer(
+#             text=f"Requested by {ctx.author}",
+#             icon=ctx.author.display_avatar_url,
+#         )
+#         await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+#         return
+    
+#     base_suffix = "\n\n*Zbyt dużo wyników (limit 4096 znaków)*"
+#     max_len = 4096
+
+#     if len(last_n_parsed) > (max_len - len(base_suffix)):
+#         original_len = len(last_n_parsed)
+
+#         removed = 0
+#         for _ in range(6):
+#             info_suffix = f"{base_suffix} (skrócono o {removed} znaków)"
+#             allowed = max_len - len(info_suffix) - 3
+#             if allowed < 0:
+#                 last_n_parsed = base_suffix
+#                 break
+#             new_removed = original_len - allowed
+#             if new_removed == removed:
+#                 last_n_parsed = last_n_parsed[:allowed].rstrip() + "..." + info_suffix
+#                 break
+#             removed = new_removed
+#         else:
+#             info_suffix = base_suffix
+#             allowed = max_len - len(info_suffix) - 3
+#             if allowed < 0:
+#                 last_n_parsed = base_suffix
+#             else:
+#                 last_n_parsed = last_n_parsed[:allowed].rstrip() + "..." + info_suffix
+
+#     logging.critical(f"Last N parsed: {last_n_parsed}")
+#     logging.critical(f"size {len(last_n_parsed)}")
+
+#     typ = "filmy" if typ == "movie" else "seriale"
+#     embed = hikari.Embed(
+#         title=f"Ostatnio ocenione {typ} ({amount}):",
+#         description=last_n_parsed,
+#         colour=0xFFC200,
+#         timestamp=datetime.now().astimezone(),
+#     )
+#     embed.set_footer(
+#         text=f"Requested by {ctx.author}",
+#         icon=ctx.author.display_avatar_url,
+#     )
+    
+#     await ctx.respond(embed)
+
+
+
+@tracker_group.child
+@lightbulb.option(
+    "typ",
+    "film / serial",
+    type=str,
+    required=True,
+    choices=["film", "serial"],
+    default="film",
+)
+@lightbulb.option("user", "Użytkownik", type=hikari.User, required=False)
+@lightbulb.command("last10", "ostatnio ocenione filmy/seriale", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def last10_subcommand(
+    ctx: lightbulb.SlashContext,
+    typ: str,
+    user: hikari.User,
+) -> None:
+
+    if user is None:
+        user = ctx.author
+
+    typ = "movies" if typ == "film" else "series"
+    last10_parsed = ""
+    
+    async with ctx.bot.d.client_session.get(
+        f"http://filman_server:8000/filmweb/user/watched/{typ}/get_all",
+        params={"discord_id": ctx.author.id},
+    ) as resp:
+        if not resp.ok:
+            await ctx.respond(
+                f"API zwróciło {resp.status} status :c",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+            return
+
+        media = await resp.json()
+
+        last10_parsed = last10(media, typ)
+
+    if len(last10_parsed) == "":
+        embed = hikari.Embed(
+            title=f"Nie znaleziono żadnych ocenionych {typ}!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+        return
+
+    typ = "film" if typ == "movie" else "serial"
+
+    embed = hikari.Embed(
+        title=f"Ostatnio ocenione {typ}:",
+        description=last10_parsed,
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+
+    await ctx.respond(embed)
+
+
+#
+#
+#
 
 
 @tracker_group.child

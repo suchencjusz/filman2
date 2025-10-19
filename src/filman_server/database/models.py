@@ -1,15 +1,4 @@
-from sqlalchemy import (
-    BIGINT,
-    VARCHAR,
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    SmallInteger,
-    String,
-)
+from sqlalchemy import BIGINT, VARCHAR, Boolean, Column, DateTime, Float, ForeignKey, Integer, SmallInteger, String
 from sqlalchemy.orm import relationship
 
 from .db import Base

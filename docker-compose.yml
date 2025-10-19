@@ -38,9 +38,8 @@ services:
       - filman_server
 
     environment:
-      - DISCORD_TOKEN= your discord bot token goes here
-      - LOG_LEVEL=DEBUG
-    
+      - DISCORD_TOKEN=
+
     networks:
       - db
 
@@ -55,10 +54,18 @@ services:
     environment:
       - CORE_ENDPOINT=http://filman_server:8000
       - SENTRY_ENABLED=false
-      - SENTRY_DSN=
-    
+      # - SENTRY_DSN=
+
     networks:
       - db
 
     restart: unless-stopped
-    
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json
+    command: --interval 60 filman_server filman_discord filman_crawler
+    restart: unless-stopped

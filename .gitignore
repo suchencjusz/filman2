@@ -55,6 +55,7 @@ docs/_build/
 venv/
 .venv/
 env/
+.venv/
 
 # Secrets
 data/
