@@ -150,12 +150,24 @@ async def last10_subcommand(
     if user is None:
         user = ctx.author
 
+    if user.is_bot:
+        embed = hikari.Embed(
+            title="Nie możesz sprawdzać ocen bota, zostaw go w spokoju!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon=ctx.author.display_avatar_url,
+        )
+        return await ctx.respond(embed)
+
     typ = "movies" if typ == "film" else "series"
     last10_parsed = ""
     
     async with ctx.bot.d.client_session.get(
         f"http://filman_server:8000/filmweb/user/watched/{typ}/get_all",
-        params={"discord_id": ctx.author.id},
+        params={"discord_id": user.id},
     ) as resp:
         if not resp.ok:
             await ctx.respond(
@@ -168,7 +180,7 @@ async def last10_subcommand(
 
         last10_parsed = last10(media, typ)
 
-    if len(last10_parsed) == "":
+    if len(last10_parsed) == 0:
         embed = hikari.Embed(
             title=f"Nie znaleziono żadnych ocenionych {typ}!",
             colour=0xFF4400,
@@ -181,10 +193,10 @@ async def last10_subcommand(
         await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
         return
 
-    typ = "film" if typ == "movie" else "serial"
+    typ = "filmy" if typ == "movies" else "seriale"
 
     embed = hikari.Embed(
-        title=f"Ostatnio ocenione {typ}:",
+        title=f"Ostatnio ocenione {typ} {user.username}:",
         description=last10_parsed,
         colour=0xFFC200,
         timestamp=datetime.now().astimezone(),
