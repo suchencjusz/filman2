@@ -20,12 +20,12 @@ async def tools_group(_: lightbulb.SlashContext) -> None:
 @tools_group.child
 @lightbulb.option("channel", "kanał tekstowy", type=hikari.TextableChannel, required=True)
 @lightbulb.option("ignore_bot", "ignorować wiadomości od botów", type=bool, required=False, default=True)
-@lightbulb.command("extract_links_advanced", "Ekstrahuje linki filmweb/imdb/letterboxd z ostatnich 1000 wiadomości na kanale. Zwraca tytuły z Filmwebu.")
+@lightbulb.command("extract_links_advanced", "Ekstrahuje linki filmweb/imdb/letterboxd z ostatnich 1000 wiadomości na kanale", guilds=(901929379297382431,))
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def extract_links_advanced_subcommand(ctx: lightbulb.SlashContext) -> None:
 
     async def create_filmweb_scrap_task(filmweb_id: str, is_movie: bool):
-        async with ctx.bot.d.client_session.get(
+        async with ctx.bot.d.client_session.post(
             "http://filman_server:8000/tasks/create",
             json={
                 "task_status": "queued",
@@ -89,7 +89,7 @@ async def extract_links_advanced_subcommand(ctx: lightbulb.SlashContext) -> None
                     continue
 
                 async with ctx.bot.d.client_session.get(
-                    f"http://filman_server:8000/filmweb/movie/get?filmweb_id={filmweb_id}"
+                    f"http://filman_server:8000/filmweb/movie/get?id={filmweb_id}"
                 ) as resp:
                     if resp.status == 200:
                         data = await resp.json()
@@ -107,7 +107,7 @@ async def extract_links_advanced_subcommand(ctx: lightbulb.SlashContext) -> None
                     continue
 
                 async with ctx.bot.d.client_session.get(
-                    f"http://filman_server:8000/filmweb/series/get?filmweb_id={filmweb_id}"
+                    f"http://filman_server:8000/filmweb/series/get?id={filmweb_id}"
                 ) as resp:
                     if resp.status == 200:
                         data = await resp.json()
