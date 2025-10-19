@@ -85,6 +85,9 @@ async def extract_links_advanced_subcommand(ctx: lightbulb.SlashContext) -> None
             if match := re.search(r'/film/[^/]+-(\d+)', link_entry.link):
                 filmweb_id = match.group(1)
 
+                if int(filmweb_id) > 100000000000000:
+                    continue
+
                 async with ctx.bot.d.client_session.get(
                     f"http://filman_server:8000/filmweb/movie/get?filmweb_id={filmweb_id}"
                 ) as resp:
@@ -99,6 +102,9 @@ async def extract_links_advanced_subcommand(ctx: lightbulb.SlashContext) -> None
 
             elif match := re.search(r'/serial/[^/]+-(\d+)', link_entry.link):
                 filmweb_id = match.group(1)
+
+                if int(filmweb_id) > 100000000000000:
+                    continue
 
                 async with ctx.bot.d.client_session.get(
                     f"http://filman_server:8000/filmweb/series/get?filmweb_id={filmweb_id}"
@@ -232,6 +238,10 @@ async def extract_links_basic_subcommand(ctx: lightbulb.SlashContext) -> None:
         
         if movie_match:
             movie_id = movie_match.group(1)
+
+            if int(movie_id) > 100000000000000:
+                continue
+
             async with ctx.bot.d.client_session.post(
                 "http://filman_server:8000/tasks/create",
                 json={
@@ -244,6 +254,10 @@ async def extract_links_basic_subcommand(ctx: lightbulb.SlashContext) -> None:
         
         elif series_match:
             series_id = series_match.group(1)
+
+            if int(series_id) > 100000000000000:
+                continue
+
             async with ctx.bot.d.client_session.post(
                 "http://filman_server:8000/tasks/create",
                 json={

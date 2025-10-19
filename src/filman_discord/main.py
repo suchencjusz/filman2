@@ -32,6 +32,7 @@ bot = lightbulb.BotApp( # to do: disable cache
     DISCORD_TOKEN,
     intents=intents,
     banner=None,
+    default_enabled_guilds=(901929379297382431,),
     cache_settings=hikari.impl.CacheSettings(
         max_messages=0,
         max_dm_channel_ids=0,
@@ -45,7 +46,6 @@ tasks.load(bot)
 async def on_starting(_: hikari.StartingEvent) -> None:
     bot.d.client_session = aiohttp.ClientSession()
     bot.d.rest = bot.rest
-
 
 @bot.listen()
 async def on_stopping(_: hikari.StoppingEvent) -> None:
