@@ -28,6 +28,28 @@ async def configure_subcommand(ctx: lightbulb.SlashContext) -> None:
 
     await ctx.respond(embed)
 
+@help_group.child
+@lightbulb.command("tools", "narzędzia bota")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def tools_subcommand(ctx: lightbulb.SlashContext) -> None:
+    embed = hikari.Embed(title="`/tools`", colour=0xFFC200, timestamp=datetime.now().astimezone())
+
+    embed.add_field(
+        name="`/tools extract_links_basic channel ignore_bot`",
+        value="Ekstrahuje wszystkie linki filmweb/imdb/letterboxd z ostatnich 1000 wiadomości na kanale i zwraca je w pliku csv",
+    )
+
+    embed.add_field(
+        name="`/tools extract_links_advanced channel ignore_bot`",
+        value="Ekstrahuje wszystkie linki filmweb/imdb/letterboxd z ostatnich 1000 wiadomości na kanale, wraz z nazwami użytkowników, nazwami filmów i zwraca je w pliku csv",
+    )
+
+    embed.set_footer(
+        text=f"Requested by {ctx.author}",
+        icon=ctx.author.display_avatar_url,
+    )
+
+    await ctx.respond(embed)
 
 @help_group.child
 @lightbulb.command("filmweb", "akcje związane z kontem filmweb")

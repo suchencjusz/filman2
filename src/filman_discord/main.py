@@ -28,7 +28,7 @@ if DISCORD_TOKEN == None or DISCORD_TOKEN == "":  # todo check this
 
 intents = hikari.Intents.GUILDS | hikari.Intents.GUILD_MESSAGES | hikari.Intents.MESSAGE_CONTENT
 
-bot = lightbulb.BotApp(
+bot = lightbulb.BotApp( # to do: disable cache
     DISCORD_TOKEN,
     intents=intents,
     banner=None,
