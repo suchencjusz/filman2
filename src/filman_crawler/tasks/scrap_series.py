@@ -39,7 +39,7 @@ class Scraper:
             logging.debug(f"Rating data : {rating_data}")
             logging.debug(f"Critics data : {critics_data}")
         except Exception as e:
-            logging.error(f"Error parsing series data (info, rating, critics): {e}")
+            logging.warning(f"Error parsing series data (info, rating, critics): {e}")
 
         title = info_data.get("title", None)
         year = info_data.get("year", None)

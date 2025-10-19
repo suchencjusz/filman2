@@ -788,7 +788,7 @@ def create_scrap_filmweb_series_task(db: Session) -> bool:
 #
 
 
-def update_stuck_tasks(db: Session, minutes: int = 10):  # dodaj minuty
+def update_stuck_tasks(db: Session, minutes: int = 15):  # dodaj minuty
     stuck_tasks = (
         db.query(models.Task)
         .filter(models.Task.task_status == schemas.TaskStatus.RUNNING)

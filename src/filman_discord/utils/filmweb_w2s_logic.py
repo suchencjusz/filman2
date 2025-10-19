@@ -17,6 +17,10 @@ async def fetch_filmweb_id(user: any) -> str | None:
     response = requests.get(
         f"http://filman_server:8000/filmweb/user/mapping/get",
         params={"discord_id": user.id},
+<<<<<<< HEAD
+=======
+        timeout=5,
+>>>>>>> origin/main
     )
     if response.status_code == 200:
         filmweb_id = response.json().get("filmweb_id")

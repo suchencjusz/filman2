@@ -15,8 +15,7 @@ from filman_crawler.tasks.scrap_user_watched_movies import Scraper as user_watch
 from filman_crawler.tasks.scrap_user_watched_series import Scraper as user_watched_series_scrapper
 from filman_server.database.schemas import Task, TaskTypes
 
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -56,7 +55,7 @@ ALLOWED_TASKS = [
 TASK_TYPES = [task for task in ALLOWED_TASKS]
 
 sentry_logging = LoggingIntegration(
-    level=logging.INFO,
+    level=logging.WARNING,
     event_level=logging.ERROR,  # Capture info and above as breadcrumbs  # Send errors as events
 )
 
@@ -141,7 +140,7 @@ def main():
 
     wait_time = 2
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         while True:
             logging.debug("Fetching tasks from endpoint")
 
