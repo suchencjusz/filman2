@@ -32,7 +32,6 @@ bot = lightbulb.BotApp( # to do: disable cache
     DISCORD_TOKEN,
     intents=intents,
     banner=None,
-    default_enabled_guilds=(901929379297382431,),
     cache_settings=hikari.impl.CacheSettings(
         max_messages=0,
         max_dm_channel_ids=0,
