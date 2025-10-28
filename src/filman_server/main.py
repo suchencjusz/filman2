@@ -8,7 +8,6 @@ from fastapi import FastAPI
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
-from filman_server.cron import Cron
 from filman_server.database import models
 from filman_server.database.migrate import trigger_migrations
 from filman_server.database.db import engine
@@ -37,7 +36,6 @@ if os.environ.get("SENTRY_ENABLED", "false") == "true":
 trigger_migrations()
 models.Base.metadata.create_all(bind=engine)
 
-cron = Cron()
 app = FastAPI()
 
 app.include_router(users.users_router)
@@ -59,6 +57,4 @@ async def trigger_error():
 
 if __name__ == "__main__":
     logging.info("Filman server started")
-    cron.start()
-    logging.debug("cron running")
     uvicorn.run(app, host="0.0.0.0", port=8000)

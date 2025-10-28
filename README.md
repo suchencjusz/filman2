@@ -32,3 +32,30 @@ Uruchomienie śledzenie użytkownika
 (todo)
 
 Docker compose [docker-compose.yml](https://github.com/suchencjusz/filman2/blob/main/docker-compose.yml)
+
+## 3. Uruchomienie Celery Worker
+
+Projekt używa Celery z Redis jako brokerem do przetwarzania zadań w tle (np. scrapowania danych Filmweb).
+
+### Wymagania
+- Redis (domyślnie: `redis://localhost:6379/0`)
+- Zmienne środowiskowe (opcjonalnie):
+  - `REDIS_URL` - adres URL serwera Redis
+
+### Uruchomienie workera
+
+```bash
+celery -A filman_server.celery_app worker -l info
+```
+
+Opcjonalne parametry:
+- `-l debug` - bardziej szczegółowe logi
+- `-l warning` - tylko ostrzeżenia i błędy
+- `--concurrency=4` - liczba równoległych workerów (domyślnie: liczba CPU)
+
+### Uruchomienie z własnym Redis
+
+```bash
+export REDIS_URL=redis://your-redis-host:6379/0
+celery -A filman_server.celery_app worker -l info
+```
