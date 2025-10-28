@@ -2,10 +2,10 @@ import os
 
 try:
     from celery import Celery
-    
+
     # Get Redis URL from environment variable, default to localhost
     REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-    
+
     # Create Celery app instance
     celery_app = Celery(
         "filman_server",
@@ -13,7 +13,7 @@ try:
         backend=REDIS_URL,
         include=["filman_server.tasks"],
     )
-    
+
     # Configure Celery
     celery_app.conf.update(
         task_serializer="json",
@@ -28,5 +28,6 @@ try:
 except ImportError:
     # Celery not installed - create a mock for testing/development
     import logging
+
     logging.warning("Celery not installed. Task queueing will not work. Install with: pip install celery redis")
     celery_app = None

@@ -72,7 +72,7 @@ def test_create_task(test_client: TestClient, mock_celery_task):
     assert task["task_type"] == task_data["task_type"]
     assert task["task_job"] == task_data["task_job"]
     assert task["message"] == "Task sent to Celery queue successfully"
-    
+
     # Verify Celery task was called
     mock_celery_task.assert_called_once_with(task_data["task_type"], task_data["task_job"])
 

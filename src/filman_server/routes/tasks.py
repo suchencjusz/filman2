@@ -23,19 +23,19 @@ tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 def create_task(task: schemas.TaskCreate):
     """
     Create a task and send it to Celery queue for processing.
-    
+
     Args:
         task: Task creation data containing task_type and task_job
-    
+
     Returns:
         dict: Task information including Celery task ID
     """
     try:
         # Send task to Celery queue
         celery_task = scrap_movie.delay(task.task_type, task.task_job)
-        
+
         logging.info(f"Task sent to Celery queue: {celery_task.id}, type={task.task_type}, job={task.task_job}")
-        
+
         return {
             "celery_task_id": celery_task.id,
             "task_type": task.task_type,
@@ -66,23 +66,18 @@ def create_scrap_users_movies_task(db: Session = Depends(get_db)):
     """
     try:
         from filman_server.database import models
-        
+
         filmweb_users = db.query(models.FilmWebUserMapping).all()
         task_ids = []
-        
+
         for user in filmweb_users:
             celery_task = scrap_movie.delay(
-                schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES.value,
-                str(user.filmweb_id)
+                schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES.value, str(user.filmweb_id)
             )
             task_ids.append(celery_task.id)
-        
+
         logging.info(f"Sent {len(task_ids)} user movie scraping tasks to Celery queue")
-        return {
-            "status": "success",
-            "tasks_queued": len(task_ids),
-            "celery_task_ids": task_ids
-        }
+        return {"status": "success", "tasks_queued": len(task_ids), "celery_task_ids": task_ids}
     except Exception as e:
         logging.error(f"Failed to create user movie scraping tasks: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to queue tasks: {str(e)}")
@@ -101,23 +96,16 @@ def create_scrap_movies_task(db: Session = Depends(get_db)):
     """
     try:
         from filman_server.database import models
-        
+
         filmweb_movies = db.query(models.FilmWebMovie).all()
         task_ids = []
-        
+
         for movie in filmweb_movies:
-            celery_task = scrap_movie.delay(
-                schemas.TaskTypes.SCRAP_FILMWEB_MOVIE.value,
-                str(movie.id)
-            )
+            celery_task = scrap_movie.delay(schemas.TaskTypes.SCRAP_FILMWEB_MOVIE.value, str(movie.id))
             task_ids.append(celery_task.id)
-        
+
         logging.info(f"Sent {len(task_ids)} movie scraping tasks to Celery queue")
-        return {
-            "status": "success",
-            "tasks_queued": len(task_ids),
-            "celery_task_ids": task_ids
-        }
+        return {"status": "success", "tasks_queued": len(task_ids), "celery_task_ids": task_ids}
     except Exception as e:
         logging.error(f"Failed to create movie scraping tasks: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to queue tasks: {str(e)}")
@@ -136,23 +124,16 @@ def create_scrap_series_task(db: Session = Depends(get_db)):
     """
     try:
         from filman_server.database import models
-        
+
         filmweb_series = db.query(models.FilmWebSeries).all()
         task_ids = []
-        
+
         for series in filmweb_series:
-            celery_task = scrap_movie.delay(
-                schemas.TaskTypes.SCRAP_FILMWEB_SERIES.value,
-                str(series.id)
-            )
+            celery_task = scrap_movie.delay(schemas.TaskTypes.SCRAP_FILMWEB_SERIES.value, str(series.id))
             task_ids.append(celery_task.id)
-        
+
         logging.info(f"Sent {len(task_ids)} series scraping tasks to Celery queue")
-        return {
-            "status": "success",
-            "tasks_queued": len(task_ids),
-            "celery_task_ids": task_ids
-        }
+        return {"status": "success", "tasks_queued": len(task_ids), "celery_task_ids": task_ids}
     except Exception as e:
         logging.error(f"Failed to create series scraping tasks: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to queue tasks: {str(e)}")
@@ -171,23 +152,18 @@ def create_scrap_users_series_task(db: Session = Depends(get_db)):
     """
     try:
         from filman_server.database import models
-        
+
         filmweb_users = db.query(models.FilmWebUserMapping).all()
         task_ids = []
-        
+
         for user in filmweb_users:
             celery_task = scrap_movie.delay(
-                schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES.value,
-                str(user.filmweb_id)
+                schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES.value, str(user.filmweb_id)
             )
             task_ids.append(celery_task.id)
-        
+
         logging.info(f"Sent {len(task_ids)} user series scraping tasks to Celery queue")
-        return {
-            "status": "success",
-            "tasks_queued": len(task_ids),
-            "celery_task_ids": task_ids
-        }
+        return {"status": "success", "tasks_queued": len(task_ids), "celery_task_ids": task_ids}
     except Exception as e:
         logging.error(f"Failed to create user series scraping tasks: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to queue tasks: {str(e)}")
