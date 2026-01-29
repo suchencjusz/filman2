@@ -1,0 +1,5 @@
+- eksport ocenionych filmow uzytkownika
+- eksport ocenionych filmow na serwerze
+- eksport filmow z listy do obejrzenia
+
+wszystko w json i csv
