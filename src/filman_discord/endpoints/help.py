@@ -87,6 +87,11 @@ async def filmweb_subcommand(ctx: lightbulb.SlashContext) -> None:
         value="Losuje film/serial z list/y użytkowników \n opcja common losuje film z wspólnych elementów wszystkich użytkowników",
     )
 
+    embed.add_field(
+        name="`/filmweb export user:@nick format:json/csv`",
+        value="Eksportuje listę obejrzanych filmów/seriali użytkownika do pliku json/csv",
+    )
+
     embed.set_footer(
         text=f"Requested by {ctx.author}",
         icon=ctx.author.display_avatar_url,

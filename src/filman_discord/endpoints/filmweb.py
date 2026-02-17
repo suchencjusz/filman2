@@ -1,6 +1,9 @@
 import logging
 from datetime import datetime
 
+import io
+import json
+import csv
 import hikari
 import lightbulb
 
@@ -625,6 +628,115 @@ async def w2s_subcommand(
     media_type = MediaType.FILM if typ == "film" else MediaType.SERIAL
 
     await ctx.edit_last_response(content=await process_media(users, common, media_type=media_type), embed=None)
+
+@tracker_group.child
+@lightbulb.option(
+    "format",
+    "Format eksportu",
+    type=str,
+    required=False,
+    choices=["json", "csv"],
+    default="json",
+)
+@lightbulb.option("user", "Użytkownik (domyślnie ty)", type=hikari.User, required=False)
+@lightbulb.command("export", "eksportuj ocenione filmy i seriale", pass_options=True)
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def export_subcommand(
+    ctx: lightbulb.SlashContext,
+    format: str,
+    user: hikari.User,
+) -> None:
+    if user is None:
+        user = ctx.author
+
+    if user.is_bot:
+        embed = hikari.Embed(
+            title="Nie możesz eksportować danych bota!",
+            colour=0xFF4400,
+            timestamp=datetime.now().astimezone(),
+        )
+        embed.set_footer(text=f"Requested by {ctx.author}", icon=ctx.author.display_avatar_url)
+        return await ctx.respond(embed, flags=hikari.MessageFlag.EPHEMERAL)
+
+    await ctx.respond("Przygotowuję eksport danych...", flags=hikari.MessageFlag.EPHEMERAL)
+
+    async with ctx.bot.d.client_session.get(
+        "http://filman_server:8000/filmweb/user/watched/export",
+        params={"discord_id": user.id},
+    ) as resp:
+        if not resp.ok:
+            if resp.status == 404:
+                embed = hikari.Embed(
+                    title="Nie znaleziono żadnych ocenionych filmów/seriali!",
+                    colour=0xFF4400,
+                    timestamp=datetime.now().astimezone(),
+                )
+                embed.set_footer(text=f"Requested by {ctx.author}", icon=ctx.author.display_avatar_url)
+                return await ctx.edit_last_response(content=None, embed=embed)
+
+            return await ctx.edit_last_response(content=f"API zwróciło {resp.status} status :c")
+
+        data = await resp.json()
+
+    if format == "json":
+        json_str = json.dumps(data, indent=2, ensure_ascii=False)
+        file_bytes = io.BytesIO(json_str.encode("utf-8"))
+        filename = f"filman_export_{user.id}.json"
+    else:
+        csv_buffer = io.StringIO()
+        csv_writer = csv.writer(csv_buffer, delimiter=";")
+        csv_writer.writerow([
+            "typ", "id", "tytuł", "rok", "rok_końca", "ocena_użytkownika", 
+            "komentarz", "ulubiony", "data_obejrzenia", "ocena_społeczności", "ocena_krytyków"
+        ])
+
+        for movie in data.get("movies", []):
+            csv_writer.writerow([
+                "film",
+                movie["id"],
+                movie["title"],
+                movie["year"],
+                "",
+                movie["user_rate"],
+                movie["user_comment"] or "",
+                movie["favorite"],
+                movie["date_watched"],
+                movie["community_rate"],
+                movie["critics_rate"],
+            ])
+
+        for series in data.get("series", []):
+            csv_writer.writerow([
+                "serial",
+                series["id"],
+                series["title"],
+                series["year"],
+                series["other_year"] or "",
+                series["user_rate"],
+                series["user_comment"] or "",
+                series["favorite"],
+                series["date_watched"],
+                series["community_rate"],
+                series["critics_rate"],
+            ])
+
+        csv_buffer.seek(0)
+        file_bytes = io.BytesIO(csv_buffer.getvalue().encode("utf-8"))
+        filename = f"filman_export_{user.id}.csv"
+
+    embed = hikari.Embed(
+        title="Eksport zakończony!",
+        description=f"Wyeksportowano **{data['total_movies']}** filmów i **{data['total_series']}** seriali dla {user.mention}",
+        colour=0xFFC200,
+        timestamp=datetime.now().astimezone(),
+    )
+    embed.set_footer(text=f"Requested by {ctx.author}", icon=ctx.author.display_avatar_url)
+
+    await ctx.edit_last_response(
+        content=None,
+        embed=embed,
+        attachment=hikari.Bytes(file_bytes, filename),
+    )
 
 
 def load(bot: lightbulb.BotApp) -> None:

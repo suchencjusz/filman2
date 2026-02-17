@@ -2,9 +2,10 @@ import logging
 import os
 import sys
 
+from fastapi.responses import JSONResponse
 import sentry_sdk
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
@@ -23,6 +24,7 @@ logging.basicConfig(
 
 logging.getLogger("uvicorn").setLevel(LOG_LEVEL)
 logging.getLogger("uvicorn.access").setLevel(LOG_LEVEL)
+logging.getLogger("fastapi").setLevel(LOG_LEVEL)
 
 if os.environ.get("SENTRY_ENABLED", "false") == "true":
     sentry_sdk.init(
@@ -56,6 +58,17 @@ async def root():
 async def trigger_error():
     division_by_zero = 1 / 0
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code >= 400:
+        logging.warning(f"{request.method} {request.url.path} -> {response.status_code}")
+    return response
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logging.error(f"Unhandled exception on {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 if __name__ == "__main__":
     logging.info("Filman server started")
