@@ -33,8 +33,7 @@ bot = lightbulb.BotApp( # to do: disable cache
     intents=intents,
     banner=None,
     cache_settings=hikari.impl.CacheSettings(
-        max_messages=0,
-        max_dm_channel_ids=0,
+        components=hikari.impl.CacheComponents.NONE,
     ),
 )
 

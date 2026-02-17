@@ -3,6 +3,7 @@ import os
 from typing import List
 from urllib.parse import quote
 
+from fastapi.responses import JSONResponse
 import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
@@ -320,3 +321,67 @@ async def get_watched_series(
         raise HTTPException(status_code=404, detail="User has no watched series")
 
     return watched_series
+
+#
+# WATCHED EXPORT
+#
+
+@filmweb_router.get(
+    "/user/watched/export",
+    summary="Export user watched movies and series",
+    description="Export all watched movies and series for a user as JSON",
+)
+async def export_user_watched(
+    user_id: int | None = None,
+    filmweb_id: str | None = None,
+    discord_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    movies = crud.get_filmweb_user_watched_movies(db, user_id, filmweb_id, discord_id)
+    series = crud.get_filmweb_user_watched_series_all(db, user_id, filmweb_id, discord_id)
+
+    if not movies and not series:
+        raise HTTPException(status_code=404, detail="No watched media found for user")
+
+    def serialize_movie(m):
+        return {
+            "type": "movie",
+            "id": m.movie.id,
+            "title": m.movie.title,
+            "year": m.movie.year,
+            "poster_url": m.movie.poster_url,
+            "community_rate": m.movie.community_rate,
+            "critics_rate": m.movie.critics_rate,
+            "user_rate": m.rate,
+            "user_comment": m.comment,
+            "favorite": m.favorite,
+            "date_watched": m.date.isoformat() if m.date else None,
+        }
+
+    def serialize_series(s):
+        return {
+            "type": "series",
+            "id": s.series.id,
+            "title": s.series.title,
+            "year": s.series.year,
+            "other_year": s.series.other_year,
+            "poster_url": s.series.poster_url,
+            "community_rate": s.series.community_rate,
+            "critics_rate": s.series.critics_rate,
+            "user_rate": s.rate,
+            "user_comment": s.comment,
+            "favorite": s.favorite,
+            "date_watched": s.date.isoformat() if s.date else None,
+        }
+    
+    data = {
+        "movies": [serialize_movie(m) for m in movies] if movies else [],
+        "series": [serialize_series(s) for s in series] if series else [],
+        "total_movies": len(movies) if movies else 0,
+        "total_series": len(series) if series else 0,
+    }
+
+    return JSONResponse(
+        content=data,
+        media_type="application/json; charset=utf-8",
+    )

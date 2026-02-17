@@ -748,3 +748,138 @@ def test_user_mapping_delete(test_client):
     # check user 1 watched movies
     response = test_client.get("/filmweb/user/watched/movies/get_all", params={"user_id": 1})
     assert response.status_code == 404
+
+def test_export_user_watched_empty(test_client):
+    """Test export when user has no watched movies or series"""
+    # Create a user without any watched content
+    test_user = {"discord_id": 999999999999}
+    response = test_client.post("/users/create", json=test_user)
+    assert response.status_code == 200
+
+    # Try to export - should return 404
+    response = test_client.get(
+        "/filmweb/user/watched/export",
+        params={"discord_id": test_user["discord_id"]},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "No watched media found for user"
+
+
+def test_export_user_watched_with_movies(test_client):
+    """Test export when user has watched movies"""
+    # Create user and mapping first (each test has fresh database)
+    test_user = {"discord_id": 321309474667253282}
+    response = test_client.post("/users/create", json=test_user)
+    assert response.status_code == 200
+    user_id = response.json()["id"]
+
+    response = test_client.post(
+        "/filmweb/user/mapping/set",
+        json={"user_id": user_id, "filmweb_id": "maciek"},
+    )
+    assert response.status_code == 200
+
+    # First add a movie to export
+    test_movie = {
+        "id": 88888,
+        "title": "Test Export Film",
+        "year": 2023,
+        "poster_url": "/88/88/88888/poster.jpg",
+        "community_rate": 8.0,
+        "critics_rate": 7.5,
+    }
+    response = test_client.post("/filmweb/movie/update", json=test_movie)
+    assert response.status_code == 200
+
+    # Add watched movie for user with filmweb_id="maciek"
+    response = test_client.post(
+        "/filmweb/user/watched/movies/add",
+        json={
+            "id_media": test_movie["id"],
+            "filmweb_id": "maciek",
+            "date": "2024-01-15T12:00:00",
+            "rate": 9,
+            "comment": "Super film",
+            "favorite": True,
+        },
+    )
+    assert response.status_code == 200
+
+    # Export by filmweb_id
+    response = test_client.get(
+        "/filmweb/user/watched/export",
+        params={"filmweb_id": "maciek"},
+    )
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "movies" in data
+    assert "series" in data
+    assert "total_movies" in data
+    assert "total_series" in data
+    assert data["total_movies"] >= 1
+    # Check that our movie is in the export
+    movie_ids = [m["id"] for m in data["movies"]]
+    assert 88888 in movie_ids
+
+
+def test_export_user_watched_utf8_encoding(test_client):
+    """Test that export correctly handles UTF-8 characters (Polish)"""
+    # Create user and mapping first (each test has fresh database)
+    test_user = {"discord_id": 321309474667253282}
+    response = test_client.post("/users/create", json=test_user)
+    assert response.status_code == 200
+    user_id = response.json()["id"]
+
+    response = test_client.post(
+        "/filmweb/user/mapping/set",
+        json={"user_id": user_id, "filmweb_id": "maciek"},
+    )
+    assert response.status_code == 200
+
+    # Create movie with Polish characters
+    test_movie = {
+        "id": 99999,
+        "title": "Łowca androidów",
+        "year": 1982,
+        "poster_url": "/99/99/99999/poster.jpg",
+        "community_rate": 7.7,
+        "critics_rate": 8.5,
+    }
+    response = test_client.post("/filmweb/movie/update", json=test_movie)
+    assert response.status_code == 200
+
+    # Add watched movie with Polish comment for user with filmweb_id="maciek"
+    response = test_client.post(
+        "/filmweb/user/watched/movies/add",
+        json={
+            "id_media": test_movie["id"],
+            "filmweb_id": "maciek",
+            "date": "2024-03-01T15:00:00",
+            "rate": 10,
+            "comment": "Żółć gęślą jaźń - świetny film!",
+            "favorite": True,
+        },
+    )
+    assert response.status_code == 200
+
+    # Export and verify UTF-8
+    response = test_client.get(
+        "/filmweb/user/watched/export",
+        params={"filmweb_id": "maciek"},
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/json; charset=utf-8"
+
+    data = response.json()
+    # Find our movie in the export
+    our_movie = next((m for m in data["movies"] if m["id"] == 99999), None)
+    assert our_movie is not None
+    assert our_movie["title"] == "Łowca androidów"
+    assert our_movie["user_comment"] == "Żółć gęślą jaźń - świetny film!"
+
+
+def test_export_user_watched_no_parameters(test_client):
+    """Test export without any parameters - should return 404"""
+    response = test_client.get("/filmweb/user/watched/export")
+    assert response.status_code == 404

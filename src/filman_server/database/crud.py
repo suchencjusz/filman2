@@ -449,7 +449,6 @@ def get_filmweb_user_watched_movie(
     if user is None:
         return None
 
-    # Get the filmweb_id from the mapping if not provided
     if filmweb_id is None:
         filmweb_mapping = (
             db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
@@ -474,13 +473,11 @@ def get_filmweb_user_watched_movies(
     filmweb_id: str | None,
     discord_id: int | None,
 ):
-    # Fetch the user based on user_id, filmweb_id, or discord_id
     user = get_user(db, user_id, filmweb_id, discord_id)
 
     if user is None:
         return None
 
-    # If filmweb_id is not provided, get it from the user mapping
     if filmweb_id is None:
         filmweb_mapping = (
             db.query(models.FilmWebUserMapping).filter(models.FilmWebUserMapping.user_id == user.id).first()
@@ -489,7 +486,6 @@ def get_filmweb_user_watched_movies(
             return None
         filmweb_id = filmweb_mapping.filmweb_id
 
-    # Query the database for all watched movies for the given filmweb_id
     watched_movies = (
         db.query(models.FilmWebUserWatchedMovie).filter(models.FilmWebUserWatchedMovie.filmweb_id == filmweb_id).all()
     )
