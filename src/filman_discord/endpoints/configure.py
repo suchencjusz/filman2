@@ -13,7 +13,7 @@ async def configure_group(_: lightbulb.SlashContext) -> None:
     pass
 
 
-def permissions_for(member: hikari.Member) -> hikari.Permissions:
+def permissions_for(member: hikari.Member | None) -> hikari.Permissions:
     """
     Get the guild permissions for the given member.
 
@@ -27,6 +27,13 @@ def permissions_for(member: hikari.Member) -> hikari.Permissions:
         This method relies on the cache to work. If the cache is not available then :obj:`hikari.Permissions.NONE`
         will be returned.
     """
+    if member is None:
+        return hikari.Permissions.NONE
+
+    interaction_permissions = getattr(member, "permissions", None)
+    if interaction_permissions is not None:
+        return interaction_permissions
+
     permissions = hikari.Permissions.NONE
     for role in member.get_roles():
         permissions |= role.permissions

@@ -8,6 +8,7 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from fake_useragent import UserAgent
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
@@ -16,6 +17,30 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
+
+
+def _fetch_filmweb_user_id(filmweb_id: str) -> int | None:
+    url = f"https://www.filmweb.pl/api/v1/users/{quote(filmweb_id)}/id"
+    try:
+        response = requests.get(url, headers={"User-Agent": UserAgent().random}, timeout=5)
+    except Exception as exc:
+        logging.error(f"Error fetching Filmweb user id for {filmweb_id}: {exc}")
+        return None
+
+    if response.status_code != 200:
+        logging.warning(
+            "Filmweb user id lookup failed for %s: HTTP %s",
+            filmweb_id,
+            response.status_code,
+        )
+        return None
+
+    try:
+        user_id = response.json().get("userId")
+        return int(user_id) if user_id is not None else None
+    except Exception as exc:
+        logging.error(f"Error parsing Filmweb user id response for {filmweb_id}: {exc}")
+        return None
 
 
 #
@@ -109,12 +134,7 @@ async def set_user_mapping(
     user_mapping: schemas.FilmWebUserMappingCreate,
     db: Session = Depends(get_db),
 ):
-
-    filmweb_id_encoded = quote(user_mapping.filmweb_id)
-
-    r = requests.get(f"https://www.filmweb.pl/api/v1/user/{filmweb_id_encoded}/preview")
-
-    if r.status_code != 200:
+    if _fetch_filmweb_user_id(user_mapping.filmweb_id) is None:
         raise HTTPException(status_code=404, detail="Filmweb user not found")
 
     try:
@@ -145,6 +165,7 @@ async def get_user_mapping(
     user_mapping = crud.get_filmweb_user_mapping(db, user_id, filmweb_id, discord_id)
     if user_mapping is None:
         raise HTTPException(status_code=404, detail="User mapping not found")
+
     return user_mapping
 
 

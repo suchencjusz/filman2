@@ -1,0 +1,196 @@
+---
+url
+https://www.filmweb.pl/api/v1/title/{id}/info
+
+response (jakie sa oczekiwane w kodzie)
+- title
+- year
+- posterPath
+- otherYear (tylko dla seriali)
+
+krotki opis co to moze robic albo co robi
+Szczegoly tytulu (film/serial): nazwa, rok i plakat. Uzywane przy scrapowaniu pojedynczego filmu i serialu.
+
+---
+url
+https://www.filmweb.pl/api/v1/film/{id}/rating
+
+response (jakie sa oczekiwane w kodzie)
+- count
+- rate
+- countWantToSee
+- countVote1
+- countVote2
+- countVote3
+- countVote4
+- countVote5
+- countVote6
+- countVote7
+- countVote8
+- countVote9
+- countVote10
+
+krotki opis co to moze robic albo co robi
+Ocena spolecznosci dla tytulu. W kodzie uzywane dla filmow i seriali.
+
+---
+url
+https://www.filmweb.pl/api/v1/film/{id}/critics/rating
+
+response (jakie sa oczekiwane w kodzie)
+- rate
+
+krotki opis co to moze robic albo co robi
+Ocena krytykow dla tytulu (opcjonalna, kod toleruje brak danych).
+
+---
+url
+https://www.filmweb.pl/api/v1/film/10119673/preview
+
+response (jakie sa oczekiwane w kodzie)
+- directors
+- year
+- entityName
+- subType
+- description
+- originalTitle
+- internationalTitle
+- poster
+- genres
+- countries
+- duration
+- siteRecommends
+- plotOrDescriptionSynopsis
+
+krotki opis co to moze robic albo co robi
+Podglad filmu po ID z rozbudowanymi danymi (test odpowiedzi API).
+
+---
+url
+https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/film
+
+response (jakie sa oczekiwane w kodzie)
+- votes (lista)
+- votes[].id.id
+- votes[].id.name
+- votes[].timestamp
+
+krotki opis co to moze robic albo co robi
+Lista ocenionych/obejrzanych filmow uzytkownika (po numeric id); kod bierze z niej identyfikatory filmow do dalszego pobierania szczegolow.
+
+---
+url
+https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/film/{movie_id}
+
+response (jakie sa oczekiwane w kodzie)
+- timestamp
+- rate
+- comment
+- favorite
+
+krotki opis co to moze robic albo co robi
+Detale oceny konkretnego filmu przez uzytkownika (data, ocena, komentarz, ulubione).
+
+---
+url
+https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/serial
+
+response (jakie sa oczekiwane w kodzie)
+- votes (lista)
+- votes[].id.id
+- votes[].id.name
+- votes[].timestamp
+
+krotki opis co to moze robic albo co robi
+Lista ocenionych/obejrzanych seriali uzytkownika (po numeric id); kod bierze z niej identyfikatory seriali do dalszego pobierania szczegolow.
+
+---
+url
+https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/serial/{series_id}
+
+response (jakie sa oczekiwane w kodzie)
+- timestamp
+- rate
+- comment
+- favorite
+
+krotki opis co to moze robic albo co robi
+Detale oceny konkretnego serialu przez uzytkownika (data, ocena, komentarz, ulubione).
+
+---
+url
+https://www.filmweb.pl/api/v1/user/{filmweb_id}/want2see/{film|serial}
+
+response (jakie sa oczekiwane w kodzie)
+- lista obiektow
+- entity (id filmu/serialu)
+
+krotki opis co to moze robic albo co robi
+Lista "chce obejrzec" dla filmow albo seriali. Kod agreguje po wielu uzytkownikach i losuje wspolne lub unikalne propozycje.
+
+---
+url
+https://www.filmweb.pl/api/v1/users/{filmweb_id}/id
+
+response (jakie sa oczekiwane w kodzie)
+- name
+- userId
+
+krotki opis co to moze robic albo co robi
+Mapowanie nick -> numeric userId (cache w pamieci scrappera).
+
+---
+url
+https://www.filmweb.pl/{film|serial}/x-1-{id}
+
+response (jakie sa oczekiwane w kodzie)
+- brak (to link do strony WWW, nie endpoint JSON)
+
+krotki opis co to moze robic albo co robi
+Generowanie linku do strony tytulu na Filmweb (uzywane w odpowiedziach Discord).
+
+---
+url
+https://www.filmweb.pl/film/{title}-{year}-{id}
+
+response (jakie sa oczekiwane w kodzie)
+- brak (to link do strony WWW, nie endpoint JSON)
+
+krotki opis co to moze robic albo co robi
+Alternatywny generator linku do filmu na Filmweb (uzywany w powiadomieniach Discord).
+
+---
+url
+https://www.filmweb.pl/api/v1/users/6737292/votes/film/31793
+
+response (jakie sa oczekiwane w kodzie)
+- timestamp
+- rate
+- comment
+- favorite
+
+krotki opis co to moze robic albo co robi
+Szczegoly oceny konkretnego filmu przez specyficznego uzytkownika filip_prorok. Test reachability dla tego endpointu.
+
+---
+url
+https://www.filmweb.pl/api/v1/users/6737292/votes/film
+
+response (jakie sa oczekiwane w kodzie)
+- lista elementow, gdzie kazdy element ma co najmniej index [0] = id filmu
+
+krotki opis co to moze robic albo co robi
+Lista wszystkich ocen filmow dla uzytkownika filip_prorok. Test reachability dla tego endpointu.
+
+---
+url
+https://www.filmweb.pl/api/v1/users/5604439/votes/film/10112240
+
+response (jakie sa oczekiwane w kodzie)
+- timestamp
+- rate
+- comment
+- favorite
+
+krotki opis co to moze robic albo co robi
+Szczegoly oceny konkretnego filmu przez specyficznego uzytkownika tirstus. Test reachability dla tego endpointu.
