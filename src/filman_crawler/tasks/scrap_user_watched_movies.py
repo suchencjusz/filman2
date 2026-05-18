@@ -82,17 +82,15 @@ class Scraper:
             last_100_watched_data = self.fetch(last_100_watched)
             last_100_watched_data = ujson.loads(last_100_watched_data)
 
+            if last_100_watched_data is None:
+                logging.error(f"Error fetching last 100 watched for {task.task_job}")
+                return "Private profile or no movies watched"
+
             votes = []
             if isinstance(last_100_watched_data, dict):
                 votes = last_100_watched_data.get("votes", [])
             elif isinstance(last_100_watched_data, list):
                 votes = last_100_watched_data
-            else:
-                votes = []
-
-            if last_100_watched_data is None:
-                logging.error(f"Error fetching last 100 watched for {task.task_job}")
-                return "Private profile or no movies watched"
 
         except Exception as e:
             logging.error(f"Error fetching last 100 watched movies from filmweb: {e}")
