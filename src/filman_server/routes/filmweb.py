@@ -8,6 +8,7 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from fake_useragent import UserAgent
 
 from filman_server.database import crud, schemas
 from filman_server.database.db import get_db
@@ -21,7 +22,7 @@ filmweb_router = APIRouter(prefix="/filmweb", tags=["filmweb"])
 def _fetch_filmweb_user_id(filmweb_id: str) -> int | None:
     url = f"https://www.filmweb.pl/api/v1/users/{quote(filmweb_id)}/id"
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, headers={"User-Agent": UserAgent().random}, timeout=5)
     except Exception as exc:
         logging.error(f"Error fetching Filmweb user id for {filmweb_id}: {exc}")
         return None
