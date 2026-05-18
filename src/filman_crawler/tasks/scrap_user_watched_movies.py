@@ -1,6 +1,9 @@
 import datetime
 import logging
 
+from urllib.parse import quote
+
+import requests
 import ujson
 
 from filman_server.database.schemas import FilmWebUserWatchedMovieCreate
@@ -13,13 +16,51 @@ class Scraper:
         self.headers = headers
         self.endpoint_url = endpoint_url
         self.fetch = Updaters(headers, endpoint_url).fetch
+        self._filmweb_user_id_cache: dict[str, int] = {}
+
+    def _fetch_filmweb_user_id(self, filmweb_id: str) -> int | None:
+        url = f"https://www.filmweb.pl/api/v1/users/{quote(filmweb_id)}/id"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=10)
+        except Exception as exc:
+            logging.error(f"Error fetching Filmweb user id for {filmweb_id}: {exc}")
+            return None
+
+        if response.status_code != 200:
+            logging.error(
+                f"Filmweb user id lookup failed for {filmweb_id}: HTTP {response.status_code}"
+            )
+            return None
+
+        try:
+            user_id = response.json().get("userId")
+            return int(user_id) if user_id is not None else None
+        except Exception as exc:
+            logging.error(f"Error parsing Filmweb user id response for {filmweb_id}: {exc}")
+            return None
+
+    def _resolve_filmweb_user_id(self, filmweb_id: str) -> int | None:
+        if filmweb_id in self._filmweb_user_id_cache:
+            return self._filmweb_user_id_cache[filmweb_id]
+
+        filmweb_user_id = self._fetch_filmweb_user_id(filmweb_id)
+        if filmweb_user_id is None:
+            return None
+
+        self._filmweb_user_id_cache[filmweb_id] = filmweb_user_id
+        return filmweb_user_id
 
     def scrap(self, task: Task):
         logging.info(f"Scraping user watched movies for user: {task.task_job}")
 
         tasks = Tasks(self.headers, self.endpoint_url)
 
-        last_100_watched = f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film"
+        filmweb_user_id = self._resolve_filmweb_user_id(task.task_job)
+        if filmweb_user_id is None:
+            logging.error(f"Error resolving Filmweb user id for {task.task_job}")
+            return "Error resolving Filmweb user id"
+
+        last_100_watched = f"https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/film"
         user_already_watched = f"{self.endpoint_url}/filmweb/user/watched/movies/get_all?filmweb_id={task.task_job}"
 
         try:
@@ -41,6 +82,14 @@ class Scraper:
             last_100_watched_data = self.fetch(last_100_watched)
             last_100_watched_data = ujson.loads(last_100_watched_data)
 
+            votes = []
+            if isinstance(last_100_watched_data, dict):
+                votes = last_100_watched_data.get("votes", [])
+            elif isinstance(last_100_watched_data, list):
+                votes = last_100_watched_data
+            else:
+                votes = []
+
             if last_100_watched_data is None:
                 logging.error(f"Error fetching last 100 watched for {task.task_job}")
                 return "Private profile or no movies watched"
@@ -53,24 +102,42 @@ class Scraper:
 
         user_already_watched_ids = set(user_already_watched_ids or [])
 
-        new_movies_watched = [movie for movie in last_100_watched_data if movie[0] not in user_already_watched_ids]
+        movie_ids = []
+        for vote in votes:
+            if isinstance(vote, dict) and "id" in vote:
+                vote_id = vote.get("id")
+                if isinstance(vote_id, dict):
+                    movie_id = vote_id.get("id")
+                else:
+                    movie_id = vote_id
+            elif isinstance(vote, (list, tuple)) and len(vote) > 0:
+                movie_id = vote[0]
+            else:
+                movie_id = None
+
+            if movie_id is not None:
+                movie_ids.append(movie_id)
+
+        new_movies_watched = [movie_id for movie_id in movie_ids if movie_id not in user_already_watched_ids]
         new_movies_watched_parsed = []
 
         logging.debug(f"Found {len(new_movies_watched)} new movies watched")
 
-        for movie in new_movies_watched:
+        for movie_id in new_movies_watched:
             try:
-                logging.debug(f"Fetching user movie rate for movie from filmweb: {movie[0]}")
-                movie_rate_data = self.fetch(f"https://www.filmweb.pl/api/v1/user/{task.task_job}/vote/film/{movie[0]}")
+                logging.debug(f"Fetching user movie rate for movie from filmweb: {movie_id}")
+                movie_rate_data = self.fetch(
+                    f"https://www.filmweb.pl/api/v1/users/{filmweb_user_id}/votes/film/{movie_id}"
+                )
 
                 if movie_rate_data is None:
-                    logging.error(f"Error fetching movie rate for movie: {movie[0]}")
+                    logging.error(f"Error fetching movie rate for movie: {movie_id}")
                     continue
 
                 movie_rate_data = ujson.loads(movie_rate_data)
 
                 watched_movie_info = FilmWebUserWatchedMovieCreate(
-                    id_media=movie[0],
+                    id_media=movie_id,
                     filmweb_id=task.task_job,
                     date=datetime.datetime.fromtimestamp(movie_rate_data["timestamp"] / 1000),
                     rate=movie_rate_data.get("rate", 0),

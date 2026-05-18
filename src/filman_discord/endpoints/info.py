@@ -21,7 +21,7 @@ async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
 
     embed.add_field(
         name="Wersja i ostatnia aktualizacja",
-        value="`1.1.10v` - `2026-02-17`",
+        value="`1.1.10Av` - `2026-05-18`",
     )
 
     embed.add_field(
@@ -40,8 +40,8 @@ async def info_basic_command(ctx: lightbulb.SlashContext) -> None:
     )
 
     embed.add_field(
-        name="Dodano komendę umożliwiająca eksport obejrzanych filmów/seriali -> json/csv",
-        value="/filmweb export (/help filmweb export)"
+        name="Fix dla nowego API Filmwebu",
+        value="teraz powinno smigac :D",
     )
 
     embed.set_footer(
