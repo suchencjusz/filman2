@@ -141,7 +141,7 @@ def delete_user_destinations(
     user_id: int | None,
     discord_user_id: int | None,
 ) -> models.DiscordDestinations | None:
-    for dest in get_user_destinations(db, user_id, discord_user_id):
+    for dest in get_user_destinations(db, user_id, discord_user_id) or []:
         delete_user_destination(db, user_id, discord_user_id, dest.discord_guild_id)
 
     return None
@@ -709,39 +709,62 @@ def remove_completed_tasks(db: Session):
 # MULTIPLE TASKS GENERATION
 #
 
+def _create_bulk_tasks(db: Session, task_type: schemas.TaskTypes, task_jobs: list[str]) -> bool:
+    """Create queued tasks in bulk while skipping already queued or running duplicates."""
+    if not task_jobs:
+        return True
+
+    active_jobs = {
+        job
+        for (job,) in db.query(models.Task.task_job)
+        .filter(
+            models.Task.task_type == task_type,
+            models.Task.task_status.in_([schemas.TaskStatus.QUEUED, schemas.TaskStatus.RUNNING]),
+        )
+        .all()
+    }
+
+    now = datetime.now()
+    new_tasks = []
+    for job in task_jobs:
+        if job in active_jobs:
+            continue
+        active_jobs.add(job)
+        new_tasks.append(
+            models.Task(
+                task_status=schemas.TaskStatus.QUEUED,
+                task_type=task_type,
+                task_job=job,
+                task_created=now,
+            )
+        )
+
+    if new_tasks:
+        db.add_all(new_tasks)
+        db.commit()
+
+    return True
+
+
 # MOVIES
 
 
 def create_scrap_filmweb_users_movies_task(db: Session) -> bool:
     filmweb_users = db.query(models.FilmWebUserMapping).all()
-
-    for user in filmweb_users:
-        create_task(
-            db,
-            schemas.TaskCreate(
-                task_status=schemas.TaskStatus.QUEUED,
-                task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES,
-                task_job=str(user.filmweb_id),
-            ),
-        )
-
-    return True
+    return _create_bulk_tasks(
+        db,
+        schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_MOVIES,
+        [str(user.filmweb_id) for user in filmweb_users],
+    )
 
 
 def create_scrap_filmweb_movies_task(db: Session) -> bool:
     filmweb_movies = db.query(models.FilmWebMovie).all()
-
-    for movie in filmweb_movies:
-        create_task(
-            db,
-            schemas.TaskCreate(
-                task_status=schemas.TaskStatus.QUEUED,
-                task_type=schemas.TaskTypes.SCRAP_FILMWEB_MOVIE,
-                task_job=str(movie.id),
-            ),
-        )
-
-    return True
+    return _create_bulk_tasks(
+        db,
+        schemas.TaskTypes.SCRAP_FILMWEB_MOVIE,
+        [str(movie.id) for movie in filmweb_movies],
+    )
 
 
 # SERIES
@@ -749,34 +772,20 @@ def create_scrap_filmweb_movies_task(db: Session) -> bool:
 
 def create_scrap_filmweb_users_series_task(db: Session) -> bool:
     filmweb_users = db.query(models.FilmWebUserMapping).all()
-
-    for user in filmweb_users:
-        create_task(
-            db,
-            schemas.TaskCreate(
-                task_status=schemas.TaskStatus.QUEUED,
-                task_type=schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES,
-                task_job=str(user.filmweb_id),
-            ),
-        )
-
-    return True
+    return _create_bulk_tasks(
+        db,
+        schemas.TaskTypes.SCRAP_FILMWEB_USER_WATCHED_SERIES,
+        [str(user.filmweb_id) for user in filmweb_users],
+    )
 
 
 def create_scrap_filmweb_series_task(db: Session) -> bool:
     filmweb_series = db.query(models.FilmWebSeries).all()
-
-    for series in filmweb_series:
-        create_task(
-            db,
-            schemas.TaskCreate(
-                task_status=schemas.TaskStatus.QUEUED,
-                task_type=schemas.TaskTypes.SCRAP_FILMWEB_SERIES,
-                task_job=str(series.id),
-            ),
-        )
-
-    return True
+    return _create_bulk_tasks(
+        db,
+        schemas.TaskTypes.SCRAP_FILMWEB_SERIES,
+        [str(series.id) for series in filmweb_series],
+    )
 
 
 #
@@ -795,6 +804,8 @@ def update_stuck_tasks(db: Session, minutes: int = 15):  # dodaj minuty
     for task in stuck_tasks:
         task.task_status = schemas.TaskStatus.QUEUED
         task.task_started = None
+
+    if stuck_tasks:
         db.commit()
 
     return True

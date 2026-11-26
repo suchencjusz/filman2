@@ -54,7 +54,7 @@ def _fetch_filmweb_user_id(filmweb_id: str) -> int | None:
     summary="Get movie",
     description="Get movie by id",
 )
-async def get_movie(
+def get_movie(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -70,7 +70,7 @@ async def get_movie(
     summary="Update/insert movie to database",
     description="Updates movie in database if it exists, otherwise inserts it",
 )
-async def update_movie(
+def update_movie(
     movie: schemas.FilmWebMovie,
     db: Session = Depends(get_db),
 ):
@@ -92,7 +92,7 @@ async def update_movie(
     summary="Get series",
     description="Get series by id",
 )
-async def get_series(
+def get_series(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -108,7 +108,7 @@ async def get_series(
     summary="Update/insert series to database",
     description="Updates series in database if it exists, otherwise inserts it",
 )
-async def update_series(
+def update_series(
     series: schemas.FilmWebSeries,
     db: Session = Depends(get_db),
 ):
@@ -130,7 +130,7 @@ async def update_series(
     summary="Set user mapping",
     description="Set user mapping between discord user and filmweb username",
 )
-async def set_user_mapping(
+def set_user_mapping(
     user_mapping: schemas.FilmWebUserMappingCreate,
     db: Session = Depends(get_db),
 ):
@@ -150,7 +150,7 @@ async def set_user_mapping(
     summary="Get user mapping",
     description="Get user mapping between discord user and filmweb username",
 )
-async def get_user_mapping(
+def get_user_mapping(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -175,7 +175,7 @@ async def get_user_mapping(
     summary="Delete user mapping",
     description="Delete user mapping between discord user and filmweb username, and watched movies of this user",
 )
-async def delete_user_mapping(
+def delete_user_mapping(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -209,7 +209,7 @@ async def delete_user_mapping(
     summary="Add watched movie by user",
     description="Add watched movie by user, if movie does not exist in database it will be added with default values",
 )
-async def add_watched_movie(
+def add_watched_movie(
     user_watched_movie: schemas.FilmWebUserWatchedMovieCreate,
     db: Session = Depends(get_db),
 ):
@@ -230,7 +230,7 @@ async def add_watched_movie(
     summary="Get watched movies by user",
     description="Get watched movies by user, with movie details",
 )
-async def get_watched_movies(
+def get_watched_movies(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -250,7 +250,7 @@ async def get_watched_movies(
     summary="Get watched movie by user",
     description="Get watched movie by user, with movie details",
 )
-async def get_watched_movie(
+def get_watched_movie(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -282,7 +282,7 @@ async def get_watched_movie(
     summary="Add watched series by user",
     description="Add watched series by user, if series does not exist in database it will be added with default values",
 )
-async def add_watched_series(
+def add_watched_series(
     user_watched_series: schemas.FilmWebUserWatchedSeriesCreate,
     db: Session = Depends(get_db),
 ):
@@ -303,7 +303,7 @@ async def add_watched_series(
     summary="Get watched series by user",
     description="Get watched series by user, with series details",
 )
-async def get_watched_series_all(
+def get_watched_series_all(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -323,7 +323,7 @@ async def get_watched_series_all(
     summary="Get watched series by user",
     description="Get watched series by user, with series details",
 )
-async def get_watched_series(
+def get_watched_series(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -352,7 +352,7 @@ async def get_watched_series(
     summary="Export user watched movies and series",
     description="Export all watched movies and series for a user as JSON",
 )
-async def export_user_watched(
+def export_user_watched(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,

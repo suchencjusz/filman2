@@ -388,3 +388,27 @@ def test_tasks_new_scrap_filmweb_movies(test_client: TestClient):
         response = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
         assert response.status_code == 200
         assert response.json()["task_id"] == 2
+
+
+def test_bulk_task_creation_skips_active_duplicates(test_client: TestClient):
+    movie = {
+        "id": 628,
+        "title": "Matrix",
+        "year": 1999,
+        "poster_url": "https://fwcdn.pl/fpo/06/28/628/7685907_1.10.webp",
+        "community_rate": 7.6,
+        "critics_rate": 8.0,
+    }
+    assert test_client.post("/filmweb/movie/update", json=movie).status_code == 200
+
+    assert test_client.get("/tasks/new/scrap/filmweb/movies").status_code == 200
+    assert test_client.get("/tasks/new/scrap/filmweb/movies").status_code == 200
+
+    first = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+    assert first.status_code == 200
+    assert first.json()["task_job"] == "628"
+
+    # Second call while first task is still running should not enqueue a duplicate
+    assert test_client.get("/tasks/new/scrap/filmweb/movies").status_code == 200
+    second = test_client.get("/tasks/get/to_do", params={"task_types": ["scrap_filmweb_movie"]})
+    assert second.status_code == 404
