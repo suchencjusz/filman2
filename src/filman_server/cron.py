@@ -75,9 +75,12 @@ class Cron:
         self.schedule.every(30).minutes.do(self.tasks_update_old_tasks)
 
         while True:
-            self.schedule.run_pending()
+            try:
+                self.schedule.run_pending()
+            except Exception as e:
+                logging.exception(f"Unexpected error in cron scheduler: {e}")
             time.sleep(3)
 
     def start(self):
-        scheduler_thread = Thread(target=self.schedule_tasks)
+        scheduler_thread = Thread(target=self.schedule_tasks, daemon=True)
         scheduler_thread.start()

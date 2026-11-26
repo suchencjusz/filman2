@@ -21,7 +21,7 @@ users_router = APIRouter(prefix="/users", tags=["users"])
     summary="Create a user",
     description="Create a user using discord user id",
 )
-async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         db_user = crud.create_user(db, user)
         return db_user
@@ -35,7 +35,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     summary="Get a user",
     description="Get a user by user_id, filmweb_id or discord_id",
 )
-async def get_user(
+def get_user(
     user_id: int | None = None,
     filmweb_id: str | None = None,
     discord_id: int | None = None,
@@ -59,7 +59,7 @@ async def get_user(
     summary="Get all users",
     description="Get all users",
 )
-async def get_all_users(
+def get_all_users(
     db: Session = Depends(get_db),
 ):
     users = crud.get_users(db)
@@ -79,7 +79,7 @@ async def get_all_users(
     summary="Get all guild text channels",
     description="Get all discord guild text channels, where notifications can be sent",
 )
-async def get_channels(
+def get_channels(
     user_id: int | None = None,
     discord_id: int | None = None,
     db: Session = Depends(get_db),
@@ -105,7 +105,7 @@ async def get_channels(
     summary="Get all user guilds",
     description="Get all guilds user is in",
 )
-async def get_guilds(
+def get_guilds(
     user_id: int | None = None,
     discord_id: int | None = None,
     db: Session = Depends(get_db),
@@ -127,7 +127,7 @@ async def get_guilds(
     summary="Add user to discord guild",
     description="Add user to discord guild (guild must be in db first)",
 )
-async def add_to_guild(
+def add_to_guild(
     discord_id: int,
     discord_guild_id: int,
     db: Session = Depends(get_db),
@@ -159,7 +159,7 @@ async def add_to_guild(
     summary="Remove user from discord guild",
     description="Remove user from discord (the message destination for notifications)",
 )
-async def remove_from_guild(
+def remove_from_guild(
     user_id: int | None = None,
     discord_user_id: int | None = None,
     discord_guild_id: int = None,
@@ -192,7 +192,7 @@ async def remove_from_guild(
     summary="Remove user from all guilds",
     description="Remove user from all guilds (the message destinations for notifications)",
 )
-async def remove_from_all_guilds(
+def remove_from_all_guilds(
     user_id: int | None = None,
     discord_user_id: int | None = None,
     db: Session = Depends(get_db),

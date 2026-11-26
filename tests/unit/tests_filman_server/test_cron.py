@@ -88,5 +88,5 @@ def test_execute_task_exception(mock_logging_error, mock_get):
 @patch("filman_server.cron.Thread")
 def test_start(mock_thread, cron):
     cron.start()
-    assert mock_thread.called
+    mock_thread.assert_called_once_with(target=cron.schedule_tasks, daemon=True)
     assert mock_thread.return_value.start.called
