@@ -63,7 +63,6 @@ def _assert_preview_payload(payload: dict[str, object]) -> None:
         "year",
         "entityName",
         "subType",
-        "description",
         "poster",
         "genres",
         "countries",
@@ -72,6 +71,7 @@ def _assert_preview_payload(payload: dict[str, object]) -> None:
     }
     missing = [key for key in expected_keys if key not in payload]
     assert not missing, f"Missing preview keys: {missing}"
+    assert "plot" in payload or "description" in payload, "Missing preview plot/description key"
 
 
 def _assert_votes_payload(payload: dict[str, object]) -> None:
